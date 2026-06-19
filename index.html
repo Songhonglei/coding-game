@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>编程小达人 - 知识闯关大冒险</title>
+<style>
+  /* ===== 全局重置 ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ===== 设计 Token ===== */
+  :root {
+    /* 主色：饱和度适中的靛蓝，不是荧光紫 */
+    --c-primary:   #4361ee;
+    --c-primary-lt:#eef0fd;
+    /* 强调色：温暖珊瑚，非荧光粉 */
+    --c-accent:    #f72585;
+    --c-accent-lt: #feeef6;
+    /* 功能色 */
+    --c-success:   #2d9e6b;
+    --c-success-lt:#eaf6f0;
+    --c-warn:      #e07b00;
+    --c-warn-lt:   #fef3e2;
+    --c-danger:    #d62839;
+    --c-danger-lt: #fdeaea;
+    /* 中性色系 */
+    --c-bg:        #f5f6fa;
+    --c-surface:   #ffffff;
+    --c-border:    #e4e6ef;
+    --c-text-1:    #1a1d2e;   /* 主文字 */
+    --c-text-2:    #4b4f6a;   /* 次文字 */
+    --c-text-3:    #9396b0;   /* 辅助说明 */
+    /* 间距 */
+    --sp-xs: 4px;
+    --sp-sm: 8px;
+    --sp-md: 16px;
+    --sp-lg: 24px;
+    --sp-xl: 40px;
+    /* 圆角：有层次而非全部一样 */
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --r-full: 999px;
+    /* 阴影：克制，只有一套 */
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lift: 0 2px 6px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.10);
+  }
+
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+    background: var(--c-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--sp-md);
+    color: var(--c-text-1);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== 游戏容器 ===== */
+  #game {
+    width: 100%;
+    max-width: 740px;
+    min-height: calc(100vh - 32px);
+    background: var(--c-surface);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--c-border);
+    position: relative;
+  }
+
+  /* ===== 顶部状态栏 ===== */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    padding: 14px var(--sp-lg) 10px;
+    background: var(--c-surface);
+    border-bottom: 1px solid var(--c-border);
+    color: var(--c-text-1);
+  }
+  .topbar .module-tag {
+    background: var(--c-primary-lt);
+    color: var(--c-primary);
+    padding: 4px 12px;
+    border-radius: var(--r-full);
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .topbar .score-box {
+    margin-left: auto;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--c-text-2);
+    background: var(--c-bg);
+    padding: 4px 14px;
+    border-radius: var(--r-full);
+    border: 1px solid var(--c-border);
+    margin-right: 46px;
+  }
+  .progress-track {
+    height: 3px;
+    background: var(--c-border);
+    margin: 0;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--c-primary);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ===== 内容区域 ===== */
+  .content {
+    flex: 1;
+    padding: var(--sp-lg) var(--sp-lg) var(--sp-xl);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  /* ===== 页面切换动画 ===== */
+  .page {
+    animation: pageIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== 开始页 ===== */
+  .start-page {
+    text-align: center;
+    padding: var(--sp-xl) var(--sp-lg);
+  }
+  .start-page .big-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--c-text-1);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--sp-sm);
+    line-height: 1.2;
+  }
+  .start-page .sub-title {
+    font-size: 1rem;
+    color: var(--c-text-2);
+    margin-bottom: var(--sp-xl);
+    line-height: 1.7;
+    font-weight: 400;
+  }
+  .emoji-row {
+    font-size: 2.2rem;
+    letter-spacing: 10px;
+    margin-bottom: var(--sp-lg);
+    display: block;
+    animation: bounceRow 3s ease-in-out infinite;
+  }
+  @keyframes bounceRow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .module-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 0 auto var(--sp-xl);
+    max-width: 560px;
+  }
+  .module-card {
+    background: var(--c-bg);
+    border-radius: var(--r-md);
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--c-text-2);
+    border: 1px solid var(--c-border);
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+  .module-card:hover {
+    box-shadow: var(--shadow-card);
+    transform: translateY(-3px);
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+  }
+  .module-card .mc-emoji { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+
+  /* ===== 通用按钮 ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: none;
+    border-radius: var(--r-md);
+    padding: 12px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    background: var(--c-primary);
+    box-shadow: 0 1px 2px rgba(67,97,238,0.2), 0 2px 8px rgba(67,97,238,0.18);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+  }
+  .btn:hover {
+    background: #3451d1;
+    box-shadow: 0 2px 4px rgba(67,97,238,0.2), 0 4px 16px rgba(67,97,238,0.22);
+    transform: translateY(-1px);
+  }
+  .btn:active { transform: translateY(0); box-shadow: none; }
+  .btn.green {
+    background: var(--c-success);
+    box-shadow: 0 1px 2px rgba(45,158,107,0.2), 0 2px 8px rgba(45,158,107,0.18);
+  }
+  .btn.green:hover {
+    background: #228a5a;
+    box-shadow: 0 2px 4px rgba(45,158,107,0.2), 0 4px 16px rgba(45,158,107,0.22);
+  }
+
+  /* ===== 模块介绍页 ===== */
+  .intro-page {
+    text-align: center;
+    padding: var(--sp-md) 0;
+  }
+  .intro-emoji {
+    font-size: 2.8rem;
+    margin-bottom: var(--sp-sm);
+    display: inline-block;
+    animation: introPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes introPop {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .intro-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin-bottom: var(--sp-sm);
+    letter-spacing: -0.01em;
+    color: var(--c-text-1);
+  }
+  .intro-desc {
+    font-size: 0.97rem;
+    color: var(--c-text-2);
+    margin-bottom: var(--sp-sm);
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  /* 动画展示区 */
+  .anim-stage {
+    width: 100%;
+    height: 220px;
+    background: var(--c-bg);
+    border-radius: var(--r-md);
+    margin: var(--sp-md) auto var(--sp-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--c-border);
+  }
+
+  /* --- 动画1：变量盒子 --- */
+  .var-box {
+    width: 110px;
+    height: 110px;
+    background: var(--c-primary-lt);
+    border-radius: var(--r-md);
+    border: 2px solid var(--c-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--c-primary);
+    font-weight: 600;
+    position: relative;
+    box-shadow: var(--shadow-card);
+  }
+  .var-box .label { font-size: 0.75rem; opacity: 0.7; margin-bottom: 4px; letter-spacing: 0.03em; }
+  .var-box .value { font-size: 1.8rem; font-weight: 700; transition: all 0.3s; }
+  .var-box .value.changing { animation: valueSwap 0.4s ease; }
+  @keyframes valueSwap {
+    0%  { transform: scale(1); opacity: 1; }
+    40% { transform: scale(0.4) rotate(90deg); opacity: 0; }
+    60% { transform: scale(0.4) rotate(-90deg); opacity: 0; }
+    100%{ transform: scale(1); opacity: 1; }
+  }
+  .var-arrow {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: arrowDown 1.8s ease-in-out infinite;
+  }
+  @keyframes arrowDown {
+    0%, 100% { transform: translateY(-8px); opacity: 0.25; }
+    50%       { transform: translateY(8px);  opacity: 0.9; }
+  }
+
+  /* --- 动画2：条件分叉路口 --- */
+  .cond-scene { position: relative; width: 300px; height: 200px; }
+  .cond-ask {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    background: var(--c-primary); color: #fff;
+    padding: 5px 16px; border-radius: var(--r-full);
+    font-weight: 600; font-size: 0.82rem; white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .cond-path {
+    position: absolute; top: 34px; width: 2px; height: 50px;
+    background: var(--c-border); left: 50%; transform: translateX(-50%);
+  }
+  .cond-left, .cond-right {
+    position: absolute; top: 82px; font-size: 0.78rem; font-weight: 600; text-align: center;
+  }
+  .cond-left { left: 28px; color: var(--c-success); }
+  .cond-right { right: 28px; color: var(--c-warn); }
+  .cond-left::before, .cond-right::before {
+    content: ''; position: absolute; top: -46px; width: 100px; height: 50px;
+    border-top: 2px solid; border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+  .cond-left::before  { border-color: var(--c-success); right: -50px; border-left: none; }
+  .cond-right::before { border-color: var(--c-warn);    left: -50px; border-right: none; }
+  .cond-walker {
+    position: absolute; top: 86px; left: 50%; font-size: 1.5rem;
+    animation: condWalk 3s ease infinite;
+  }
+  @keyframes condWalk {
+    0%   { left: 50%; top: 86px; }
+    30%  { left: 50%; top: 100px; }
+    50%  { left: 20%; top: 130px; }
+    70%  { left: 20%; top: 130px; opacity: 1; }
+    100% { left: 20%; top: 130px; opacity: 0; }
+  }
+  .cond-walker2 {
+    position: absolute; top: 86px; left: 50%; font-size: 1.5rem;
+    animation: condWalk2 3s ease infinite;
+    animation-delay: 1.5s; opacity: 0;
+  }
+  @keyframes condWalk2 {
+    0%   { left: 50%; top: 86px; opacity: 0; }
+    5%   { opacity: 1; }
+    30%  { left: 50%; top: 100px; opacity: 1; }
+    50%  { left: 80%; top: 130px; opacity: 1; }
+    70%  { left: 80%; top: 130px; opacity: 1; }
+    100% { left: 80%; top: 130px; opacity: 0; }
+  }
+
+  /* --- 动画3：循环 --- */
+  .loop-scene { position: relative; width: 200px; height: 200px; }
+  .loop-circle {
+    width: 130px; height: 130px;
+    border: 4px solid var(--c-warn); border-radius: 50%; border-top-color: transparent;
+    position: absolute; top: 35px; left: 35px;
+    animation: loopSpin 1.4s linear infinite;
+  }
+  @keyframes loopSpin { to { transform: rotate(360deg); } }
+  .loop-dot {
+    position: absolute; width: 14px; height: 14px;
+    background: var(--c-warn); border-radius: 50%; top: 26px; left: 93px;
+    animation: loopDot 1.4s linear infinite;
+  }
+  @keyframes loopDot {
+    0%   { transform: rotate(0deg)   translateX(-65px) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(-65px) rotate(-360deg); }
+  }
+  .loop-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    font-size: 1.8rem;
+  }
+  .loop-count {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    font-size: 0.75rem; font-weight: 500; color: var(--c-text-3); white-space: nowrap;
+  }
+
+  /* --- 动画4：函数工厂 --- */
+  .func-scene { display: flex; align-items: center; gap: 10px; }
+  .func-in, .func-out {
+    width: 52px; height: 52px; border-radius: var(--r-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 700; color: #fff;
+  }
+  .func-in  { background: var(--c-success); }
+  .func-out { background: var(--c-accent); }
+  .func-machine {
+    width: 90px; height: 80px;
+    background: #fff; border: 2px solid var(--c-border);
+    border-radius: var(--r-md); position: relative;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; box-shadow: var(--shadow-card);
+  }
+  .func-machine::after {
+    content: '函数'; position: absolute; bottom: -20px;
+    font-size: 0.7rem; font-weight: 600; color: var(--c-text-3); letter-spacing: 0.05em;
+  }
+  .func-arrow-mini {
+    font-size: 1.1rem; color: var(--c-text-3);
+    animation: arrowFlow 1.2s ease-in-out infinite;
+  }
+  @keyframes arrowFlow {
+    0%, 100% { transform: translateX(-3px); opacity: 0.4; }
+    50%       { transform: translateX(3px);  opacity: 1; }
+  }
+  .func-in-move  { animation: inMove  2s ease infinite; }
+  @keyframes inMove {
+    0%  { transform: translateX(0);   opacity: 1; }
+    40% { transform: translateX(28px); opacity: 0.4; }
+    50% { transform: translateX(28px); opacity: 0; }
+    51% { transform: translateX(0);   opacity: 0; }
+    100%{ transform: translateX(0);   opacity: 1; }
+  }
+  .func-out-move { animation: outMove 2s ease infinite; }
+  @keyframes outMove {
+    0%, 50% { transform: translateX(0);    opacity: 0; }
+    51%     { transform: translateX(-28px); opacity: 0.4; }
+    100%    { transform: translateX(0);    opacity: 1; }
+  }
+
+  /* --- 动画5：调试 --- */
+  .bug-scene { position: relative; width: 280px; height: 200px; }
+  .bug-bug {
+    position: absolute; top: 50%; left: 10%; font-size: 2rem;
+    animation: bugCrawl 3s ease infinite;
+  }
+  @keyframes bugCrawl {
+    0%   { left: 10%; transform: rotate(0); }
+    45%  { left: 45%; transform: rotate(0); }
+    50%  { left: 45%; transform: scale(1.1); }
+    55%  { left: 45%; transform: scale(0) rotate(720deg); opacity: 1; }
+    60%  { left: 45%; transform: scale(0); opacity: 0; }
+    100% { left: 45%; transform: scale(0); opacity: 0; }
+  }
+  .bug-magnifier {
+    position: absolute; top: 40%; left: 60%; font-size: 2rem;
+    animation: magSearch 3s ease infinite;
+  }
+  @keyframes magSearch {
+    0%, 40% { left: 60%; transform: rotate(-15deg); }
+    45%  { left: 48%; transform: rotate(0) scale(1.2); }
+    60%  { left: 48%; transform: rotate(0) scale(1); opacity: 1; }
+    100% { left: 48%; transform: rotate(0) scale(1); opacity: 1; }
+  }
+  .bug-zap {
+    position: absolute; top: 35%; left: 42%; font-size: 1.8rem;
+    opacity: 0; animation: bugZap 3s ease infinite;
+  }
+  @keyframes bugZap {
+    0%, 52% { opacity: 0; transform: scale(0); }
+    55%  { opacity: 1; transform: scale(1.4); }
+    62%  { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 0; }
+  }
+  .bug-fixed {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 0.82rem; font-weight: 600; color: var(--c-success);
+    opacity: 0; animation: bugFixed 3s ease infinite; white-space: nowrap;
+  }
+  @keyframes bugFixed {
+    0%, 62% { opacity: 0; }
+    70%  { opacity: 1; }
+    100% { opacity: 1; }
+  }
+
+  /* ===== 题目页 ===== */
+  .question-page { display: flex; flex-direction: column; }
+  .q-number {
+    display: inline-block;
+    background: var(--c-bg);
+    color: var(--c-text-3);
+    font-weight: 500;
+    font-size: 0.78rem;
+    padding: 3px 12px;
+    border-radius: var(--r-full);
+    margin-bottom: var(--sp-md);
+    align-self: flex-start;
+    border: 1px solid var(--c-border);
+    letter-spacing: 0.04em;
+  }
+  .q-concept {
+    font-size: 0.9rem;
+    color: var(--c-text-2);
+    margin-bottom: var(--sp-md);
+    line-height: 1.7;
+    background: var(--c-bg);
+    padding: var(--sp-sm) var(--sp-md);
+    border-radius: var(--r-sm);
+    border-left: 3px solid var(--c-primary);
+    font-weight: 400;
+  }
+  .q-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.65;
+    margin-bottom: var(--sp-md);
+    color: var(--c-text-1);
+    letter-spacing: -0.01em;
+  }
+  /* 代码块 */
+  .code-block {
+    background: #1e1e2e;
+    border-radius: var(--r-md);
+    padding: 16px 20px;
+    margin-bottom: var(--sp-md);
+    overflow-x: auto;
+  }
+  .code-block pre {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Consolas, monospace;
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: #cdd6f4;
+    white-space: pre;
+  }
+  .code-block .kw  { color: #cba6f7; }
+  .code-block .num { color: #fab387; }
+  .code-block .str { color: #a6e3a1; }
+  .code-block .fn  { color: #89b4fa; }
+  .code-block .cmt { color: #6c7086; font-style: italic; }
+
+  /* 选项 */
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: var(--sp-md);
+  }
+  .option {
+    background: var(--c-surface);
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: inherit;
+    color: var(--c-text-1);
+    line-height: 1.5;
+  }
+  .option .opt-letter {
+    width: 28px; height: 28px; border-radius: var(--r-sm);
+    background: var(--c-bg); color: var(--c-text-2);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 0.82rem; flex-shrink: 0;
+    border: 1px solid var(--c-border);
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+    letter-spacing: 0.02em;
+  }
+  .option:hover:not(.disabled) {
+    border-color: var(--mc, var(--c-primary));
+    background: var(--c-primary-lt);
+  }
+  .option:hover:not(.disabled) .opt-letter {
+    background: var(--mc, var(--c-primary));
+    color: #fff;
+    border-color: var(--mc, var(--c-primary));
+  }
+  .option.correct {
+    border-color: var(--c-success);
+    background: var(--c-success-lt);
+    animation: correctPulse 0.4s ease;
+  }
+  .option.correct .opt-letter {
+    background: var(--c-success); color: #fff; border-color: var(--c-success);
+  }
+  .option.wrong {
+    border-color: var(--c-danger);
+    background: var(--c-danger-lt);
+    animation: wrongShake 0.35s ease;
+  }
+  .option.wrong .opt-letter {
+    background: var(--c-danger); color: #fff; border-color: var(--c-danger);
+  }
+  .option.disabled { cursor: default; }
+  .option.disabled:not(.correct):not(.wrong) { opacity: 0.45; }
+  @keyframes correctPulse {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(1.025); }
+    100% { transform: scale(1); }
+  }
+  @keyframes wrongShake {
+    0%, 100% { transform: translateX(0); }
+    25%  { transform: translateX(-7px); }
+    75%  { transform: translateX(7px); }
+  }
+
+  /* 反馈区 */
+  .feedback {
+    border-radius: var(--r-md);
+    padding: 14px 18px;
+    margin-bottom: var(--sp-md);
+    animation: fbIn 0.35s ease;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  @keyframes fbIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .feedback.right {
+    background: var(--c-success-lt);
+    border: 1px solid #b7e4cf;
+  }
+  .feedback.wrong-fb {
+    background: var(--c-danger-lt);
+    border: 1px solid #f0b8bc;
+  }
+  .feedback .fb-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .feedback.right .fb-title { color: var(--c-success); }
+  .feedback.wrong-fb .fb-title { color: var(--c-danger); }
+  .feedback .fb-body {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--c-text-2);
+    font-weight: 400;
+  }
+  .feedback .fb-body .answer-tag {
+    display: inline-block;
+    background: var(--c-success); color: #fff;
+    padding: 1px 10px; border-radius: var(--r-full);
+    font-weight: 600; font-size: 0.82rem;
+    margin: 0 3px;
+  }
+
+  .next-btn-wrap {
+    text-align: center;
+    margin-top: var(--sp-sm);
+    display: none;
+  }
+  .next-btn-wrap.show { display: block; animation: fbIn 0.35s ease 0.15s both; }
+
+  /* ===== 总结页 ===== */
+  .summary-page {
+    text-align: center;
+    padding: var(--sp-lg) 0;
+  }
+  .summary-crown { font-size: 3rem; animation: crownBounce 2s ease-in-out infinite; }
+  @keyframes crownBounce {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%       { transform: translateY(-10px) rotate(3deg); }
+  }
+  .summary-title {
+    font-size: 1.5rem; font-weight: 700; margin: 10px 0 4px;
+    color: var(--c-text-1); letter-spacing: -0.02em;
+  }
+  .summary-score {
+    font-size: 2.8rem; font-weight: 800;
+    color: var(--c-primary);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .summary-score small {
+    font-size: 1.1rem; font-weight: 500;
+    color: var(--c-text-3); letter-spacing: 0;
+  }
+  .summary-stars { font-size: 1.6rem; margin: 10px 0 20px; letter-spacing: 6px; }
+  .module-results {
+    display: grid; grid-template-columns: 1fr;
+    gap: 8px; max-width: 500px; margin: 0 auto 20px;
+  }
+  .mr-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--c-bg); border-radius: var(--r-md);
+    padding: 12px 16px; text-align: left;
+    border: 1px solid var(--c-border);
+  }
+  .mr-emoji { font-size: 1.4rem; }
+  .mr-info { flex: 1; }
+  .mr-name { font-weight: 600; font-size: 0.92rem; color: var(--c-text-1); }
+  .mr-bar {
+    height: 6px; background: var(--c-border); border-radius: var(--r-full);
+    margin-top: 6px; overflow: hidden;
+  }
+  .mr-bar-fill { height: 100%; border-radius: var(--r-full); transition: width 0.9s cubic-bezier(0.4,0,0.2,1); }
+  .mr-stat { font-weight: 700; font-size: 1rem; min-width: 44px; text-align: right; color: var(--c-text-2); }
+  .summary-encourage {
+    background: var(--c-warn-lt);
+    border: 1px solid #f5cc82;
+    border-radius: var(--r-md);
+    padding: 16px 20px;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--c-text-2);
+    max-width: 500px;
+    margin: 0 auto 28px;
+    font-weight: 400;
+    text-align: left;
+  }
+
+  /* ===== Dark Mode Tokens ===== */
+  [data-theme="dark"] {
+    --c-primary:   #6b8cff;
+    --c-primary-lt:#1a2140;
+    --c-accent:    #ff6eb4;
+    --c-accent-lt: #2a0e1d;
+    --c-success:   #3dba80;
+    --c-success-lt:#0e2a1c;
+    --c-warn:      #f59e0b;
+    --c-warn-lt:   #2a1a00;
+    --c-danger:    #f87171;
+    --c-danger-lt: #2a0a0a;
+    --c-bg:        #0f1117;
+    --c-surface:   #1a1d27;
+    --c-border:    #2c2f3e;
+    --c-text-1:    #e8eaf2;
+    --c-text-2:    #9ea3b8;
+    --c-text-3:    #5c6180;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.35);
+    --shadow-lift: 0 2px 6px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.40);
+  }
+  [data-theme="dark"] .code-block { background: #0d1117; }
+  [data-theme="dark"] .func-machine { background: #1a1d27; }
+
+  /* ===== 主题切换按钮 ===== */
+  .theme-btn {
+    position: absolute;
+    top: 14px;
+    right: var(--sp-lg);
+    width: 34px;
+    height: 34px;
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-md);
+    background: var(--c-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    z-index: 10;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .theme-btn:hover { background: var(--c-border); }
+  .theme-btn svg { display: block; }
+
+  /* 滚动条 */
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: var(--r-full); }
+
+  /* 响应式 */
+  @media (max-width: 600px) {
+    .options { grid-template-columns: 1fr; }
+    .topbar  { padding: 12px var(--sp-md) 8px; }
+    .content { padding: var(--sp-md) var(--sp-md) var(--sp-xl); }
+    .start-page .big-title { font-size: 1.6rem; }
+    .q-text  { font-size: 1rem; }
+    #game    { border-radius: var(--r-md); }
+  }
+</style>
+</head>
+<body>
+
+<div id="game">
+  <!-- 主题切换按钮（始终悬浮在右上角） -->
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="切换深色/浅色模式" aria-label="切换主题">
+    <!-- 初始显示月亮（当前是浅色，点击切换深色） -->
+    <svg id="iconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-text-2)">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg id="iconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-text-2);display:none;">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
+
+  <!-- 顶部状态栏 -->
+  <div class="topbar" id="topbar" style="display:none;">
+    <span class="module-tag" id="moduleTag">模块</span>
+    <span class="score-box" id="scoreBox">0 分</span>
+  </div>
+  <div class="progress-track" id="progressTrack" style="display:none;">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- 内容区 -->
+  <div class="content" id="content">
+    <!-- 动态渲染 -->
+  </div>
+</div>
+
+<script>
+/* ============================================================
+ *  编程小达人 - 知识闯关大冒险
+ *  数据 + 逻辑
+ * ============================================================ */
+
+// ---- 模块定义 ----
+var MODULES = [
+  {
+    id: 1,
+    emoji: '📦',
+    name: '变量',
+    color: '#4361ee',
+    desc: '变量就像贴了标签的盒子，用来存放数据。让我们一起来认识它吧！',
+    anim: 'variable'
+  },
+  {
+    id: 2,
+    emoji: '⚖️',
+    name: '条件判断',
+    color: '#d62839',
+    desc: '如果……就……！条件判断让程序学会做选择，就像走到分叉路口。',
+    anim: 'condition'
+  },
+  {
+    id: 3,
+    emoji: '🔄',
+    name: '循环',
+    color: '#e07b00',
+    desc: '重复的事情交给循环！不用复制粘贴，几行代码就能重复执行很多次。',
+    anim: 'loop'
+  },
+  {
+    id: 4,
+    emoji: '🔧',
+    name: '函数',
+    color: '#2d9e6b',
+    desc: '函数是一个可以反复使用的小工具，定义一次，随时调用，让代码整洁有序。',
+    anim: 'function'
+  },
+  {
+    id: 5,
+    emoji: '🔍',
+    name: '调试思维',
+    color: '#7c3aed',
+    desc: '程序出错了怎么办？学会像侦探一样分析错误，一步步找出并修复 Bug！',
+    anim: 'bug'
+  }
+];
+
+// ---- 题目数据 ----
+// code: 含高亮的代码HTML（可选）
+var QUESTIONS = [
+  // ===== 模块1：变量 =====
+  {
+    module: 1,
+    concept: '变量就像一个贴了标签的盒子，可以把数据放进去，需要的时候再取出来，还能随时换成新的内容。',
+    question: '在编程中，"变量"最像下面哪个东西？',
+    code: null,
+    options: [
+      { letter: 'A', text: '一本书' },
+      { letter: 'B', text: '一个贴了标签的盒子' },
+      { letter: 'C', text: '一扇门' },
+      { letter: 'D', text: '一张地图' }
+    ],
+    answer: 1,
+    explain: '变量就像一个贴了标签的盒子，可以存放各种数据，随时取用或更换里面的内容。'
+  },
+  {
+    module: 1,
+    concept: '给变量起名字有规则：不能以数字开头、不能含空格、不能用减号（Python中）。驼峰命名法（myName）是常见的好习惯！',
+    question: '下面哪个变量名是正确的？',
+    code: null,
+    options: [
+      { letter: 'A', text: '1name' },
+      { letter: 'B', text: 'my name' },
+      { letter: 'C', text: 'myName' },
+      { letter: 'D', text: 'my-name' }
+    ],
+    answer: 2,
+    explain: '变量名不能以数字开头，不能含空格，通常用字母、数字、下划线，myName 是驼峰命名法。'
+  },
+  {
+    module: 1,
+    concept: '在编程中，= 是"赋值"的意思，把右边的内容放入左边的变量盒子里。注意：这里的 = 不是"相等"！',
+    question: 'x = 12 这行代码是什么意思？',
+    code: '<span class="kw">x</span> = <span class="num">12</span>',
+    options: [
+      { letter: 'A', text: '判断 x 是否等于 12' },
+      { letter: 'B', text: '把数字 12 存入名为 x 的变量' },
+      { letter: 'C', text: '输出数字 12' },
+      { letter: 'D', text: '删除变量 x' }
+    ],
+    answer: 1,
+    explain: '= 在编程中是"赋值"符号，表示把右边的值存入左边的变量。'
+  },
+
+  // ===== 模块2：条件判断 =====
+  {
+    module: 2,
+    concept: 'if 语句就像生活中的"如果……就……"。比如：如果下雨了，就带伞出门。程序也能做这样的判断！',
+    question: 'if 语句的作用是什么？',
+    code: null,
+    options: [
+      { letter: 'A', text: '重复执行代码' },
+      { letter: 'B', text: '定义一个函数' },
+      { letter: 'C', text: '根据条件决定执行哪段代码' },
+      { letter: 'D', text: '打印输出内容' }
+    ],
+    answer: 2,
+    explain: 'if 就像我们生活中的"如果……就……"，比如"如果下雨了，就带伞"。'
+  },
+  {
+    module: 2,
+    concept: '比较运算符用来比较两个值，返回"真"或"假"：> 大于、< 小于、== 等于（两个等号）、!= 不等于。',
+    question: 'score > 60 中的 > 表示什么？',
+    code: '<span class="kw">score</span> &gt; <span class="num">60</span>',
+    options: [
+      { letter: 'A', text: 'score 赋值为 60' },
+      { letter: 'B', text: 'score 大于 60' },
+      { letter: 'C', text: 'score 等于 60' },
+      { letter: 'D', text: 'score 小于 60' }
+    ],
+    answer: 1,
+    explain: '> 是"大于"，< 是"小于"，== 是"等于"，!= 是"不等于"。'
+  },
+  {
+    module: 2,
+    concept: 'x = 8，然后判断 x > 5 是否成立。成立就走 if 那条路，不成立就走 else 那条路。读代码时要逐行跟着走。',
+    question: '以下代码会输出什么？',
+    code: 'x = <span class="num">8</span>\n<span class="kw">if</span> x &gt; <span class="num">5</span>:\n    <span class="fn">print</span>(<span class="str">"大"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"小"</span>)',
+    options: [
+      { letter: 'A', text: '小' },
+      { letter: 'B', text: '8' },
+      { letter: 'C', text: '大' },
+      { letter: 'D', text: '没有输出' }
+    ],
+    answer: 2,
+    explain: 'x=8，8>5 为真，所以执行 if 里面的代码，输出"大"。'
+  },
+
+  // ===== 模块3：循环 =====
+  {
+    module: 3,
+    concept: '如果要打印100次"你好"，不用复制100行代码！用循环，几行就能搞定，这是编程最重要的思维之一。',
+    question: '为什么需要循环？',
+    code: null,
+    options: [
+      { letter: 'A', text: '让程序更难理解' },
+      { letter: 'B', text: '避免重复写同样的代码' },
+      { letter: 'C', text: '让程序运行更慢' },
+      { letter: 'D', text: '存储数据' }
+    ],
+    answer: 1,
+    explain: '如果要打印100次"你好"，用循环只需几行代码，不用复制100次！'
+  },
+  {
+    module: 3,
+    concept: 'range(5) 会生成 0、1、2、3、4 这5个数字（从0开始，不包含5），所以循环恰好执行5次。',
+    question: 'for i in range(5) 会循环几次？',
+    code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):\n    <span class="fn">print</span>(<span class="str">"你好"</span>)',
+    options: [
+      { letter: 'A', text: '4次' },
+      { letter: 'B', text: '5次' },
+      { letter: 'C', text: '6次' },
+      { letter: 'D', text: '无限次' }
+    ],
+    answer: 1,
+    explain: 'range(5) 生成 0,1,2,3,4 共5个数，所以循环5次。'
+  },
+  {
+    module: 3,
+    concept: 'while 循环会一直重复执行，直到条件变成"假"才停止。如果条件永远为真，就会陷入"死循环"——程序会卡住！',
+    question: 'while 循环什么时候停止？',
+    code: '<span class="kw">while</span> 条件:\n    <span class="cmt"># 重复执行的代码</span>',
+    options: [
+      { letter: 'A', text: '执行了10次之后' },
+      { letter: 'B', text: '程序员手动停止' },
+      { letter: 'C', text: '当条件变为假（False）时' },
+      { letter: 'D', text: '永远不停止' }
+    ],
+    answer: 2,
+    explain: 'while 循环会一直执行，直到条件不成立。如果条件一直为真，就会变成"死循环"。'
+  },
+
+  // ===== 模块4：函数 =====
+  {
+    module: 4,
+    concept: '函数就像一个可反复使用的工具，定义一次，在任何地方都能调用，让代码变得简洁、有条理。',
+    question: '函数最主要的作用是什么？',
+    code: null,
+    options: [
+      { letter: 'A', text: '让代码更复杂' },
+      { letter: 'B', text: '把代码打包，可以重复使用' },
+      { letter: 'C', text: '存储数据' },
+      { letter: 'D', text: '判断条件' }
+    ],
+    answer: 1,
+    explain: '函数就像一个小工具，定义一次，可以在任何地方调用，避免重复写代码。'
+  },
+  {
+    module: 4,
+    concept: 'def 关键字用来"定义"函数（告诉程序这个工具长什么样），函数名后跟括号则是"调用"函数（真正去使用这个工具）。',
+    question: '下面哪行是"调用函数"？',
+    code: '<span class="cmt"># A. 定义函数</span>\n<span class="kw">def</span> <span class="fn">sayHello</span>():\n    <span class="fn">print</span>(<span class="str">"Hi"</span>)\n\n<span class="cmt"># B. 调用函数</span>\n<span class="fn">sayHello</span>()',
+    options: [
+      { letter: 'A', text: 'def sayHello():' },
+      { letter: 'B', text: 'sayHello()' },
+      { letter: 'C', text: 'return "Hello"' },
+      { letter: 'D', text: '# 这是一个函数' }
+    ],
+    answer: 1,
+    explain: 'def 是定义函数，函数名() 是调用函数。调用时才会真正执行里面的代码。'
+  },
+  {
+    module: 4,
+    concept: '参数就是传给函数的输入数据，就像食材之于厨师。add(3, 5) 中的 3 和 5 就是参数，函数接收后进行处理，返回结果。',
+    question: '函数的"参数"是什么？',
+    code: '<span class="kw">def</span> <span class="fn">add</span>(a, b):\n    <span class="kw">return</span> a + b\n\n<span class="fn">add</span>(<span class="num">3</span>, <span class="num">5</span>)  <span class="cmt"># 3和5是参数</span>',
+    options: [
+      { letter: 'A', text: '函数的名字' },
+      { letter: 'B', text: '函数执行后返回的结果' },
+      { letter: 'C', text: '传入函数的输入数据' },
+      { letter: 'D', text: '函数里的注释' }
+    ],
+    answer: 2,
+    explain: '参数就像工厂的原材料，比如 add(3, 5) 中的 3 和 5 就是参数，函数用它们来计算。'
+  },
+
+  // ===== 模块5：调试思维 =====
+  {
+    module: 5,
+    concept: 'Bug 原意是"虫子"。1947年，工程师们真的发现一只飞蛾卡在电脑继电器里导致故障——"Bug"这个词从此沿用至今，指代程序中的任何错误。',
+    question: '"Bug" 在编程中是什么意思？',
+    code: null,
+    options: [
+      { letter: 'A', text: '一种编程语言' },
+      { letter: 'B', text: '程序中的错误或缺陷' },
+      { letter: 'C', text: '程序运行得很快' },
+      { letter: 'D', text: '一种数据类型' }
+    ],
+    answer: 1,
+    explain: 'Bug 原意是"虫子"，历史上第一个 Bug 真的是一只飞蛾卡在电脑里！现在指程序中的各种错误。'
+  },
+  {
+    module: 5,
+    concept: '调试（Debug）四步法：① 看错误提示 → ② 定位出错的行 → ③ 理解出错原因 → ④ 修改并重新验证。沉住气，一步一步来。',
+    question: '发现程序有 Bug，第一步应该做什么？',
+    code: null,
+    options: [
+      { letter: 'A', text: '立刻删掉所有代码重写' },
+      { letter: 'B', text: '分析错误信息，找出问题所在' },
+      { letter: 'C', text: '关掉电脑重启' },
+      { letter: 'D', text: '请别人帮你写' }
+    ],
+    answer: 1,
+    explain: '调试（Debug）的步骤：①看错误提示 ②找到出错的行 ③理解为什么出错 ④修改并验证。'
+  },
+  {
+    module: 5,
+    concept: 'Python 函数定义格式：def 函数名(参数):  — 末尾必须有冒号！这是很多初学者容易漏掉的语法细节，仔细看看下面的代码。',
+    question: '以下代码有什么问题？',
+    code: '<span class="kw">def</span> <span class="fn">add</span>(a, b)\n    <span class="kw">return</span> a + b',
+    options: [
+      { letter: 'A', text: '函数名不对' },
+      { letter: 'B', text: '参数太多了' },
+      { letter: 'C', text: '缺少冒号 :' },
+      { letter: 'D', text: 'return 写错了' }
+    ],
+    answer: 2,
+    explain: 'Python函数定义的格式是 def 函数名(参数): 末尾必须有冒号，这里漏掉了。'
+  }
+];
+
+/* ============================================================
+ *  状态管理
+ * ============================================================ */
+var state = {
+  phase: 'start',       // start | intro | question | summary
+  qIndex: 0,            // 当前题目索引 0-14
+  moduleIndex: 0,       // 当前模块索引 0-4
+  score: 0,             // 总分
+  moduleScore: [0,0,0,0,0], // 每模块得分
+  answered: false       // 当前题是否已答
+};
+
+var content = document.getElementById('content');
+var topbar = document.getElementById('topbar');
+var progressTrack = document.getElementById('progressTrack');
+var moduleTag = document.getElementById('moduleTag');
+var scoreBox = document.getElementById('scoreBox');
+var progressFill = document.getElementById('progressFill');
+
+/* ---- 进度暂存（localStorage）---- */
+var SAVE_KEY = 'coding-game-save';
+function saveProgress() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      qIndex: state.qIndex,
+      moduleIndex: state.moduleIndex,
+      score: state.score,
+      moduleScore: state.moduleScore,
+      ts: Date.now()
+    }));
+  } catch(e) {}
+}
+function loadProgress() {
+  try {
+    var raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+function clearProgress() {
+  try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+}
+function continueGame() {
+  var save = loadProgress();
+  if (!save || save.qIndex >= QUESTIONS.length) { startGame(); return; }
+  state.qIndex = save.qIndex;
+  state.moduleIndex = save.moduleIndex;
+  state.score = save.score;
+  state.moduleScore = save.moduleScore || [0,0,0,0,0];
+  state.answered = false;
+  renderQuestion();
+}
+
+/* ============================================================
+ *  渲染：开始页
+ * ============================================================ */
+function renderStart() {
+  state.phase = 'start';
+  topbar.style.display = 'none';
+  progressTrack.style.display = 'none';
+
+  var save = loadProgress();
+  var hasSave = save && save.qIndex < QUESTIONS.length;
+
+  var cards = MODULES.map(function(m){
+    return '<div class="module-card" style="border-top:4px solid '+m.color+';">' +
+      '<span class="mc-emoji">'+m.emoji+'</span>' + m.name + '</div>';
+  }).join('');
+
+  var btnHTML;
+  if (hasSave) {
+    var saveModName = MODULES[save.moduleIndex] ? MODULES[save.moduleIndex].name : '';
+    var progressText = '上次进度：第 ' + (save.qIndex + 1) + ' / 15 题 · 已得 ' + save.score + ' 分 · 当前关卡：' + saveModName;
+    btnHTML =
+      '<div style="margin-bottom:14px;font-size:0.85rem;color:var(--c-text-3);line-height:1.6;">' + progressText + '</div>' +
+      '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
+        '<button class="btn" onclick="continueGame()">继续闯关</button>' +
+        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.06);" onclick="startGame()">重新开始</button>' +
+      '</div>';
+  } else {
+    btnHTML = '<button class="btn" onclick="startGame()">开始闯关</button>';
+  }
+
+  content.innerHTML =
+    '<div class="page start-page">' +
+      '<div class="emoji-row">📦 ⚖️ 🔄 🔧 🔍</div>' +
+      '<h1 class="big-title">编程小达人</h1>' +
+      '<p class="sub-title">知识闯关 · 5大模块 · 15道题<br>系统学习编程基础概念</p>' +
+      '<div class="module-list">' + cards + '</div>' +
+      btnHTML +
+    '</div>';
+}
+
+/* ============================================================
+ *  渲染：模块介绍页（带动画）
+ * ============================================================ */
+function renderIntro() {
+  state.phase = 'intro';
+  var m = MODULES[state.moduleIndex];
+  topbar.style.display = 'flex';
+  progressTrack.style.display = 'block';
+  moduleTag.textContent = m.emoji + ' ' + m.name;
+  moduleTag.style.background = 'rgba(255,255,255,0.25)';
+  scoreBox.textContent = state.score + ' 分';
+  updateProgress();
+
+  var animHTML = getAnimHTML(m.anim, m.color);
+
+  content.innerHTML =
+    '<div class="page intro-page">' +
+      '<span class="intro-emoji">' + m.emoji + '</span>' +
+      '<h2 class="intro-title" style="color:'+m.color+'">第 ' + m.id + ' 关：' + m.name + '</h2>' +
+      '<p class="intro-desc">' + m.desc + '</p>' +
+      '<div class="anim-stage" id="animStage">' + animHTML + '</div>' +
+      '<button class="btn" style="background:'+m.color+';box-shadow:0 1px 2px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.10);" onclick="startQuestions()">开始答题</button>' +
+    '</div>';
+}
+
+/* 生成动画HTML */
+function getAnimHTML(type, color) {
+  switch(type) {
+    case 'variable':
+      return '<div style="position:relative;display:flex;flex-direction:column;align-items:center;">' +
+        '<div class="var-arrow" style="color:var(--c-primary);">↓</div>' +
+        '<div class="var-box" id="varBox">' +
+          '<span class="label">变量 msg</span>' +
+          '<span class="value" id="varValue">"hello"</span>' +
+        '</div>' +
+        '<div style="margin-top:14px;font-size:0.78rem;color:var(--c-text-3);letter-spacing:0.03em;">值可以随时替换</div>' +
+      '</div>';
+    case 'condition':
+      return '<div class="cond-scene">' +
+        '<div class="cond-ask">if 下雨?</div>' +
+        '<div class="cond-path"></div>' +
+        '<div class="cond-left">带伞</div>' +
+        '<div class="cond-right">不带</div>' +
+        '<div class="cond-walker">🧒</div>' +
+        '<div class="cond-walker2">🧒</div>' +
+      '</div>';
+    case 'loop':
+      return '<div class="loop-scene">' +
+        '<div class="loop-circle" style="border-color:'+color+';border-top-color:transparent;"></div>' +
+        '<div class="loop-dot" style="background:'+color+';"></div>' +
+        '<div class="loop-center" style="font-size:1.4rem;color:var(--c-warn);">loop</div>' +
+        '<div class="loop-count">重复执行，无需复制代码</div>' +
+      '</div>';
+    case 'function':
+      return '<div class="func-scene">' +
+        '<div class="func-in func-in-move">3,5</div>' +
+        '<div class="func-arrow-mini">→</div>' +
+        '<div class="func-machine" style="font-size:1rem;font-weight:700;color:var(--c-text-2);letter-spacing:-0.02em;">fn()</div>' +
+        '<div class="func-arrow-mini">→</div>' +
+        '<div class="func-out func-out-move">8</div>' +
+      '</div>';
+    case 'bug':
+      return '<div class="bug-scene">' +
+        '<div class="bug-bug">🐞</div>' +
+        '<div class="bug-magnifier">🔎</div>' +
+        '<div class="bug-zap" style="font-size:1.6rem;">×</div>' +
+        '<div class="bug-fixed">Bug 已修复</div>' +
+      '</div>';
+    default:
+      return '';
+  }
+}
+
+/* 颜色加深 */
+function shade(hex) {
+  var r = parseInt(hex.slice(1,3),16);
+  var g = parseInt(hex.slice(3,5),16);
+  var b = parseInt(hex.slice(5,7),16);
+  r = Math.max(0, r-40);
+  g = Math.max(0, g-40);
+  b = Math.max(0, b-40);
+  return 'rgb('+r+','+g+','+b+')';
+}
+
+/* ============================================================
+ *  渲染：题目页
+ * ============================================================ */
+function renderQuestion() {
+  state.phase = 'question';
+  state.answered = false;
+  var q = QUESTIONS[state.qIndex];
+  var m = MODULES[state.moduleIndex];
+  moduleTag.textContent = m.emoji + ' ' + m.name;
+  scoreBox.textContent = state.score + ' 分';
+  updateProgress();
+
+  var codeHTML = q.code
+    ? '<div class="code-block" style="border-left-color:'+m.color+';"><pre>'+q.code+'</pre></div>'
+    : '';
+
+  var optionsHTML = q.options.map(function(opt, i){
+    return '<button class="option" data-index="'+i+'" onclick="selectOption('+i+')" style="--mc:'+m.color+';">' +
+      '<span class="opt-letter">'+opt.letter+'</span>' +
+      '<span>'+opt.text+'</span>' +
+    '</button>';
+  }).join('');
+
+  content.innerHTML =
+    '<div class="page question-page">' +
+      '<span class="q-number" style="color:'+m.color+';">第 '+(state.qIndex+1)+' 题 / 共15题</span>' +
+      '<div class="q-concept" style="border-left-color:'+m.color+';">'+q.concept+'</div>' +
+      '<div class="q-text">'+q.question+'</div>' +
+      codeHTML +
+      '<div class="options">'+optionsHTML+'</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+      '<div class="next-btn-wrap" id="nextWrap">' +
+        '<button class="btn '+(state.qIndex >= QUESTIONS.length-1 ? 'green' : '')+'" onclick="goNext()">'+
+          (state.qIndex >= QUESTIONS.length-1 ? '查看成绩' : '下一题')+
+        '</button>' +
+      '</div>' +
+    '</div>';
+  saveProgress();
+}
+
+/* 选择选项 */
+function selectOption(index) {
+  if (state.answered) return;
+  state.answered = true;
+  var q = QUESTIONS[state.qIndex];
+  var m = MODULES[state.moduleIndex];
+  var opts = document.querySelectorAll('.option');
+  opts.forEach(function(o){ o.classList.add('disabled'); });
+
+  var feedback = document.getElementById('feedback');
+  var nextWrap = document.getElementById('nextWrap');
+  var correctIdx = q.answer;
+  var isRight = (index === correctIdx);
+
+  // 标记正确和错误
+  opts[correctIdx].classList.add('correct');
+  if (!isRight) {
+    opts[index].classList.add('wrong');
+  }
+
+  if (isRight) {
+    state.score++;
+    state.moduleScore[state.moduleIndex]++;
+    scoreBox.textContent = state.score + ' 分';
+    feedback.className = 'feedback right show';
+    feedback.innerHTML =
+      '<div class="fb-title">答对了</div>' +
+      '<div class="fb-body"><strong>知识点小结：</strong>'+q.explain+'</div>';
+  } else {
+    feedback.className = 'feedback wrong-fb show';
+    var correctText = q.options[correctIdx].text;
+    feedback.innerHTML =
+      '<div class="fb-title">答错了，没关系</div>' +
+      '<div class="fb-body">正确答案是 <span class="answer-tag">'+q.options[correctIdx].letter+'</span>'+
+      '  '+correctText+'<br><br><strong>解析：</strong>'+q.explain+'</div>';
+  }
+
+  nextWrap.classList.add('show');
+}
+
+/* 进入下一题/下一模块/总结 */
+function goNext() {
+  state.qIndex++;
+  // 判断是否进入新模块
+  if (state.qIndex < QUESTIONS.length) {
+    var nextModuleIdx = QUESTIONS[state.qIndex].module - 1;
+    if (nextModuleIdx !== state.moduleIndex) {
+      state.moduleIndex = nextModuleIdx;
+      renderIntro();
+    } else {
+      renderQuestion();
+    }
+  } else {
+    renderSummary();
+  }
+}
+
+/* 更新进度条 */
+function updateProgress() {
+  var pct = (state.qIndex / QUESTIONS.length) * 100;
+  progressFill.style.width = pct + '%';
+}
+
+/* ============================================================
+ *  渲染：总结页
+ * ============================================================ */
+function renderSummary() {
+  state.phase = 'summary';
+  clearProgress();
+  topbar.style.display = 'flex';
+  progressTrack.style.display = 'block';
+  progressFill.style.width = '100%';
+  moduleTag.textContent = '闯关完成';
+  scoreBox.textContent = state.score + ' 分';
+
+  var total = QUESTIONS.length;
+  var stars = '';
+  var ratio = state.score / total;
+  var starCount = ratio >= 0.9 ? 5 : (ratio >= 0.7 ? 4 : (ratio >= 0.5 ? 3 : (ratio >= 0.3 ? 2 : 1)));
+  for (var i=0;i<5;i++){ stars += i < starCount ? '⭐' : '☆'; }
+
+  // 模块掌握情况
+  var resultsHTML = MODULES.map(function(m, i){
+    var ms = state.moduleScore[i];
+    var pct = (ms / 3) * 100;
+    var barColor = ms === 3 ? m.color : (ms === 2 ? '#e07b00' : '#d62839');
+    var level = ms === 3 ? '精通' : (ms === 2 ? '良好' : '加油');
+    return '<div class="mr-item">' +
+      '<span class="mr-emoji">'+m.emoji+'</span>' +
+      '<div class="mr-info">' +
+        '<div class="mr-name">'+m.name+'</div>' +
+        '<div class="mr-bar"><div class="mr-bar-fill" data-target="'+pct+'" style="width:0%;background:'+barColor+';"></div></div>' +
+      '</div>' +
+      '<span class="mr-stat" style="color:'+barColor+';">'+ms+'/3</span>' +
+    '</div>';
+  }).join('');
+
+  // 鼓励语
+  var encourage = '';
+  if (ratio >= 0.9) {
+    encourage = '非常扎实！你对这5个编程核心概念都掌握得很好。变量、条件、循环、函数、调试——这是真正编程的基础。继续学下去，实际写代码会让你理解得更深。';
+  } else if (ratio >= 0.7) {
+    encourage = '理解得不错，大部分概念已经清晰了。建议回去再看看错题的解析，特别是概念和代码之间的对应关系。知道"是什么"只是第一步，动手写才能真正掌握。';
+  } else if (ratio >= 0.5) {
+    encourage = '有些概念还不太清楚，这很正常——编程概念第一次接触都比较抽象。建议把错题的解析多读几遍，从生活中找到对应的例子，帮助理解。';
+  } else {
+    encourage = '这些概念比较新，需要时间消化。不用着急，把每道题的解析认真读一遍，理解比记忆更重要。准备好了再来闯一次，会有很大提升。';
+  }
+
+  content.innerHTML =
+    '<div class="page summary-page">' +
+      '<div class="summary-crown">🎓</div>' +
+      '<h2 class="summary-title">闯关完成</h2>' +
+      '<div class="summary-score">'+state.score+'<small> / '+total+'</small></div>' +
+      '<div class="summary-stars">'+stars+'</div>' +
+      '<div class="module-results">'+resultsHTML+'</div>' +
+      '<div class="summary-encourage">'+encourage+'</div>' +
+      '<button class="btn green" onclick="restart()">再来一次</button>' +
+    '</div>';
+
+  // 动画填充进度条
+  setTimeout(function(){
+    document.querySelectorAll('.mr-bar-fill').forEach(function(el){
+      el.style.width = el.getAttribute('data-target') + '%';
+    });
+  }, 150);
+}
+
+/* ============================================================
+ *  流程控制
+ * ============================================================ */
+function startGame() {
+  clearProgress();
+  state.qIndex = 0;
+  state.moduleIndex = 0;
+  state.score = 0;
+  state.moduleScore = [0,0,0,0,0];
+  renderIntro();
+}
+
+function startQuestions() {
+  renderQuestion();
+}
+
+function restart() {
+  clearProgress();
+  state = {
+    phase: 'start',
+    qIndex: 0,
+    moduleIndex: 0,
+    score: 0,
+    moduleScore: [0,0,0,0,0],
+    answered: false
+  };
+  renderStart();
+}
+
+/* ============================================================
+ *  变量动画：循环变化值
+ * ============================================================ */
+var varAnimTimer = null;
+function startVarAnim() {
+  var values = ['"hello"', '42', 'True', '"你好"', '3.14'];
+  var idx = 0;
+  var el = document.getElementById('varValue');
+  if (!el) return;
+  if (varAnimTimer) clearInterval(varAnimTimer);
+  varAnimTimer = setInterval(function(){
+    var e = document.getElementById('varValue');
+    if (!e) { clearInterval(varAnimTimer); return; }
+    idx = (idx + 1) % values.length;
+    e.classList.add('changing');
+    setTimeout(function(){
+      e.textContent = values[idx];
+      e.classList.remove('changing');
+    }, 200);
+  }, 1800);
+}
+
+/* 重写 renderIntro 以触发变量动画 */
+var _origRenderIntro = renderIntro;
+renderIntro = function() {
+  _origRenderIntro();
+  var m = MODULES[state.moduleIndex];
+  if (m.anim === 'variable') {
+    setTimeout(startVarAnim, 100);
+  }
+};
+
+/* ============================================================
+ *  主题切换
+ * ============================================================ */
+var isDark = false;
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('iconMoon').style.display = isDark ? 'none' : 'block';
+  document.getElementById('iconSun').style.display  = isDark ? 'block' : 'none';
+}
+
+/* ============================================================
+ *  初始化
+ * ============================================================ */
+renderStart();
+</script>
+
+</body>
+</html>

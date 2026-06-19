@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>编程小达人 - 知识闯关大冒险</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
   /* ===== 全局重置 ===== */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -161,6 +163,12 @@
     margin-bottom: var(--sp-lg);
     display: block;
     animation: bounceRow 3s ease-in-out infinite;
+  }
+  .logo-wrap {
+    margin-bottom: var(--sp-md);
+  }
+  .logo-wrap svg {
+    filter: drop-shadow(0 2px 8px rgba(67,97,238,0.25));
   }
   @keyframes bounceRow {
     0%, 100% { transform: translateY(0); }
@@ -1167,7 +1175,7 @@ function renderStart() {
 
   content.innerHTML =
     '<div class="page start-page">' +
-      '<div class="emoji-row">📦 ⚖️ 🔄 🔧 🔍</div>' +
+      '<div class="logo-wrap"><svg viewBox="0 0 64 64" width="56" height="56"><rect width="64" height="64" rx="14" fill="#4361ee"/><rect x="10" y="14" width="44" height="36" rx="6" fill="#1e1e2e"/><rect x="10" y="14" width="44" height="10" rx="6" fill="#313244"/><rect x="10" y="22" width="44" height="2" fill="#313244"/><circle cx="17" cy="19" r="2" fill="#f72585"/><circle cx="23" cy="19" r="2" fill="#2d9e6b"/><circle cx="29" cy="19" r="2" fill="#e07b00"/><text x="15" y="40" font-size="13" font-family="monospace" font-weight="bold" fill="#6b8cff">&gt;_</text></svg></div>' +
       '<h1 class="big-title">编程小达人</h1>' +
       '<p class="sub-title">知识闯关 · 5大模块 · 15道题<br>系统学习编程基础概念</p>' +
       '<div class="module-list">' + cards + '</div>' +

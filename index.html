@@ -961,7 +961,7 @@ var QUESTIONS = [
   },
   {
     module: 1,
-    visual: { type: 'variable', params: { varName: "myName", values: [""Evan""] } },
+    visual: { type: 'variable', params: { varName: "myName", values: ["Evan"] } },
     concept: '给变量起名字有规则：不能以数字开头、不能含空格、不能用减号（Python中）。驼峰命名法（myName）是常见的好习惯！',
     question: '下面哪个变量名是正确的？',
     code: null,
@@ -988,6 +988,36 @@ var QUESTIONS = [
     ],
     answer: 1,
     explain: '= 在编程中是"赋值"符号，表示把右边的值存入左边的变量。'
+  },
+  {
+    module: 1,
+    visual: { type: 'variable', params: { varName: "data", values: ["42"] } },
+    concept: '变量可以存放各种类型的数据：数字（整数、小数）、文字（字符串）、真/假值（布尔）。不同类型的数据能做不同的事。',
+    question: '下面哪些是变量可以存放的数据？',
+    code: null,
+    options: [
+      { letter: 'A', text: '只能存数字' },
+      { letter: 'B', text: '数字、文字、真/假值都可以' },
+      { letter: 'C', text: '只能存文字' },
+      { letter: 'D', text: '变量不能存数据' }
+    ],
+    answer: 1,
+    explain: '变量很灵活，可以存放数字（如 12）、文字（如 "hello"）、真/假值（True/False）等各种类型的数据。'
+  },
+  {
+    module: 1,
+    visual: { type: 'variable', params: { varName: "x", values: ["8"] } },
+    concept: '变量最强大的地方在于：它的值可以随时改变！新值会覆盖旧值，这就是"变"量的含义。',
+    question: '执行下面两行代码后，变量 x 里的值是多少？',
+    code: '<span class="kw">x</span> = <span class="num">5</span>\n<span class="kw">x</span> = <span class="num">8</span>',
+    options: [
+      { letter: 'A', text: '5' },
+      { letter: 'B', text: '8' },
+      { letter: 'C', text: '13' },
+      { letter: 'D', text: '会报错' }
+    ],
+    answer: 1,
+    explain: '第一行把 5 放入 x，第二行把 8 放入 x——新值会覆盖旧值，所以 x 最终是 8。这就是变量"可以改变"的含义。'
   },
 
   // ===== 模块2：条件判断 =====
@@ -1036,6 +1066,36 @@ var QUESTIONS = [
     answer: 2,
     explain: 'x=8，8>5 为真，所以执行 if 里面的代码，输出"大"。'
   },
+  {
+    module: 2,
+    visual: { type: 'condition', params: { cond: "if-else", takePath: "left" } },
+    concept: 'if-else 像岔路口：如果条件成立，走 if 这条路；不成立，走 else 这条路。两条路必选其一。',
+    question: 'if-else 语句的作用是？',
+    code: null,
+    options: [
+      { letter: 'A', text: '让代码重复执行' },
+      { letter: 'B', text: '根据条件二选一执行' },
+      { letter: 'C', text: '定义一个新变量' },
+      { letter: 'D', text: '打印输出内容' }
+    ],
+    answer: 1,
+    explain: 'if-else 提供两条路：条件成立走 if，不成立走 else。就像"如果下雨带伞，否则戴帽子"。'
+  },
+  {
+    module: 2,
+    visual: { type: 'condition', params: { cond: "True/False", takePath: "left" } },
+    concept: 'True 表示"真"（成立），False 表示"假"（不成立）。条件判断的结果就是 True 或 False，程序据此决定走哪条路。',
+    question: 'True 和 False 在编程中叫什么？',
+    code: null,
+    options: [
+      { letter: 'A', text: '数字' },
+      { letter: 'B', text: '字符串' },
+      { letter: 'C', text: '布尔值（真或假）' },
+      { letter: 'D', text: '函数' }
+    ],
+    answer: 2,
+    explain: 'True（真）和 False（假）叫做"布尔值"，是以数学家乔治·布尔命名的。条件判断的结果就是布尔值。'
+  },
 
   // ===== 模块3：循环 =====
   {
@@ -1082,6 +1142,21 @@ var QUESTIONS = [
     ],
     answer: 2,
     explain: 'while 循环会一直执行，直到条件不成立。如果条件一直为真，就会变成"死循环"。'
+  },
+  {
+    module: 3,
+    visual: { type: 'loop', params: { count: 999 } },
+    concept: '死循环就是循环永远不会停止——因为条件永远为真。这会让程序卡住不动！写 while 循环时一定要确保条件最终能变成假。',
+    question: '下面这段代码会发生什么？',
+    code: '<span class="kw">while</span> <span class="kw">True</span>:\n    <span class="fn">print</span>(<span class="str">"停不下来！"</span>)',
+    options: [
+      { letter: 'A', text: '正常结束，不打印任何内容' },
+      { letter: 'B', text: '会死循环，一直打印"停不下来！"' },
+      { letter: 'C', text: '只打印一次后停止' },
+      { letter: 'D', text: '代码有语法错误，跑不起来' }
+    ],
+    answer: 1,
+    explain: 'while True 表示条件永远为真，循环体（打印）会永远执行，这就是"死循环"。要避免它！'
   },
 
   // ===== 模块4：函数 =====
@@ -1176,6 +1251,21 @@ var QUESTIONS = [
     ],
     answer: 2,
     explain: 'Python函数定义的格式是 def 函数名(参数): 末尾必须有冒号，这里漏掉了。'
+  },
+  {
+    module: 5,
+    visual: { type: 'bug', params: {} },
+    concept: '语法错误是"写错了"（少了冒号、拼错关键字）——程序根本跑不起来，会报错。逻辑错误是"想错了"（算法不对）——程序能跑，但结果不对。',
+    question: '下面哪个是"逻辑错误"的例子？',
+    code: null,
+    options: [
+      { letter: 'A', text: '少了冒号 :' },
+      { letter: 'B', text: '拼错了 print' },
+      { letter: 'C', text: '想计算 1+2，却写了 1*2' },
+      { letter: 'D', text: '括号不匹配' }
+    ],
+    answer: 2,
+    explain: '想算加法却写了乘法——程序能运行（没有语法错误），但结果不对，这就是逻辑错误。语法错误会让程序跑不起来，逻辑错误会让程序给出错误答案。'
   }
 ];
 
@@ -1306,6 +1396,11 @@ function toggleSpeak() {
   }
 }
 
+/* 朗读解析文本 */
+function speakExplain() {
+  if (window._explainText) window.tts.speak(window._explainText);
+}
+
 function continueGame() {
   var save = loadProgress();
   if (!save || save.qIndex >= QUESTIONS.length) { startGame(); return; }
@@ -1336,7 +1431,7 @@ function renderStart() {
   var btnHTML;
   if (hasSave) {
     var saveModName = MODULES[save.moduleIndex] ? MODULES[save.moduleIndex].name : '';
-    var progressText = '上次进度：第 ' + (save.qIndex + 1) + ' / 15 题 · 已得 ' + save.score + ' 分 · 当前关卡：' + saveModName;
+    var progressText = '上次进度：第 ' + (save.qIndex + 1) + ' / 21 题 · 已得 ' + save.score + ' 分 · 当前关卡：' + saveModName;
     btnHTML =
       '<div style="margin-bottom:14px;font-size:0.85rem;color:var(--c-text-3);line-height:1.6;">' + progressText + '</div>' +
       '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
@@ -1351,7 +1446,7 @@ function renderStart() {
     '<div class="page start-page">' +
       '<div class="logo-wrap"><svg viewBox="0 0 64 64" width="56" height="56"><rect width="64" height="64" rx="14" fill="#4361ee"/><rect x="10" y="14" width="44" height="36" rx="6" fill="#1e1e2e"/><rect x="10" y="14" width="44" height="10" rx="6" fill="#313244"/><rect x="10" y="22" width="44" height="2" fill="#313244"/><circle cx="17" cy="19" r="2" fill="#f72585"/><circle cx="23" cy="19" r="2" fill="#2d9e6b"/><circle cx="29" cy="19" r="2" fill="#e07b00"/><text x="15" y="40" font-size="13" font-family="monospace" font-weight="bold" fill="#6b8cff">&gt;_</text></svg></div>' +
       '<h1 class="big-title">编程小达人</h1>' +
-      '<p class="sub-title">知识闯关 · 5大模块 · 15道题<br>系统学习编程基础概念</p>' +
+      '<p class="sub-title">知识闯关 · 5大模块 · 21道题<br>系统学习编程基础概念</p>' +
       '<div class="module-list">' + cards + '</div>' +
       btnHTML +
     '</div>';
@@ -1512,6 +1607,9 @@ function selectOption(index) {
   // 停止朗读
   if (window.tts) window.tts.stop();
 
+  // 将解析文本存到全局变量，供朗读按钮引用
+  window._explainText = q.explain.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'');
+
   if (isRight) {
     state.score++;
     state.moduleScore[state.moduleIndex]++;
@@ -1520,7 +1618,7 @@ function selectOption(index) {
     feedback.innerHTML =
       '<div class="fb-title">答对了</div>' +
       '<div class="fb-body"><strong>知识点小结：</strong>'+q.explain+'</div>' +
-      '<button class="fb-speak-btn" onclick="tts.speak(''+q.explain.replace(/'/g,'\\\'').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'')+'')">🔊 朗读解析</button>';
+      '<button class="fb-speak-btn" onclick="speakExplain()">🔊 朗读解析</button>';
   } else {
     feedback.className = 'feedback wrong-fb show';
     var correctText = q.options[correctIdx].text;
@@ -1528,7 +1626,7 @@ function selectOption(index) {
       '<div class="fb-title">答错了，没关系</div>' +
       '<div class="fb-body">正确答案是 <span class="answer-tag">'+q.options[correctIdx].letter+'</span>'+
       '  '+correctText+'<br><br><strong>解析：</strong>'+q.explain+'</div>' +
-      '<button class="fb-speak-btn" onclick="tts.speak(''+q.explain.replace(/'/g,'\\\'').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'')+'')">🔊 朗读解析</button>';
+      '<button class="fb-speak-btn" onclick="speakExplain()">🔊 朗读解析</button>';
   }
 
   nextWrap.classList.add('show');
@@ -1714,7 +1812,7 @@ function getFuncVisual(p, m) {
       '<text x="160" y="100" text-anchor="middle" font-size="11" fill="#9396b0">处理中</text>' +
       '<rect x="224" y="55" width="56" height="50" rx="10" fill="'+c+'22" stroke="'+c+'" stroke-width="2.5"/>' +
       '<text x="252" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="'+c+'">成品</text>' +
-      '<line x1="76" y1="80" x2="122" y2="80" stroke="'+c+'" stroke-width="2.5" marker-end="url(#arrowB)'/>' +
+      '<line x1="76" y1="80" x2="122" y2="80" stroke="'+c+'" stroke-width="2.5" marker-end="url(#arrowB)"/>' +
       '<line x1="198" y1="80" x2="224" y2="80" stroke="'+c+'" stroke-width="2.5" marker-end="url(#arrowB)"/>' +
       '<defs><marker id="arrowB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L8,4 L0,8" fill="'+c+'"/></marker></defs>' +
     '</svg></div>';

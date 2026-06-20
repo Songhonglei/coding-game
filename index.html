@@ -660,6 +660,79 @@
   }
   .next-btn-wrap.show { display: block; animation: fbIn 0.35s ease 0.15s both; }
 
+  .speak-btn {
+    background: none;
+    border: 1.5px solid var(--c-border);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 3px 7px;
+    border-radius: var(--r-sm);
+    color: var(--c-text-2);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .speak-btn:hover {
+    background: var(--c-primary-lt);
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+  }
+  .speak-btn.speaking {
+    background: var(--c-primary-lt);
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+    animation: speakPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes speakPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(67,97,238,0.25); }
+    50%       { box-shadow: 0 0 0 6px rgba(67,97,238,0); }
+  }
+  .q-visual {
+    width: 100%;
+    height: 170px;
+    background: var(--c-bg);
+    border-radius: var(--r-md);
+    margin: var(--sp-sm) 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--c-border);
+    overflow: hidden;
+    position: relative;
+  }
+  .q-visual svg {
+    width: auto;
+    height: 150px;
+  }
+  .fb-speak-btn {
+    background: none;
+    border: 1.5px solid var(--c-border);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: var(--r-full);
+    color: var(--c-text-2);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-family: inherit;
+  }
+  .fb-speak-btn:hover {
+    background: var(--c-primary-lt);
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+  }
+  .fb-speak-btn.speaking {
+    background: var(--c-primary-lt);
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+  }
+
   /* ===== 总结页 ===== */
   .summary-page {
     text-align: center;
@@ -804,6 +877,7 @@
   <!-- 顶部状态栏 -->
   <div class="topbar" id="topbar" style="display:none;">
     <span class="module-tag" id="moduleTag">模块</span>
+    <button class="speak-btn" id="speakBtn" onclick="toggleSpeak()" title="朗读题目">&#x1F50A;</button>
     <span class="score-box" id="scoreBox">0 分</span>
   </div>
   <div class="progress-track" id="progressTrack" style="display:none;">
@@ -872,6 +946,7 @@ var QUESTIONS = [
   // ===== 模块1：变量 =====
   {
     module: 1,
+    visual: { type: 'variable', params: { varName: "x", values: ["8"] } },
     concept: '变量就像一个贴了标签的盒子，可以把数据放进去，需要的时候再取出来，还能随时换成新的内容。',
     question: '在编程中，"变量"最像下面哪个东西？',
     code: null,
@@ -886,6 +961,7 @@ var QUESTIONS = [
   },
   {
     module: 1,
+    visual: { type: 'variable', params: { varName: "myName", values: [""Evan""] } },
     concept: '给变量起名字有规则：不能以数字开头、不能含空格、不能用减号（Python中）。驼峰命名法（myName）是常见的好习惯！',
     question: '下面哪个变量名是正确的？',
     code: null,
@@ -900,6 +976,7 @@ var QUESTIONS = [
   },
   {
     module: 1,
+    visual: { type: 'variable', params: { varName: "x", values: ["12"] } },
     concept: '在编程中，= 是"赋值"的意思，把右边的内容放入左边的变量盒子里。注意：这里的 = 不是"相等"！',
     question: 'x = 12 这行代码是什么意思？',
     code: '<span class="kw">x</span> = <span class="num">12</span>',
@@ -916,6 +993,7 @@ var QUESTIONS = [
   // ===== 模块2：条件判断 =====
   {
     module: 2,
+    visual: { type: 'condition', params: { cond: "如果…就…", takePath: "if" } },
     concept: 'if 语句就像生活中的"如果……就……"。比如：如果下雨了，就带伞出门。程序也能做这样的判断！',
     question: 'if 语句的作用是什么？',
     code: null,
@@ -930,6 +1008,7 @@ var QUESTIONS = [
   },
   {
     module: 2,
+    visual: { type: 'condition', params: { cond: "score > 60", takePath: "left" } },
     concept: '比较运算符用来比较两个值，返回"真"或"假"：> 大于、< 小于、== 等于（两个等号）、!= 不等于。',
     question: 'score > 60 中的 > 表示什么？',
     code: '<span class="kw">score</span> &gt; <span class="num">60</span>',
@@ -944,6 +1023,7 @@ var QUESTIONS = [
   },
   {
     module: 2,
+    visual: { type: 'condition', params: { cond: "x > 5", takePath: "left" } },
     concept: 'x = 8，然后判断 x > 5 是否成立。成立就走 if 那条路，不成立就走 else 那条路。读代码时要逐行跟着走。',
     question: '以下代码会输出什么？',
     code: 'x = <span class="num">8</span>\n<span class="kw">if</span> x &gt; <span class="num">5</span>:\n    <span class="fn">print</span>(<span class="str">"大"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"小"</span>)',
@@ -960,6 +1040,7 @@ var QUESTIONS = [
   // ===== 模块3：循环 =====
   {
     module: 3,
+    visual: { type: 'loop', params: { count: 100 } },
     concept: '如果要打印100次"你好"，不用复制100行代码！用循环，几行就能搞定，这是编程最重要的思维之一。',
     question: '为什么需要循环？',
     code: null,
@@ -974,6 +1055,7 @@ var QUESTIONS = [
   },
   {
     module: 3,
+    visual: { type: 'loop', params: { count: 5 } },
     concept: 'range(5) 会生成 0、1、2、3、4 这5个数字（从0开始，不包含5），所以循环恰好执行5次。',
     question: 'for i in range(5) 会循环几次？',
     code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):\n    <span class="fn">print</span>(<span class="str">"你好"</span>)',
@@ -988,6 +1070,7 @@ var QUESTIONS = [
   },
   {
     module: 3,
+    visual: { type: 'loop', params: { count: 3 } },
     concept: 'while 循环会一直重复执行，直到条件变成"假"才停止。如果条件永远为真，就会陷入"死循环"——程序会卡住！',
     question: 'while 循环什么时候停止？',
     code: '<span class="kw">while</span> 条件:\n    <span class="cmt"># 重复执行的代码</span>',
@@ -1004,6 +1087,7 @@ var QUESTIONS = [
   // ===== 模块4：函数 =====
   {
     module: 4,
+    visual: { type: 'function', params: { input: "名字", output: "问好" } },
     concept: '函数就像一个可反复使用的工具，定义一次，在任何地方都能调用，让代码变得简洁、有条理。',
     question: '函数最主要的作用是什么？',
     code: null,
@@ -1018,6 +1102,7 @@ var QUESTIONS = [
   },
   {
     module: 4,
+    visual: { type: 'function', params: { input: "参数", output: "结果" } },
     concept: 'def 关键字用来"定义"函数（告诉程序这个工具长什么样），函数名后跟括号则是"调用"函数（真正去使用这个工具）。',
     question: '下面哪行是"调用函数"？',
     code: '<span class="cmt"># A. 定义函数</span>\n<span class="kw">def</span> <span class="fn">sayHello</span>():\n    <span class="fn">print</span>(<span class="str">"Hi"</span>)\n\n<span class="cmt"># B. 调用函数</span>\n<span class="fn">sayHello</span>()',
@@ -1032,6 +1117,7 @@ var QUESTIONS = [
   },
   {
     module: 4,
+    visual: { type: 'function', params: { input: "数据", output: "处理后" } },
     concept: '参数就是传给函数的输入数据，就像食材之于厨师。add(3, 5) 中的 3 和 5 就是参数，函数接收后进行处理，返回结果。',
     question: '函数的"参数"是什么？',
     code: '<span class="kw">def</span> <span class="fn">add</span>(a, b):\n    <span class="kw">return</span> a + b\n\n<span class="fn">add</span>(<span class="num">3</span>, <span class="num">5</span>)  <span class="cmt"># 3和5是参数</span>',
@@ -1048,6 +1134,7 @@ var QUESTIONS = [
   // ===== 模块5：调试思维 =====
   {
     module: 5,
+    visual: { type: 'bug', params: { bugType: "含义" } },
     concept: 'Bug 原意是"虫子"。1947年，工程师们真的发现一只飞蛾卡在电脑继电器里导致故障——"Bug"这个词从此沿用至今，指代程序中的任何错误。',
     question: '"Bug" 在编程中是什么意思？',
     code: null,
@@ -1062,6 +1149,7 @@ var QUESTIONS = [
   },
   {
     module: 5,
+    visual: { type: 'bug', params: { bugType: "找错" } },
     concept: '调试（Debug）四步法：① 看错误提示 → ② 定位出错的行 → ③ 理解出错原因 → ④ 修改并重新验证。沉住气，一步一步来。',
     question: '发现程序有 Bug，第一步应该做什么？',
     code: null,
@@ -1076,6 +1164,7 @@ var QUESTIONS = [
   },
   {
     module: 5,
+    visual: { type: 'bug', params: { bugType: "步骤" } },
     concept: 'Python 函数定义格式：def 函数名(参数):  — 末尾必须有冒号！这是很多初学者容易漏掉的语法细节，仔细看看下面的代码。',
     question: '以下代码有什么问题？',
     code: '<span class="kw">def</span> <span class="fn">add</span>(a, b)\n    <span class="kw">return</span> a + b',
@@ -1132,6 +1221,91 @@ function loadProgress() {
 function clearProgress() {
   try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
 }
+
+/* ---- 朗读功能（Web Speech API）---- */
+var tts = {
+  utter: null,
+  speaking: false,
+  paused: false,
+
+  speak: function(text, onEnd) {
+    this.stop();
+    var clean = text.replace(/<[^>]+>/g, '').replace(/&[a-z]+;/g, '');
+    this.utter = new SpeechSynthesisUtterance(clean);
+    this.utter.lang = 'zh-CN';
+    this.utter.rate = 0.88;
+    this.utter.pitch = 1.0;
+    this.utter.onend = function() {
+      tts.speaking = false;
+      tts.paused = false;
+      tts.updateBtn();
+      if (onEnd) onEnd();
+    };
+    this.utter.onerror = function() {
+      tts.speaking = false;
+      tts.paused = false;
+      tts.updateBtn();
+    };
+    speechSynthesis.speak(this.utter);
+    this.speaking = true;
+    this.paused = false;
+    this.updateBtn();
+  },
+
+  stop: function() {
+    if (speechSynthesis.speaking || speechSynthesis.pending) {
+      speechSynthesis.cancel();
+    }
+    this.speaking = false;
+    this.paused = false;
+    this.updateBtn();
+  },
+
+  toggle: function(text) {
+    if (this.speaking && !this.paused) {
+      speechSynthesis.pause();
+      this.paused = true;
+      this.updateBtn();
+      return 'paused';
+    } else if (this.paused) {
+      speechSynthesis.resume();
+      this.paused = false;
+      this.updateBtn();
+      return 'resumed';
+    } else {
+      this.speak(text);
+      return 'speaking';
+    }
+  },
+
+  updateBtn: function() {
+    var btns = document.querySelectorAll('.speak-btn, .fb-speak-btn');
+    btns.forEach(function(btn) {
+      if (tts.speaking && !tts.paused) {
+        btn.classList.add('speaking');
+      } else if (tts.paused) {
+        btn.classList.add('speaking');
+      } else {
+        btn.classList.remove('speaking');
+      }
+    });
+  }
+};
+
+
+/* ---- 朗读控制 ---- */
+function toggleSpeak() {
+  var btn = document.getElementById('speakBtn');
+  if (!btn) return;
+  if (window.tts.speaking && !window.tts.paused) {
+    window.tts.toggle();
+  } else {
+    var q = QUESTIONS[state.qIndex];
+    var text = q.concept.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'') + '。' + q.question;
+    window.tts.speak(text);
+  }
+}
+
 function continueGame() {
   var save = loadProgress();
   if (!save || save.qIndex >= QUESTIONS.length) { startGame(); return; }
@@ -1290,10 +1464,14 @@ function renderQuestion() {
     '</button>';
   }).join('');
 
+  // 生成图文插图
+  var visualHTML = q.visual ? getQuestionVisual(q.visual, q.module) : getDefaultVisual(q.module, m);
+
   content.innerHTML =
     '<div class="page question-page">' +
-      '<span class="q-number" style="color:'+m.color+';">第 '+(state.qIndex+1)+' 题 / 共15题</span>' +
+      '<span class="q-number" style="color:'+m.color+';">第 '+(state.qIndex+1)+' 题 / 共'+QUESTIONS.length+'题</span>' +
       '<div class="q-concept" style="border-left-color:'+m.color+';">'+q.concept+'</div>' +
+      visualHTML +
       '<div class="q-text">'+q.question+'</div>' +
       codeHTML +
       '<div class="options">'+optionsHTML+'</div>' +
@@ -1305,6 +1483,10 @@ function renderQuestion() {
       '</div>' +
     '</div>';
   saveProgress();
+
+  // 更新朗读按钮
+  var speakText = q.concept.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'') + '。' + q.question;
+  window._currentSpeakText = speakText;
 }
 
 /* 选择选项 */
@@ -1327,6 +1509,9 @@ function selectOption(index) {
     opts[index].classList.add('wrong');
   }
 
+  // 停止朗读
+  if (window.tts) window.tts.stop();
+
   if (isRight) {
     state.score++;
     state.moduleScore[state.moduleIndex]++;
@@ -1334,14 +1519,16 @@ function selectOption(index) {
     feedback.className = 'feedback right show';
     feedback.innerHTML =
       '<div class="fb-title">答对了</div>' +
-      '<div class="fb-body"><strong>知识点小结：</strong>'+q.explain+'</div>';
+      '<div class="fb-body"><strong>知识点小结：</strong>'+q.explain+'</div>' +
+      '<button class="fb-speak-btn" onclick="tts.speak(''+q.explain.replace(/'/g,'\\\'').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'')+'')">🔊 朗读解析</button>';
   } else {
     feedback.className = 'feedback wrong-fb show';
     var correctText = q.options[correctIdx].text;
     feedback.innerHTML =
       '<div class="fb-title">答错了，没关系</div>' +
       '<div class="fb-body">正确答案是 <span class="answer-tag">'+q.options[correctIdx].letter+'</span>'+
-      '  '+correctText+'<br><br><strong>解析：</strong>'+q.explain+'</div>';
+      '  '+correctText+'<br><br><strong>解析：</strong>'+q.explain+'</div>' +
+      '<button class="fb-speak-btn" onclick="tts.speak(''+q.explain.replace(/'/g,'\\\'').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'')+'')">🔊 朗读解析</button>';
   }
 
   nextWrap.classList.add('show');
@@ -1349,6 +1536,8 @@ function selectOption(index) {
 
 /* 进入下一题/下一模块/总结 */
 function goNext() {
+  // 停止朗读
+  if (window.tts) window.tts.stop();
   state.qIndex++;
   // 判断是否进入新模块
   if (state.qIndex < QUESTIONS.length) {
@@ -1438,6 +1627,114 @@ function renderSummary() {
 /* ============================================================
  *  流程控制
  * ============================================================ */
+
+/* ---- 题目图文插图 ---- */
+function getDefaultVisual(module, m) {
+  // 无 visual 字段时，使用模块默认插图
+  switch(module) {
+    case 1: return getVarVisual({ varName:'x', values:['8','3.14','"hello"'] }, m);
+    case 2: return getCondVisual({ cond:'score > 60', takePath:'left' }, m);
+    case 3: return getLoopVisual({ count:5 }, m);
+    case 4: return getFuncVisual({ input:'原料', output:'成品' }, m);
+    case 5: return getBugVisual({}, m);
+    default: return '';
+  }
+}
+
+function getQuestionVisual(visual, module) {
+  var m = MODULES[module-1];
+  switch(visual.type || '') {
+    case 'variable': return getVarVisual(visual.params || {}, m);
+    case 'condition': return getCondVisual(visual.params || {}, m);
+    case 'loop': return getLoopVisual(visual.params || {}, m);
+    case 'function': return getFuncVisual(visual.params || {}, m);
+    case 'bug': return getBugVisual(visual.params || {}, m);
+    default: return getDefaultVisual(module, m);
+  }
+}
+
+/* --- 变量：盒子 --- */
+function getVarVisual(p, m) {
+  var vn = p.varName || 'x';
+  var v  = (p.values && p.values[0]) || '8';
+  var c  = m ? m.color : '#4361ee';
+  var bg = m ? m.color.replace('#', '').replace(/../g, function(h) { return String.fromCharCode(parseInt(h,16)+40) }) : '#eef0fd';
+  return '<div class="q-visual">' +
+    '<svg width="260" height="160" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="20" y="30" width="220" height="110" rx="14" fill="'+c+'22" stroke="'+c+'" stroke-width="2.5"/>' +
+      '<rect x="20" y="30" width="220" height="36" rx="14" fill="'+c+'33" stroke="'+c+'" stroke-width="2.5"/>' +
+      '<text x="130" y="55" text-anchor="middle" font-size="15" font-weight="700" fill="'+c+'">变量 ' + vn + '</text>' +
+      '<text x="130" y="105" text-anchor="middle" font-size="36" font-weight="800" fill="'+c+'">'+v+'</text>' +
+      '<text x="130" y="140" text-anchor="middle" font-size="11" fill="#9396b0">变量里放的是……</text>' +
+    '</svg></div>';
+}
+
+/* --- 条件：分岔路口 --- */
+function getCondVisual(p, m) {
+  var c = m ? m.color : '#d62839';
+  return '<div class="q-visual">' +
+    '<svg width="280" height="160" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="140" y1="8" x2="140" y2="55" stroke="'+c+'" stroke-width="3" stroke-dasharray="8 4"/>' +
+      '<rect x="108" y="52" width="64" height="28" rx="14" fill="'+c+'"/>' +
+      '<text x="140" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">'+(p.cond||'x>5')+' ?</text>' +
+      '<path d="M140 82 Q 80 110 60 140" stroke="'+c+'" stroke-width="2.5" fill="none"/>' +
+      '<path d="M140 82 Q 200 110 220 140" stroke="'+c+'" stroke-width="2.5" fill="none"/>' +
+      '<circle cx="60" cy="145" r="12" fill="'+c+'22" stroke="'+c+'" stroke-width="2"/>' +
+      '<text x="60" y="150" text-anchor="middle" font-size="12" fill="'+c+'">&#10004;</text>' +
+      '<circle cx="220" cy="145" r="12" fill="#f5f6fa" stroke="#9396b0" stroke-width="2"/>' +
+      '<text x="220" y="150" text-anchor="middle" font-size="12" fill="#9396b0">&#10008;</text>' +
+      '<text x="140" y="158" text-anchor="middle" font-size="10" fill="#9396b0">成立走左，不成立走右</text>' +
+    '</svg></div>';
+}
+
+/* --- 循环：绕圈 --- */
+function getLoopVisual(p, m) {
+  var c = m ? m.color : '#e07b00';
+  var n = p.count || 5;
+  return '<div class="q-visual">' +
+    '<svg width="220" height="160" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse cx="110" cy="85" rx="68" ry="52" fill="none" stroke="'+c+'" stroke-width="3"/>' +
+      '<ellipse cx="110" cy="85" rx="68" ry="52" fill="'+c+'12" stroke="none"/>' +
+      '<circle cx="42" cy="85" r="18" fill="'+c+'22" stroke="'+c+'" stroke-width="2.5"/>' +
+      '<text x="42" y="91" text-anchor="middle" font-size="15" font-weight="700" fill="'+c+'">➜</text>' +
+      '<text x="110" y="40" text-anchor="middle" font-size="15" font-weight="700" fill="'+c+'">循环</text>' +
+      '<text x="110" y="155" text-anchor="middle" font-size="11" fill="#9396b0">重复执行 '+n+' 次</text>' +
+    '</svg></div>';
+}
+
+/* --- 函数：加工机器 --- */
+function getFuncVisual(p, m) {
+  var c = m ? m.color : '#2d9e6b';
+  return '<div class="q-visual">' +
+    '<svg width="300" height="160" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="20" y="55" width="56" height="50" rx="10" fill="'+c+'22" stroke="'+c+'" stroke-width="2.5"/>' +
+      '<text x="48" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="'+c+'">原料</text>' +
+      '<rect x="122" y="45" width="76" height="70" rx="12" fill="#fff" stroke="'+c+'" stroke-width="2.5"/>' +
+      '<text x="160" y="78" text-anchor="middle" font-size="15" font-weight="700" fill="'+c+'">fn()</text>' +
+      '<text x="160" y="100" text-anchor="middle" font-size="11" fill="#9396b0">处理中</text>' +
+      '<rect x="224" y="55" width="56" height="50" rx="10" fill="'+c+'22" stroke="'+c+'" stroke-width="2.5"/>' +
+      '<text x="252" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="'+c+'">成品</text>' +
+      '<line x1="76" y1="80" x2="122" y2="80" stroke="'+c+'" stroke-width="2.5" marker-end="url(#arrowB)'/>' +
+      '<line x1="198" y1="80" x2="224" y2="80" stroke="'+c+'" stroke-width="2.5" marker-end="url(#arrowB)"/>' +
+      '<defs><marker id="arrowB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L8,4 L0,8" fill="'+c+'"/></marker></defs>' +
+    '</svg></div>';
+}
+
+/* --- 调试：找虫子 --- */
+function getBugVisual(p, m) {
+  var c = m ? m.color : '#7c3aed';
+  return '<div class="q-visual">' +
+    '<svg width="280" height="160" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="10" y="20" width="260" height="90" rx="10" fill="#1e1e2e"/>' +
+      '<text x="20" y="45" font-family="monospace" font-size="12" fill="#cdd6f4">1  x = 8</text>' +
+      '<text x="20" y="64" font-family="monospace" font-size="12" fill="#cdd6f4">2  if x > 5:</text>' +
+      '<text x="20" y="83" font-family="monospace" font-size="12" fill="#cdd6f4">3    print("GT")</text>' +
+      '<text x="20" y="102" font-family="monospace" font-size="12" fill="#f38ba8">   ↑ 这里错了</text>' +
+      '<text x="140" y="145" text-anchor="middle" font-size="13">🐛 → 🔍 → ⚡ → ✅</text>' +
+      '<text x="140" y="158" text-anchor="middle" font-size="10" fill="#9396b0">找虫·分析·修复·验证</text>' +
+    '</svg></div>';
+}
+
 function startGame() {
   clearProgress();
   state.qIndex = 0;
@@ -1511,6 +1808,7 @@ function toggleTheme() {
  *  初始化
  * ============================================================ */
 renderStart();
+  window.tts = tts;
 </script>
 
 </body>

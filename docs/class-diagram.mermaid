@@ -1,0 +1,152 @@
+%% ============================================================
+%% 编程小达人 i18n + TTS 升级 — 类图/数据结构关系图
+%% 架构师：高见远
+%% ============================================================
+
+classDiagram
+    direction LR
+
+    %% ---- i18n 数据结构 ----
+    class I18N {
+        +Object zh
+        +Object en
+        +Object fr
+    }
+
+    class MODULES_I18N {
+        +Array~ModuleI18n~ zh
+        +Array~ModuleI18n~ en
+        +Array~ModuleI18n~ fr
+    }
+
+    class STAGES_I18N {
+        +Array~StageI18n~ zh
+        +Array~StageI18n~ en
+        +Array~StageI18n~ fr
+    }
+
+    class ModuleI18n {
+        +String name
+        +String desc
+    }
+
+    class StageI18n {
+        +int id
+        +String emoji
+        +String name
+        +int count
+        +String desc
+    }
+
+    %% ---- 题目数据结构 ----
+    class QUESTIONS {
+        +Array~Question~ items
+    }
+
+    class Question {
+        +int module
+        +int stage
+        +Object visual
+        +String concept
+        +String question
+        +String code
+        +Array~Option~ options
+        +int answer
+        +String explain
+        +QuestionI18n i18n
+    }
+
+    class Option {
+        +String letter
+        +String text
+    }
+
+    class QuestionI18n {
+        +Object en
+        +Object fr
+    }
+
+    class QuestionLang {
+        +String concept
+        +String question
+        +Array~Option~ options
+        +String explain
+    }
+
+    %% ---- TTS 双引擎对象 ----
+    class TTS {
+        +boolean speaking
+        +boolean paused
+        +String _engine
+        +boolean _puterReady
+        +Array _queue
+        +int _idx
+        +Function _onEnd
+        +Audio _currentAudio
+        +init()
+        +speak(text, onEnd)
+        +stop()
+        +toggle(text) String
+        +_playWithPuter()
+        +_playWithWebSpeech()
+        +_chunk(text) Array
+        +_getTTSLang() String
+        +_finish()
+        +_showLoading()
+        +updateBtn()
+    }
+
+    %% ---- 状态管理 ----
+    class State {
+        +String phase
+        +int stage
+        +int qIndex
+        +int moduleIndex
+        +int score
+        +Array~int~ moduleScore
+        +boolean answered
+        +Array~int~ unlocked
+        +Object stageScore
+        +Object stageStars
+    }
+
+    %% ---- 全局常量 ----
+    class GlobalConstants {
+        +Array LANGS
+        +String currentLang
+        +String LANG_KEY
+        +Object TTS_LANG_MAP
+    }
+
+    %% ---- i18n 翻译函数 ----
+    class I18nFunctions {
+        +t(key) String
+        +tQ(qIndex, field) String
+        +tM(moduleIndex, field) String
+        +getStages() Array
+        +initLang()
+        +detectLang() String
+        +setLang(lang)
+        +rerenderCurrent()
+        +toggleLangMenu()
+        +updateLangSwitcher()
+    }
+
+    %% ---- 关系 ----
+    I18N "1" --> "3" ModuleI18n : 每语言1组
+    MODULES_I18N "1" --> "3" ModuleI18n : 每语言1组
+    STAGES_I18N "1" --> "3" StageI18n : 每语言1组
+
+    QUESTIONS "1" --> "52" Question : contains
+    Question "1" --> "4" Option : has
+    Question "1" --> "0..1" QuestionI18n : has
+    QuestionI18n "1" --> "2" QuestionLang : en + fr
+
+    TTS ..> GlobalConstants : reads currentLang via _getTTSLang
+    I18nFunctions ..> GlobalConstants : reads/writes currentLang
+    I18nFunctions ..> I18N : t() reads
+    I18nFunctions ..> MODULES_I18N : tM() reads
+    I18nFunctions ..> STAGES_I18N : getStages() reads
+    I18nFunctions ..> QUESTIONS : tQ() reads
+    I18nFunctions ..> State : setLang reads phase for rerenderCurrent
+    I18nFunctions ..> TTS : setLang calls tts.stop()

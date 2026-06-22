@@ -107,14 +107,19 @@
   }
   .topbar .score-box {
     margin-left: auto;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--c-text-2);
     background: var(--c-bg);
-    padding: 4px 14px;
-    border-radius: var(--r-full);
-    border: 1px solid var(--c-border);
-    margin-right: 46px;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: var(--r-md);
+    border: 1.5px solid var(--c-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
   }
   .progress-track {
     height: 3px;
@@ -422,7 +427,7 @@
     font-size: 1.6rem; box-shadow: var(--shadow-card);
   }
   .func-machine::after {
-    content: '函数'; position: absolute; bottom: -20px;
+    content: attr(data-label); position: absolute; bottom: -20px;
     font-size: 0.7rem; font-weight: 600; color: var(--c-text-3); letter-spacing: 0.05em;
   }
   .func-arrow-mini {
@@ -834,11 +839,16 @@
   [data-theme="dark"] .code-block { background: #0d1117; }
   [data-theme="dark"] .func-machine { background: #1a1d27; }
 
+  /* ===== 顶部控制区（主题按钮 + 语言切换器） ===== */
+  .top-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    flex-shrink: 0;
+  }
+
   /* ===== 主题切换按钮 ===== */
   .theme-btn {
-    position: absolute;
-    top: 14px;
-    right: var(--sp-lg);
     width: 44px;
     height: 44px;
     border: 1.5px solid var(--c-border);
@@ -849,12 +859,63 @@
     align-items: center;
     justify-content: center;
     transition: background 0.2s, border-color 0.2s;
-    z-index: 10;
     flex-shrink: 0;
     padding: 0;
   }
   .theme-btn:hover { background: var(--c-border); }
   .theme-btn svg { display: block; }
+
+  /* ===== 语言切换器 ===== */
+  .lang-switcher { position: relative; flex-shrink: 0; }
+  .lang-btn {
+    height: 44px;
+    min-width: 44px;
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-md);
+    background: var(--c-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0 6px;
+    transition: background 0.2s, border-color 0.2s;
+    color: var(--c-text-2);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .lang-btn:hover { background: var(--c-border); }
+  .lang-menu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-lift);
+    z-index: 20;
+    overflow: hidden;
+    min-width: 120px;
+  }
+  .lang-menu button {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: var(--c-surface);
+    color: var(--c-text-1);
+    cursor: pointer;
+    font-size: 0.88rem;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .lang-menu button:hover { background: var(--c-bg); }
+
+  /* ===== TTS 加载状态 ===== */
+  .speak-btn.tts-loading, .fb-speak-btn.tts-loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
 
   /* 滚动条 */
   .content::-webkit-scrollbar { width: 4px; }
@@ -877,6 +938,8 @@
     .module-card .mc-emoji { font-size: 1.4rem; }
     .btn { padding: 12px 20px; font-size: 0.95rem; }
     .option { padding: 14px 14px; font-size: 0.92rem; }
+    .lang-btn .lang-label { display: none; }
+    .topbar .score-box { height: 40px; font-size: 0.8rem; }
   }
 
   /* ===== 响应式：小手机（iPhone SE） ===== */
@@ -1211,30 +1274,41 @@
 <body>
 
 <div id="game">
-  <!-- 主题切换按钮（始终悬浮在右上角） -->
-  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="切换深色/浅色模式" aria-label="切换主题">
-    <!-- 初始显示月亮（当前是浅色，点击切换深色） -->
-    <svg id="iconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-text-2)">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-    </svg>
-    <svg id="iconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-text-2);display:none;">
-      <circle cx="12" cy="12" r="5"/>
-      <line x1="12" y1="1" x2="12" y2="3"/>
-      <line x1="12" y1="21" x2="12" y2="23"/>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-      <line x1="1" y1="12" x2="3" y2="12"/>
-      <line x1="21" y1="12" x2="23" y2="12"/>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-    </svg>
-  </button>
-
   <!-- 顶部状态栏 -->
   <div class="topbar" id="topbar" style="display:none;">
     <span class="module-tag" id="moduleTag">模块</span>
-    <button class="speak-btn" id="speakBtn" onclick="toggleSpeak()" title="朗读题目">&#x1F50A;</button>
+    <button class="speak-btn" id="speakBtn" onclick="toggleSpeak()" title="">&#x1F50A;</button>
     <span class="score-box" id="scoreBox">0 分</span>
+    <!-- 语言切换器 + 主题按钮 -->
+    <div class="top-controls">
+      <div class="lang-switcher">
+        <button class="lang-btn" onclick="toggleLangMenu()" title="" aria-label="Language">
+          <span>🌐</span><span class="lang-label" id="langLabel">中</span>
+        </button>
+        <div class="lang-menu" id="langMenu" style="display:none;">
+          <button onclick="setLang('zh')" id="langOptZh">✓ 中文</button>
+          <button onclick="setLang('en')" id="langOptEn">&nbsp; English</button>
+          <button onclick="setLang('fr')" id="langOptFr">&nbsp; Français</button>
+        </div>
+      </div>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="" aria-label="Theme">
+        <!-- 初始显示月亮（当前是浅色，点击切换深色） -->
+        <svg id="iconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-text-2)">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg id="iconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-text-2);display:none;">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+    </div>
   </div>
   <div class="progress-track" id="progressTrack" style="display:none;">
     <div class="progress-fill" id="progressFill"></div>
@@ -1251,6 +1325,321 @@
  *  编程小达人 - 知识闯关大冒险
  *  数据 + 逻辑
  * ============================================================ */
+
+// ---- i18n 常量 ----
+var LANGS = ['zh', 'en', 'fr'];
+var currentLang = 'zh';
+var LANG_KEY = 'coding-game-lang';
+var TTS_LANG_MAP = { 'zh': 'zh-CN', 'en': 'en-US', 'fr': 'fr-FR' };
+
+// ---- I18N 语言包（UI 文案三语） ----
+var I18N = {
+  zh: {
+    app_title: '编程小达人',
+    app_subtitle: '知识闯关 · 3大阶段 · 84道题',
+    app_subtitle2: '从认识概念到读懂代码',
+    stage_beginner: '入门',
+    stage_elementary: '初级',
+    stage_intermediate: '中级',
+    stage1_desc: '认识5大编程基础概念',
+    stage2_desc: '读懂代码，预测运行结果',
+    stage3_desc: '综合应用（即将开放）',
+    unit_questions: '题',
+    passed_badge: '✓ 已通过',
+    best_score: '最高 {score}/{total}',
+    status_unlocked: '已解锁',
+    status_locked: '未解锁',
+    continue_info: '上次进度：{stage}阶段 · 第{n}题 · {score}分',
+    btn_continue: '继续闯关',
+    btn_reselect: '重新选择',
+    btn_start: '开始答题',
+    unit_score: '分',
+    q_number: '第 {n} 题 / 共{total}题',
+    btn_next: '下一题',
+    btn_view_results: '查看成绩',
+    speak_tooltip: '朗读题目',
+    speak_explain: '🔊 朗读解析',
+    fb_correct_title: '答对了',
+    fb_wrong_title: '答错了，没关系',
+    fb_summary_label: '知识点小结：',
+    fb_explain_label: '解析：',
+    fb_correct_answer: '正确答案是',
+    intro_title_prefix: '第 {id} 关：',
+    btn_start_quiz: '开始答题',
+    summary_module_tag: '闯关完成',
+    summary_title: '{stage}阶段 闯关完成',
+    btn_retry_stage: '重答本阶段',
+    btn_back_to_stages: '回阶段选择',
+    encourage_s1_3star: '太棒了！你对编程基础概念掌握得非常扎实，可以去挑战初级阶段了！',
+    encourage_s1_pass: '恭喜通过入门阶段！正确率达到60%就能解锁初级阶段。再多练几次会更扎实！',
+    encourage_s1_fail: '正确率达到60%就能解锁初级阶段，再来一次吧！相信你能做到！',
+    encourage_s2_3star: '非常扎实！你的代码阅读能力很强！',
+    encourage_s2_pass: '做得不错！大部分代码都能读懂了，继续加油！',
+    encourage_s2_low_pass: '通过啦！代码阅读需要练习，多读几遍会更熟练。',
+    encourage_s2_fail: '代码阅读需要多练习，把每道题的解析认真读一遍，再来一次会有很大提升！',
+    unlock_title: '恭喜过关！',
+    unlock_score_label: '本阶段成绩：',
+    unlock_accuracy: '正确率',
+    unlock_unlocked: '已解锁：',
+    unlock_go_next: '去{stage}阶段',
+    unlock_practice: '再练练',
+    lang_tooltip: '切换语言',
+    lang_zh: '中文',
+    lang_en: 'English',
+    lang_fr: 'Français',
+    svg_var_label: '变量 msg',
+    svg_var_hint: '值可以随时替换',
+    svg_var_caption: '变量 {name} 里放的是 {value}',
+    svg_cond_ask: 'if 下雨?',
+    svg_cond_left: '带伞',
+    svg_cond_right: '不带',
+    svg_cond_true: '条件成立 → 走左边',
+    svg_cond_false: '条件不成立 → 走右边',
+    svg_loop_hint: '重复执行，无需复制代码',
+    svg_loop_lap: '第 {n} 圈',
+    svg_loop_caption: '重复执行 {n} 次',
+    svg_func_label: '函数',
+    svg_func_caption: '函数：原料 → 加工 → 成品',
+    svg_func_input: '原料',
+    svg_func_output: '成品',
+    svg_func_input_param: '参数',
+    svg_func_output_return: '返回值',
+    svg_bug_fixed: 'Bug 已修复',
+    svg_bug_caption: '找虫 · 分析 · 修复 · 验证',
+    svg_reading_hint: '从上到下 · 逐行阅读 · 预测结果',
+    svg_reading_caption: '读代码 · 理解 · 预测结果',
+    svg_list_hint: '有序排列 · 索引从0开始',
+    svg_list_caption: '列表 · 有序排列 · 索引从0开始',
+    overview_passed: '已通过',
+    overview_unlocked: '已解锁',
+    overview_locked: '未解锁'
+  },
+  en: {
+    app_title: 'Coding Star Kids',
+    app_subtitle: 'Quiz Adventure · 3 Stages · 84 Questions',
+    app_subtitle2: 'From concepts to reading code',
+    stage_beginner: 'Beginner',
+    stage_elementary: 'Elementary',
+    stage_intermediate: 'Intermediate',
+    stage1_desc: 'Learn 5 core programming concepts',
+    stage2_desc: 'Read code, predict the output',
+    stage3_desc: 'Comprehensive practice (Coming soon)',
+    unit_questions: ' Questions',
+    passed_badge: '✓ Passed',
+    best_score: 'Best {score}/{total}',
+    status_unlocked: 'Unlocked',
+    status_locked: 'Locked',
+    continue_info: 'Last progress: {stage} · Q{n} · {score} pts',
+    btn_continue: 'Continue',
+    btn_reselect: 'Choose Again',
+    btn_start: 'Start',
+    unit_score: ' pts',
+    q_number: 'Question {n} / {total}',
+    btn_next: 'Next',
+    btn_view_results: 'View Results',
+    speak_tooltip: 'Read question',
+    speak_explain: '🔊 Read explanation',
+    fb_correct_title: 'Correct!',
+    fb_wrong_title: 'Not quite, that\'s okay!',
+    fb_summary_label: 'Key point: ',
+    fb_explain_label: 'Explanation: ',
+    fb_correct_answer: 'The correct answer is',
+    intro_title_prefix: 'Stage {id}: ',
+    btn_start_quiz: 'Start Quiz',
+    summary_module_tag: 'Stage Complete',
+    summary_title: '{stage} Stage Complete!',
+    btn_retry_stage: 'Retry Stage',
+    btn_back_to_stages: 'Back to Stages',
+    encourage_s1_3star: 'Awesome! You\'ve mastered the basics. Time to challenge the Elementary stage!',
+    encourage_s1_pass: 'Congrats on passing! 60% unlocks Elementary. Practice more to get even better!',
+    encourage_s1_fail: 'Score 60% to unlock the next stage. Try again — you can do it!',
+    encourage_s2_3star: 'Excellent! Your code-reading skills are strong!',
+    encourage_s2_pass: 'Well done! You can read most code now. Keep it up!',
+    encourage_s2_low_pass: 'You passed! Code reading takes practice — read more to improve.',
+    encourage_s2_fail: 'Code reading takes practice. Read each explanation carefully and try again!',
+    unlock_title: 'Congratulations!',
+    unlock_score_label: 'Stage score: ',
+    unlock_accuracy: 'Accuracy',
+    unlock_unlocked: 'Unlocked: ',
+    unlock_go_next: 'Go to {stage}',
+    unlock_practice: 'Practice More',
+    lang_tooltip: 'Switch Language',
+    lang_zh: 'Chinese',
+    lang_en: 'English',
+    lang_fr: 'Français',
+    svg_var_label: 'Variable msg',
+    svg_var_hint: 'Value can change anytime',
+    svg_var_caption: 'Variable {name} holds {value}',
+    svg_cond_ask: 'if raining?',
+    svg_cond_left: 'Bring umbrella',
+    svg_cond_right: 'No umbrella',
+    svg_cond_true: 'Condition true → go left',
+    svg_cond_false: 'Condition false → go right',
+    svg_loop_hint: 'Repeat without copying code',
+    svg_loop_lap: 'Lap {n}',
+    svg_loop_caption: 'Repeat {n} times',
+    svg_func_label: 'Function',
+    svg_func_caption: 'Function: input → process → output',
+    svg_func_input: 'Input',
+    svg_func_output: 'Output',
+    svg_func_input_param: 'Parameter',
+    svg_func_output_return: 'Return value',
+    svg_bug_fixed: 'Bug fixed!',
+    svg_bug_caption: 'Find · Analyze · Fix · Verify',
+    svg_reading_hint: 'Top to bottom · Read line by line · Predict',
+    svg_reading_caption: 'Read · Understand · Predict',
+    svg_list_hint: 'Ordered · Index starts at 0',
+    svg_list_caption: 'List · Ordered · Index from 0',
+    overview_passed: 'Passed',
+    overview_unlocked: 'Unlocked',
+    overview_locked: 'Locked'
+  },
+  fr: {
+    app_title: 'Petits Pros du Code',
+    app_subtitle: 'Aventure Quiz · 3 Niveaux · 84 Questions',
+    app_subtitle2: 'Des concepts à la lecture de code',
+    stage_beginner: 'Débutant',
+    stage_elementary: 'Élémentaire',
+    stage_intermediate: 'Intermédiaire',
+    stage1_desc: 'Découvrir 5 concepts de base',
+    stage2_desc: 'Lire le code, prédire le résultat',
+    stage3_desc: 'Pratique globale (Bientôt disponible)',
+    unit_questions: ' Questions',
+    passed_badge: '✓ Réussi',
+    best_score: 'Meilleur {score}/{total}',
+    status_unlocked: 'Déverrouillé',
+    status_locked: 'Verrouillé',
+    continue_info: 'Dernière progression : {stage} · Q{n} · {score} pts',
+    btn_continue: 'Continuer',
+    btn_reselect: 'Choisir à nouveau',
+    btn_start: 'Commencer',
+    unit_score: ' pts',
+    q_number: 'Question {n} / {total}',
+    btn_next: 'Suivante',
+    btn_view_results: 'Voir les résultats',
+    speak_tooltip: 'Lire la question',
+    speak_explain: '🔊 Lire l\'explication',
+    fb_correct_title: 'Correct !',
+    fb_wrong_title: 'Pas tout à fait, ce n\'est pas grave !',
+    fb_summary_label: 'Point clé : ',
+    fb_explain_label: 'Explication : ',
+    fb_correct_answer: 'La bonne réponse est',
+    intro_title_prefix: 'Niveau {id} : ',
+    btn_start_quiz: 'Commencer le quiz',
+    summary_module_tag: 'Niveau terminé',
+    summary_title: 'Niveau {stage} terminé !',
+    btn_retry_stage: 'Recommencer',
+    btn_back_to_stages: 'Retour aux niveaux',
+    encourage_s1_3star: 'Génial ! Tu maîtrises les bases. C\'est l\'heure du niveau Élémentaire !',
+    encourage_s1_pass: 'Bravo ! 60% déverrouille l\'Élémentaire. Entraîne-toi encore !',
+    encourage_s1_fail: 'Atteins 60% pour déverrouiller la suite. Réessaye, tu peux le faire !',
+    encourage_s2_3star: 'Excellent ! Tu lis très bien le code !',
+    encourage_s2_pass: 'Bien joué ! Tu comprends la plupart du code. Continue !',
+    encourage_s2_low_pass: 'Réussi ! La lecture demande de la pratique. Continue à lire !',
+    encourage_s2_fail: 'La lecture de code demande de la pratique. Lis bien les explications et réessaye !',
+    unlock_title: 'Félicitations !',
+    unlock_score_label: 'Score du niveau : ',
+    unlock_accuracy: 'Précision',
+    unlock_unlocked: 'Déverrouillé : ',
+    unlock_go_next: 'Aller au {stage}',
+    unlock_practice: 'S\'entraîner encore',
+    lang_tooltip: 'Changer de langue',
+    lang_zh: 'Chinois',
+    lang_en: 'Anglais',
+    lang_fr: 'Français',
+    svg_var_label: 'Variable msg',
+    svg_var_hint: 'La valeur peut changer',
+    svg_var_caption: 'La variable {name} contient {value}',
+    svg_cond_ask: 'si pluie ?',
+    svg_cond_left: 'Prendre parapluie',
+    svg_cond_right: 'Pas de parapluie',
+    svg_cond_true: 'Condition vraie → à gauche',
+    svg_cond_false: 'Condition fausse → à droite',
+    svg_loop_hint: 'Répéter sans copier le code',
+    svg_loop_lap: 'Tour {n}',
+    svg_loop_caption: 'Répéter {n} fois',
+    svg_func_label: 'Fonction',
+    svg_func_caption: 'Fonction : entrée → traitement → sortie',
+    svg_func_input: 'Entrée',
+    svg_func_output: 'Sortie',
+    svg_func_input_param: 'Paramètre',
+    svg_func_output_return: 'Valeur de retour',
+    svg_bug_fixed: 'Bug corrigé !',
+    svg_bug_caption: 'Trouver · Analyser · Corriger · Vérifier',
+    svg_reading_hint: 'De haut en bas · Lire ligne par ligne · Prédire',
+    svg_reading_caption: 'Lire · Comprendre · Prédire',
+    svg_list_hint: 'Ordonné · L\'index commence à 0',
+    svg_list_caption: 'Liste · Ordonné · Index dès 0',
+    overview_passed: 'Réussi',
+    overview_unlocked: 'Déverrouillé',
+    overview_locked: 'Verrouillé'
+  }
+};
+
+// ---- 阶段信息三语 ----
+var STAGES_I18N = {
+  zh: [
+    { id:1, emoji:'🌱', name:'入门', count:22, desc:'认识5大编程基础概念' },
+    { id:2, emoji:'📖', name:'初级', count:30, desc:'读懂代码，预测运行结果' },
+    { id:3, emoji:'🚀', name:'中级', count:32, desc:'综合应用（即将开放）' }
+  ],
+  en: [
+    { id:1, emoji:'🌱', name:'Beginner', count:22, desc:'Learn 5 core programming concepts' },
+    { id:2, emoji:'📖', name:'Elementary', count:30, desc:'Read code, predict the output' },
+    { id:3, emoji:'🚀', name:'Intermediate', count:32, desc:'Comprehensive practice (Coming soon)' }
+  ],
+  fr: [
+    { id:1, emoji:'🌱', name:'Débutant', count:22, desc:'Découvrir 5 concepts de base' },
+    { id:2, emoji:'📖', name:'Élémentaire', count:30, desc:'Lire le code, prédire le résultat' },
+    { id:3, emoji:'🚀', name:'Intermédiaire', count:32, desc:'Pratique globale (Bientôt disponible)' }
+  ]
+};
+
+// ---- 模块信息三语（name/desc） ----
+var MODULES_I18N = {
+  zh: [
+    { name:'变量', desc:'变量就像贴了标签的盒子，用来存放数据。让我们一起来认识它吧！' },
+    { name:'条件判断', desc:'如果……就……！条件判断让程序学会做选择，就像走到分叉路口。' },
+    { name:'循环', desc:'重复的事情交给循环！不用复制粘贴，几行代码就能重复执行很多次。' },
+    { name:'函数', desc:'函数是一个可以反复使用的小工具，定义一次，随时调用，让代码整洁有序。' },
+    { name:'调试思维', desc:'程序出错了怎么办？学会像侦探一样分析错误，一步步找出并修复 Bug！' },
+    { name:'代码阅读基础', desc:'学会像读故事一样读代码，从上到下一行一行理解执行顺序。' },
+    { name:'变量进阶', desc:'变量可以互相赋值、连续更新，还能交换——来看看变量的进阶用法！' },
+    { name:'条件进阶', desc:'elif 多分支、嵌套 if、and/or 逻辑运算符——让程序做更复杂的判断！' },
+    { name:'循环进阶', desc:'range 范围、累加器、循环里加条件——循环的威力远超你的想象！' },
+    { name:'函数进阶', desc:'带参数、有返回值、函数套函数——函数是代码复用的利器！' },
+    { name:'列表入门', desc:'列表就像购物清单，把多个数据排成一排存放。学会创建、访问和添加元素！' },
+    { name:'综合小案例', desc:'把前面学的知识串起来，读懂完整的小程序——猜数字、成绩判断、倒计时、购物计算！' }
+  ],
+  en: [
+    { name:'Variables', desc:"Variables are like labeled boxes for storing data. Let's learn about them!" },
+    { name:'Conditionals', desc:'If... then...! Conditionals let programs make choices, like reaching a fork in the road.' },
+    { name:'Loops', desc:'Let loops handle repetition! No copy-pasting — a few lines repeat many times.' },
+    { name:'Functions', desc:'Functions are reusable tools — define once, call anytime, keep code tidy.' },
+    { name:'Debugging', desc:'Program has a bug? Learn to analyze errors like a detective and fix them step by step!' },
+    { name:'Reading Code Basics', desc:'Learn to read code like a story — line by line, top to bottom.' },
+    { name:'Variables Advanced', desc:'Variables can copy, update, and swap values — explore advanced uses!' },
+    { name:'Conditionals Advanced', desc:'elif chains, nested if, and/or operators — for more complex decisions!' },
+    { name:'Loops Advanced', desc:'range, accumulators, if-inside-loop — loops are more powerful than you think!' },
+    { name:'Functions Advanced', desc:'Parameters, return values, nested calls — functions are reuse powerhouses!' },
+    { name:'Lists Intro', desc:'Lists are like shopping lists — store multiple items in a row. Create, access, add!' },
+    { name:'Mini Projects', desc:'Put it all together — read complete programs: guessing game, grading, countdown, shopping!' }
+  ],
+  fr: [
+    { name:'Variables', desc:'Les variables sont comme des boîtes étiquetées pour stocker des données. Découvrons-les !' },
+    { name:'Conditions', desc:'Si... alors... ! Les conditions permettent au programme de faire des choix, comme à un carrefour.' },
+    { name:'Boucles', desc:'Les boucles gèrent la répétition ! Quelques lignes suffisent pour répéter.' },
+    { name:'Fonctions', desc:'Les fonctions sont des outils réutilisables — définies une fois, appelées à volonté.' },
+    { name:'Débogage', desc:'Un bug dans le programme ? Apprends à analyser les erreurs comme un détective !' },
+    { name:'Bases de lecture de code', desc:'Apprends à lire le code comme une histoire — ligne par ligne.' },
+    { name:'Variables avancées', desc:"Les variables peuvent se copier, s'actualiser, s'échanger — explorons !" },
+    { name:'Conditions avancées', desc:'chaînes elif, if imbriqués, opérateurs and/or — des décisions complexes !' },
+    { name:'Boucles avancées', desc:'range, accumulateurs, if dans boucle — les boucles sont puissantes !' },
+    { name:'Fonctions avancées', desc:'Paramètres, valeurs de retour, appels imbriqués — les fonctions sont puissantes !' },
+    { name:'Intro aux listes', desc:'Les listes sont comme des listes de courses — stocke plusieurs éléments. Crée, accède, ajoute !' },
+    { name:'Mini projets', desc:'Tout rassembler — lis des programmes complets : devinettes, notes, compte à rebours, courses !' }
+  ]
+};
 
 // ---- 模块定义 ----
 var MODULES = [
@@ -1370,7 +1759,31 @@ var QUESTIONS = [
       { letter: 'D', text: '一张地图' }
     ],
     answer: 2,
-    explain: '变量就像一个贴了标签的盒子，可以存放各种数据，随时取用或更换里面的内容。'
+    explain: '变量就像一个贴了标签的盒子，可以存放各种数据，随时取用或更换里面的内容。',
+    i18n: {
+      en: {
+        concept: 'A variable is like a labeled box — you can put data in, take it out when needed, and change its content anytime.',
+        question: 'In programming, what is a "variable" most like?',
+        options: [
+          { letter: 'A', text: 'A book' },
+          { letter: 'B', text: 'A door' },
+          { letter: 'C', text: 'A labeled box' },
+          { letter: 'D', text: 'A map' }
+        ],
+        explain: 'A variable is like a labeled box that can store various types of data, accessible and changeable anytime.'
+      },
+      fr: {
+        concept: 'Une variable est comme une boîte étiquetée — tu peux y mettre des données, les récupérer au besoin et changer son contenu à tout moment.',
+        question: 'En programmation, à quoi ressemble le plus une « variable » ?',
+        options: [
+          { letter: 'A', text: 'Un livre' },
+          { letter: 'B', text: 'Une porte' },
+          { letter: 'C', text: 'Une boîte étiquetée' },
+          { letter: 'D', text: 'Une carte' }
+        ],
+        explain: 'Une variable est comme une boîte étiquetée qui peut stocker divers types de données, accessibles et modifiables à tout moment.'
+      }
+    }
   },
   {
     module: 1,
@@ -1385,7 +1798,31 @@ var QUESTIONS = [
       { letter: 'D', text: 'my-name' }
     ],
     answer: 0,
-    explain: '变量名不能以数字开头，不能含空格，通常用字母、数字、下划线，myName 是驼峰命名法。'
+    explain: '变量名不能以数字开头，不能含空格，通常用字母、数字、下划线，myName 是驼峰命名法。',
+    i18n: {
+      en: {
+        concept: 'Naming variables has rules: cannot start with a digit, no spaces, no hyphens (in Python). CamelCase (myName) is a common good habit!',
+        question: 'Which variable name is correct?',
+        options: [
+          { letter: 'A', text: 'myName' },
+          { letter: 'B', text: 'my name' },
+          { letter: 'C', text: '1name' },
+          { letter: 'D', text: 'my-name' }
+        ],
+        explain: 'Variable names cannot start with a digit, cannot contain spaces, and usually use letters, digits, and underscores. myName uses camelCase.'
+      },
+      fr: {
+        concept: 'Nommer une variable a des règles : pas de chiffre au début, pas d\'espace, pas de tiret (en Python). Le camelCase (myName) est une bonne habitude courante !',
+        question: 'Quel nom de variable est correct ?',
+        options: [
+          { letter: 'A', text: 'myName' },
+          { letter: 'B', text: 'my name' },
+          { letter: 'C', text: '1name' },
+          { letter: 'D', text: 'my-name' }
+        ],
+        explain: 'Les noms de variables ne peuvent pas commencer par un chiffre, ni contenir d\'espaces. On utilise lettres, chiffres et tirets bas. myName utilise le camelCase.'
+      }
+    }
   },
   {
     module: 1,
@@ -1400,7 +1837,31 @@ var QUESTIONS = [
       { letter: 'D', text: '把数字 12 存入名为 x 的变量' }
     ],
     answer: 3,
-    explain: '= 在编程中是"赋值"符号，表示把右边的值存入左边的变量。'
+    explain: '= 在编程中是"赋值"符号，表示把右边的值存入左边的变量。',
+    i18n: {
+      en: {
+        concept: 'In programming, = means "assign" — it puts the right-side content into the left-side variable box. Note: this = is NOT "equal"!',
+        question: 'What does the line "x = 12" mean?',
+        options: [
+          { letter: 'A', text: 'Check if x equals 12' },
+          { letter: 'B', text: 'Delete variable x' },
+          { letter: 'C', text: 'Print the number 12' },
+          { letter: 'D', text: 'Store 12 into variable x' }
+        ],
+        explain: 'In programming, = is the "assignment" symbol, meaning store the right-side value into the left-side variable.'
+      },
+      fr: {
+        concept: 'En programmation, = signifie « assigner » — il met le contenu de droite dans la variable de gauche. Attention : ce = n\'est pas « égal » !',
+        question: 'Que signifie la ligne « x = 12 » ?',
+        options: [
+          { letter: 'A', text: 'Vérifier si x égale 12' },
+          { letter: 'B', text: 'Supprimer la variable x' },
+          { letter: 'C', text: 'Afficher le nombre 12' },
+          { letter: 'D', text: 'Stocker 12 dans la variable x' }
+        ],
+        explain: 'En programmation, = est le symbole « d\'affectation », il stocke la valeur de droite dans la variable de gauche.'
+      }
+    }
   },
   {
     module: 1,
@@ -1415,7 +1876,31 @@ var QUESTIONS = [
       { letter: 'D', text: '变量不能存数据' }
     ],
     answer: 1,
-    explain: '变量很灵活，可以存放数字（如 12）、文字（如 "hello"）、真/假值（True/False）等各种类型的数据。'
+    explain: '变量很灵活，可以存放数字（如 12）、文字（如 "hello"）、真/假值（True/False）等各种类型的数据。',
+    i18n: {
+      en: {
+        concept: 'Variables can store many data types: numbers (integers, decimals), text (strings), true/false (Boolean). Different types can do different things.',
+        question: 'Which of these can a variable store?',
+        options: [
+          { letter: 'A', text: 'Only numbers' },
+          { letter: 'B', text: 'Numbers, text, true/false values' },
+          { letter: 'C', text: 'Only text' },
+          { letter: 'D', text: 'Variables cannot store data' }
+        ],
+        explain: 'Variables are flexible — they can store numbers (like 12), text (like "hello"), true/false (True/False), and many other data types.'
+      },
+      fr: {
+        concept: 'Les variables peuvent stocker différents types de données : nombres (entiers, décimaux), texte (chaînes), vrai/faux (booléens). Chaque type permet des choses différentes.',
+        question: 'Quelles données une variable peut-elle stocker ?',
+        options: [
+          { letter: 'A', text: 'Seulement des nombres' },
+          { letter: 'B', text: 'Nombres, texte, vrai/faux' },
+          { letter: 'C', text: 'Seulement du texte' },
+          { letter: 'D', text: 'Les variables ne stockent rien' }
+        ],
+        explain: 'Les variables sont flexibles — elles peuvent stocker des nombres (12), du texte ("hello"), des vrai/faux (True/False) et bien d\'autres types.'
+      }
+    }
   },
   {
     module: 1,
@@ -1430,7 +1915,31 @@ var QUESTIONS = [
       { letter: 'D', text: '会报错' }
     ],
     answer: 1,
-    explain: '第一行把 5 放入 x，第二行把 8 放入 x——新值会覆盖旧值，所以 x 最终是 8。这就是变量"可以改变"的含义。'
+    explain: '第一行把 5 放入 x，第二行把 8 放入 x——新值会覆盖旧值，所以 x 最终是 8。这就是变量"可以改变"的含义。',
+    i18n: {
+      en: {
+        concept: 'The best thing about variables: their value can change anytime! A new value overwrites the old one — that is what "variable" means.',
+        question: 'After running these two lines, what is the value of x?',
+        options: [
+          { letter: 'A', text: '5' },
+          { letter: 'B', text: '8' },
+          { letter: 'C', text: '13' },
+          { letter: 'D', text: 'Error' }
+        ],
+        explain: 'Line 1 puts 5 into x, line 2 puts 8 into x — the new value overwrites the old, so x ends up as 8. That is what "can change" means.'
+      },
+      fr: {
+        concept: 'Le grand pouvoir des variables : leur valeur peut changer à tout moment ! La nouvelle valeur remplace l\'ancienne — c\'est le sens de « variable ».',
+        question: 'Après ces deux lignes, quelle est la valeur de x ?',
+        options: [
+          { letter: 'A', text: '5' },
+          { letter: 'B', text: '8' },
+          { letter: 'C', text: '13' },
+          { letter: 'D', text: 'Erreur' }
+        ],
+        explain: 'La ligne 1 met 5 dans x, la ligne 2 met 8 dans x — la nouvelle valeur remplace l\'ancienne, donc x vaut 8. C\'est ce que « peut changer » signifie.'
+      }
+    }
   },
 
   // ===== 模块2：条件判断 =====
@@ -1447,7 +1956,33 @@ var QUESTIONS = [
       { letter: 'D', text: '根据条件决定执行哪段代码' }
     ],
     answer: 3,
-    explain: 'if 就像我们生活中的"如果……就……"，比如"如果下雨了，就带伞"。'
+    explain: 'if 就像我们生活中的"如果……就……"，比如"如果下雨了，就带伞"。',
+    i18n: {
+      en: {
+        concept: 'An if statement is like "if... then..." in real life. For example: if it rains, then bring an umbrella. Programs can make decisions like this too!',
+        question: 'What does an if statement do?',
+        options: [
+          { letter: 'A', text: 'Repeat code' },
+          { letter: 'B', text: 'Define a function' },
+          { letter: 'C', text: 'Print output' },
+          { letter: 'D', text: 'Decide which code runs based on a condition' }
+        ],
+        explain: 'if is like "if... then..." in real life, such as "if it rains, bring an umbrella".',
+        visual: { type: 'condition', params: { cond: 'if…then…', takePath: 'if' } }
+      },
+      fr: {
+        concept: 'Une instruction if est comme « si... alors... » dans la vie. Par exemple : s\'il pleut, prends un parapluie. Les programmes peuvent décider aussi !',
+        question: 'Que fait une instruction if ?',
+        options: [
+          { letter: 'A', text: 'Répéter du code' },
+          { letter: 'B', text: 'Définir une fonction' },
+          { letter: 'C', text: 'Afficher du texte' },
+          { letter: 'D', text: 'Choisir quel code exécuter selon une condition' }
+        ],
+        explain: 'if est comme « si... alors... » dans la vie, par exemple « s\'il pleut, prends un parapluie ».',
+        visual: { type: 'condition', params: { cond: 'si…alors…', takePath: 'if' } }
+      }
+    }
   },
   {
     module: 2,
@@ -1462,7 +1997,31 @@ var QUESTIONS = [
       { letter: 'D', text: 'score 小于 60' }
     ],
     answer: 0,
-    explain: '> 是"大于"，< 是"小于"，== 是"等于"，!= 是"不等于"。'
+    explain: '> 是"大于"，< 是"小于"，== 是"等于"，!= 是"不等于"。',
+    i18n: {
+      en: {
+        concept: 'Comparison operators compare two values and return "true" or "false": > greater than, < less than, == equal to (two signs), != not equal.',
+        question: 'What does > mean in "score > 60"?',
+        options: [
+          { letter: 'A', text: 'score is greater than 60' },
+          { letter: 'B', text: 'assign 60 to score' },
+          { letter: 'C', text: 'score equals 60' },
+          { letter: 'D', text: 'score is less than 60' }
+        ],
+        explain: '> means "greater than", < means "less than", == means "equal to", != means "not equal to".'
+      },
+      fr: {
+        concept: 'Les opérateurs de comparaison comparent deux valeurs et renvoient « vrai » ou « faux » : > supérieur, < inférieur, == égal (deux signes), != différent.',
+        question: 'Que signifie > dans « score > 60 » ?',
+        options: [
+          { letter: 'A', text: 'score supérieur à 60' },
+          { letter: 'B', text: 'assigner 60 à score' },
+          { letter: 'C', text: 'score égal à 60' },
+          { letter: 'D', text: 'score inférieur à 60' }
+        ],
+        explain: '> signifie « supérieur à », < « inférieur à », == « égal à », != « différent de ».'
+      }
+    }
   },
   {
     module: 2,
@@ -1477,7 +2036,33 @@ var QUESTIONS = [
       { letter: 'D', text: '没有输出' }
     ],
     answer: 2,
-    explain: 'x=8，8>5 为真，所以执行 if 里面的代码，输出"大"。'
+    explain: 'x=8，8>5 为真，所以执行 if 里面的代码，输出"大"。',
+    i18n: {
+      en: {
+        concept: 'x = 8, then check if x > 5. If true, go the if way; if false, go the else way. Follow the code line by line when reading.',
+        question: 'What does this code output?',
+        code: 'x = <span class="num">8</span>\n<span class="kw">if</span> x &gt; <span class="num">5</span>:\n    <span class="fn">print</span>(<span class="str">"Big"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Small"</span>)',
+        options: [
+          { letter: 'A', text: 'Small' },
+          { letter: 'B', text: '8' },
+          { letter: 'C', text: 'Big' },
+          { letter: 'D', text: 'No output' }
+        ],
+        explain: 'x=8, 8>5 is true, so the if block runs and outputs "Big".'
+      },
+      fr: {
+        concept: 'x = 8, puis on vérifie si x > 5. Si vrai, on prend le chemin if ; si faux, le chemin else. Lis le code ligne par ligne.',
+        question: 'Que produit ce code ?',
+        code: 'x = <span class="num">8</span>\n<span class="kw">if</span> x &gt; <span class="num">5</span>:\n    <span class="fn">print</span>(<span class="str">"Grand"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Petit"</span>)',
+        options: [
+          { letter: 'A', text: 'Petit' },
+          { letter: 'B', text: '8' },
+          { letter: 'C', text: 'Grand' },
+          { letter: 'D', text: 'Pas de sortie' }
+        ],
+        explain: 'x=8, 8>5 est vrai, donc le bloc if s\'exécute et affiche « Grand ».'
+      }
+    }
   },
   {
     module: 2,
@@ -1492,7 +2077,31 @@ var QUESTIONS = [
       { letter: 'D', text: '根据条件二选一执行' }
     ],
     answer: 3,
-    explain: 'if-else 提供两条路：条件成立走 if，不成立走 else。就像"如果下雨带伞，否则戴帽子"。'
+    explain: 'if-else 提供两条路：条件成立走 if，不成立走 else。就像"如果下雨带伞，否则戴帽子"。',
+    i18n: {
+      en: {
+        concept: 'if-else is like a fork in the road: if the condition is true, take the if path; if false, take the else path. You must choose one.',
+        question: 'What does an if-else statement do?',
+        options: [
+          { letter: 'A', text: 'Repeat code' },
+          { letter: 'B', text: 'Print output' },
+          { letter: 'C', text: 'Define a new variable' },
+          { letter: 'D', text: 'Choose one of two paths based on a condition' }
+        ],
+        explain: 'if-else offers two paths: condition true → if, false → else. Like "if it rains, bring an umbrella; otherwise, wear a hat".'
+      },
+      fr: {
+        concept: 'if-else est comme un carrefour : si la condition est vraie, prends le chemin if ; si fausse, le chemin else. Il faut en choisir un.',
+        question: 'Que fait une instruction if-else ?',
+        options: [
+          { letter: 'A', text: 'Répéter du code' },
+          { letter: 'B', text: 'Afficher du texte' },
+          { letter: 'C', text: 'Définir une variable' },
+          { letter: 'D', text: 'Choisir entre deux chemins selon une condition' }
+        ],
+        explain: 'if-else offre deux chemins : condition vraie → if, fausse → else. Comme « s\'il pleut, prends un parapluie ; sinon, mets un chapeau ».'
+      }
+    }
   },
   {
     module: 2,
@@ -1507,7 +2116,31 @@ var QUESTIONS = [
       { letter: 'D', text: '函数' }
     ],
     answer: 1,
-    explain: 'True（真）和 False（假）叫做"布尔值"，是以数学家乔治·布尔命名的。条件判断的结果就是布尔值。'
+    explain: 'True（真）和 False（假）叫做"布尔值"，是以数学家乔治·布尔命名的。条件判断的结果就是布尔值。',
+    i18n: {
+      en: {
+        concept: 'True means "true" (yes), False means "false" (no). The result of a condition check is True or False, and the program decides which path to take.',
+        question: 'What are True and False called in programming?',
+        options: [
+          { letter: 'A', text: 'Numbers' },
+          { letter: 'B', text: 'Booleans (true or false)' },
+          { letter: 'C', text: 'Strings' },
+          { letter: 'D', text: 'Functions' }
+        ],
+        explain: 'True and False are called "Boolean values", named after mathematician George Boole. Condition checks produce Boolean values.'
+      },
+      fr: {
+        concept: 'True signifie « vrai » (oui), False signifie « faux » (non). Le résultat d\'une condition est True ou False, et le programme choisit son chemin.',
+        question: 'Comment appelle-t-on True et False en programmation ?',
+        options: [
+          { letter: 'A', text: 'Des nombres' },
+          { letter: 'B', text: 'Des booléens (vrai ou faux)' },
+          { letter: 'C', text: 'Des chaînes' },
+          { letter: 'D', text: 'Des fonctions' }
+        ],
+        explain: 'True et False s\'appellent des « booléens », du nom du mathématicien George Boole. Les conditions produisent des booléens.'
+      }
+    }
   },
 
   // ===== 模块3：循环 =====
@@ -1524,7 +2157,31 @@ var QUESTIONS = [
       { letter: 'D', text: '存储数据' }
     ],
     answer: 2,
-    explain: '如果要打印100次"你好"，用循环只需几行代码，不用复制100次！'
+    explain: '如果要打印100次"你好"，用循环只需几行代码，不用复制100次！',
+    i18n: {
+      en: {
+        concept: 'If you need to print "hello" 100 times, no need to copy 100 lines! Loops do it in just a few lines — one of the most important ideas in programming.',
+        question: 'Why do we need loops?',
+        options: [
+          { letter: 'A', text: 'Make code harder to understand' },
+          { letter: 'B', text: 'Make code run slower' },
+          { letter: 'C', text: 'Avoid writing the same code over and over' },
+          { letter: 'D', text: 'Store data' }
+        ],
+        explain: 'To print "hello" 100 times, a loop does it in just a few lines — no need to copy 100 times!'
+      },
+      fr: {
+        concept: 'Si tu dois afficher « bonjour » 100 fois, pas besoin de copier 100 lignes ! Les boucles le font en quelques lignes — une idée clé de la programmation.',
+        question: 'Pourquoi a-t-on besoin des boucles ?',
+        options: [
+          { letter: 'A', text: 'Rendre le code plus dur à lire' },
+          { letter: 'B', text: 'Ralentir le code' },
+          { letter: 'C', text: 'Éviter de répéter le même code' },
+          { letter: 'D', text: 'Stocker des données' }
+        ],
+        explain: 'Pour afficher « bonjour » 100 fois, une boucle suffit en quelques lignes — pas besoin de copier 100 fois !'
+      }
+    }
   },
   {
     module: 3,
@@ -1539,7 +2196,33 @@ var QUESTIONS = [
       { letter: 'D', text: '无限次' }
     ],
     answer: 0,
-    explain: 'range(5) 生成 0,1,2,3,4 共5个数，所以循环5次。'
+    explain: 'range(5) 生成 0,1,2,3,4 共5个数，所以循环5次。',
+    i18n: {
+      en: {
+        concept: 'range(5) generates the 5 numbers 0, 1, 2, 3, 4 (starting from 0, not including 5), so the loop runs exactly 5 times.',
+        question: 'How many times does "for i in range(5)" loop?',
+        code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):\n    <span class="fn">print</span>(<span class="str">"Hello"</span>)',
+        options: [
+          { letter: 'A', text: '5 times' },
+          { letter: 'B', text: '4 times' },
+          { letter: 'C', text: '6 times' },
+          { letter: 'D', text: 'Infinite' }
+        ],
+        explain: 'range(5) generates 0,1,2,3,4 — 5 numbers total, so the loop runs 5 times.'
+      },
+      fr: {
+        concept: 'range(5) génère les 5 nombres 0, 1, 2, 3, 4 (depuis 0, sans inclure 5), donc la boucle s\'exécute exactement 5 fois.',
+        question: 'Combien de fois « for i in range(5) » boucle-t-il ?',
+        code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):\n    <span class="fn">print</span>(<span class="str">"Bonjour"</span>)',
+        options: [
+          { letter: 'A', text: '5 fois' },
+          { letter: 'B', text: '4 fois' },
+          { letter: 'C', text: '6 fois' },
+          { letter: 'D', text: 'Infini' }
+        ],
+        explain: 'range(5) génère 0,1,2,3,4 — 5 nombres, donc la boucle s\'exécute 5 fois.'
+      }
+    }
   },
   {
     module: 3,
@@ -1554,7 +2237,33 @@ var QUESTIONS = [
       { letter: 'D', text: '永远不停止' }
     ],
     answer: 0,
-    explain: 'while 循环会一直执行，直到条件不成立。如果条件一直为真，就会变成"死循环"。'
+    explain: 'while 循环会一直执行，直到条件不成立。如果条件一直为真，就会变成"死循环"。',
+    i18n: {
+      en: {
+        concept: 'A while loop keeps repeating until the condition becomes false. If the condition is always true, you get an "infinite loop" — the program gets stuck!',
+        question: 'When does a while loop stop?',
+        code: '<span class="kw">while</span> condition:\n    <span class="cmt"># code to repeat</span>',
+        options: [
+          { letter: 'A', text: 'When the condition becomes false' },
+          { letter: 'B', text: 'When the programmer stops it manually' },
+          { letter: 'C', text: 'After 10 times' },
+          { letter: 'D', text: 'Never stops' }
+        ],
+        explain: 'A while loop keeps running until the condition is false. If the condition stays true forever, it becomes an "infinite loop".'
+      },
+      fr: {
+        concept: 'Une boucle while se répète jusqu\'à ce que la condition devienne fausse. Si la condition reste toujours vraie, c\'est une « boucle infinie » — le programme bloque !',
+        question: 'Quand une boucle while s\'arrête-t-elle ?',
+        code: '<span class="kw">while</span> condition:\n    <span class="cmt"># code à répéter</span>',
+        options: [
+          { letter: 'A', text: 'Quand la condition devient fausse' },
+          { letter: 'B', text: 'Quand le programmeur l\'arrête' },
+          { letter: 'C', text: 'Après 10 fois' },
+          { letter: 'D', text: 'Jamais' }
+        ],
+        explain: 'Une boucle while s\'exécute jusqu\'à ce que la condition soit fausse. Si elle reste vraie, c\'est une « boucle infinie ».'
+      }
+    }
   },
   {
     module: 3,
@@ -1569,7 +2278,33 @@ var QUESTIONS = [
       { letter: 'D', text: '代码有语法错误，跑不起来' }
     ],
     answer: 2,
-    explain: 'while True 表示条件永远为真，循环体（打印）会永远执行，这就是"死循环"。要避免它！'
+    explain: 'while True 表示条件永远为真，循环体（打印）会永远执行，这就是"死循环"。要避免它！',
+    i18n: {
+      en: {
+        concept: 'An infinite loop never stops — because the condition is always true. This freezes the program! Always make sure the condition can eventually become false.',
+        question: 'What happens with this code?',
+        code: '<span class="kw">while</span> <span class="kw">True</span>:\n    <span class="fn">print</span>(<span class="str">"Can\'t stop!"</span>)',
+        options: [
+          { letter: 'A', text: 'Ends normally, prints nothing' },
+          { letter: 'B', text: 'Prints once then stops' },
+          { letter: 'C', text: 'Infinite loop, keeps printing forever' },
+          { letter: 'D', text: 'Syntax error, cannot run' }
+        ],
+        explain: 'while True means the condition is always true, so the loop body (printing) runs forever — this is an "infinite loop". Avoid it!'
+      },
+      fr: {
+        concept: 'Une boucle infinie ne s\'arrête jamais — car la condition est toujours vraie. Le programme se bloque ! Assure-toi que la condition puisse devenir fausse.',
+        question: 'Que se passe-t-il avec ce code ?',
+        code: '<span class="kw">while</span> <span class="kw">True</span>:\n    <span class="fn">print</span>(<span class="str">"Impossible de s\'arrêter !"</span>)',
+        options: [
+          { letter: 'A', text: 'Finit normalement, n\'affiche rien' },
+          { letter: 'B', text: 'Affiche une fois puis s\'arrête' },
+          { letter: 'C', text: 'Boucle infinie, affiche sans fin' },
+          { letter: 'D', text: 'Erreur de syntaxe' }
+        ],
+        explain: 'while True signifie que la condition est toujours vraie, donc la boucle (affichage) tourne pour toujours — c\'est une « boucle infinie ». À éviter !'
+      }
+    }
   },
 
   // ===== 模块4：函数 =====
@@ -1586,7 +2321,31 @@ var QUESTIONS = [
       { letter: 'D', text: '判断条件' }
     ],
     answer: 1,
-    explain: '函数就像一个小工具，定义一次，可以在任何地方调用，避免重复写代码。'
+    explain: '函数就像一个小工具，定义一次，可以在任何地方调用，避免重复写代码。',
+    i18n: {
+      en: {
+        concept: 'A function is a reusable tool — define it once, call it anywhere, keeping your code clean and organized.',
+        question: 'What is the main purpose of a function?',
+        options: [
+          { letter: 'A', text: 'Make code more complex' },
+          { letter: 'B', text: 'Package code for reuse' },
+          { letter: 'C', text: 'Store data' },
+          { letter: 'D', text: 'Check conditions' }
+        ],
+        explain: 'A function is like a small tool — define it once and call it anywhere, avoiding repeated code.'
+      },
+      fr: {
+        concept: 'Une fonction est un outil réutilisable — définissez-la une fois, appelez-la n\'importe où, pour garder votre code propre et organisé.',
+        question: 'Quel est le but principal d\'une fonction ?',
+        options: [
+          { letter: 'A', text: 'Rendre le code plus complexe' },
+          { letter: 'B', text: 'Emballer le code pour le réutiliser' },
+          { letter: 'C', text: 'Stocker des données' },
+          { letter: 'D', text: 'Vérifier des conditions' }
+        ],
+        explain: 'Une fonction est comme un petit outil — définissez-la une fois et appelez-la n\'importe où, pour éviter de répéter du code.'
+      }
+    }
   },
   {
     module: 4,
@@ -1601,7 +2360,33 @@ var QUESTIONS = [
       { letter: 'D', text: 'sayHello()' }
     ],
     answer: 3,
-    explain: 'def 是定义函数，函数名() 是调用函数。调用时才会真正执行里面的代码。'
+    explain: 'def 是定义函数，函数名() 是调用函数。调用时才会真正执行里面的代码。',
+    i18n: {
+      en: {
+        concept: 'The def keyword "defines" a function (tells the program what the tool looks like). Writing the function name with parentheses "calls" it (actually uses the tool).',
+        question: 'Which line below "calls" a function?',
+        code: '<span class="cmt"># A. Define function</span>\n<span class="kw">def</span> <span class="fn">sayHello</span>():\n    <span class="fn">print</span>(<span class="str">"Hi"</span>)\n\n<span class="cmt"># B. Call function</span>\n<span class="fn">sayHello</span>()',
+        options: [
+          { letter: 'A', text: 'def sayHello():' },
+          { letter: 'B', text: '# This is a function' },
+          { letter: 'C', text: 'return "Hello"' },
+          { letter: 'D', text: 'sayHello()' }
+        ],
+        explain: 'def defines a function; functionName() calls it. The code inside only runs when called.'
+      },
+      fr: {
+        concept: 'Le mot-clé def « définit » une fonction (indique au programme à quoi ressemble l\'outil). Écrire le nom de la fonction avec des parenthèses « l\'appelle » (utilise réellement l\'outil).',
+        question: 'Quelle ligne ci-dessous « appelle » une fonction ?',
+        code: '<span class="cmt"># A. Définir une fonction</span>\n<span class="kw">def</span> <span class="fn">sayHello</span>():\n    <span class="fn">print</span>(<span class="str">"Hi"</span>)\n\n<span class="cmt"># B. Appeler la fonction</span>\n<span class="fn">sayHello</span>()',
+        options: [
+          { letter: 'A', text: 'def sayHello():' },
+          { letter: 'B', text: '# Ceci est une fonction' },
+          { letter: 'C', text: 'return "Hello"' },
+          { letter: 'D', text: 'sayHello()' }
+        ],
+        explain: 'def définit une fonction ; nomFonction() l\'appelle. Le code à l\'intérieur ne s\'exécute qu\'à l\'appel.'
+      }
+    }
   },
   {
     module: 4,
@@ -1616,7 +2401,33 @@ var QUESTIONS = [
       { letter: 'D', text: '函数里的注释' }
     ],
     answer: 1,
-    explain: '参数就像工厂的原材料，比如 add(3, 5) 中的 3 和 5 就是参数，函数用它们来计算。'
+    explain: '参数就像工厂的原材料，比如 add(3, 5) 中的 3 和 5 就是参数，函数用它们来计算。',
+    i18n: {
+      en: {
+        concept: 'Parameters are input data passed to a function, like ingredients for a chef. In add(3, 5), the 3 and 5 are parameters — the function processes them and returns a result.',
+        question: 'What are function "parameters"?',
+        code: '<span class="kw">def</span> <span class="fn">add</span>(a, b):\n    <span class="kw">return</span> a + b\n\n<span class="fn">add</span>(<span class="num">3</span>, <span class="num">5</span>)  <span class="cmt"># 3 and 5 are arguments</span>',
+        options: [
+          { letter: 'A', text: 'The function\'s name' },
+          { letter: 'B', text: 'Input data passed into the function' },
+          { letter: 'C', text: 'The result returned after execution' },
+          { letter: 'D', text: 'Comments inside the function' }
+        ],
+        explain: 'Parameters are like raw materials for a factory. For example, 3 and 5 in add(3, 5) are parameters that the function uses to calculate.'
+      },
+      fr: {
+        concept: 'Les paramètres sont les données d\'entrée passées à une fonction, comme les ingrédients pour un chef. Dans add(3, 5), 3 et 5 sont les paramètres — la fonction les traite et renvoie un résultat.',
+        question: 'Que sont les « paramètres » d\'une fonction ?',
+        code: '<span class="kw">def</span> <span class="fn">add</span>(a, b):\n    <span class="kw">return</span> a + b\n\n<span class="fn">add</span>(<span class="num">3</span>, <span class="num">5</span>)  <span class="cmt"># 3 et 5 sont des arguments</span>',
+        options: [
+          { letter: 'A', text: 'Le nom de la fonction' },
+          { letter: 'B', text: 'Les données d\'entrée passées à la fonction' },
+          { letter: 'C', text: 'Le résultat renvoyé après l\'exécution' },
+          { letter: 'D', text: 'Les commentaires dans la fonction' }
+        ],
+        explain: 'Les paramètres sont comme les matières premières d\'une usine. Par exemple, 3 et 5 dans add(3, 5) sont des paramètres que la fonction utilise pour calculer.'
+      }
+    }
   },
   {
     module: 4,
@@ -1631,7 +2442,33 @@ var QUESTIONS = [
       { letter: 'D', text: '定义一个新变量' }
     ],
     answer: 0,
-    explain: 'return 让函数把计算结果"交出去"，比如 double(5) 返回 10，调用者可以用 result = double(5) 来接收这个结果。'
+    explain: 'return 让函数把计算结果"交出去"，比如 double(5) 返回 10，调用者可以用 result = double(5) 来接收这个结果。',
+    i18n: {
+      en: {
+        concept: 'return is how a function "hands back" its result to the caller. Without return, the function finishes and the result is lost; with return, the caller can use the result.',
+        question: 'What does return do in a function?',
+        code: '<span class="kw">def</span> <span class="fn">double</span>(n):\n    <span class="kw">return</span> n * <span class="num">2</span>\n\nresult = <span class="fn">double</span>(<span class="num">5</span>)\n<span class="fn">print</span>(result)  <span class="cmt"># outputs 10</span>',
+        options: [
+          { letter: 'A', text: 'Return the result to the caller' },
+          { letter: 'B', text: 'End the program' },
+          { letter: 'C', text: 'Print output content' },
+          { letter: 'D', text: 'Define a new variable' }
+        ],
+        explain: 'return lets a function "hand out" its result. For example, double(5) returns 10, and the caller can capture it with result = double(5).'
+      },
+      fr: {
+        concept: 'return est la façon dont une fonction « rend » son résultat à l\'appelant. Sans return, la fonction termine et le résultat est perdu ; avec return, l\'appelant peut utiliser le résultat.',
+        question: 'Que fait return dans une fonction ?',
+        code: '<span class="kw">def</span> <span class="fn">double</span>(n):\n    <span class="kw">return</span> n * <span class="num">2</span>\n\nresult = <span class="fn">double</span>(<span class="num">5</span>)\n<span class="fn">print</span>(result)  <span class="cmt"># affiche 10</span>',
+        options: [
+          { letter: 'A', text: 'Renvoyer le résultat à l\'appelant' },
+          { letter: 'B', text: 'Terminer le programme' },
+          { letter: 'C', text: 'Afficher le contenu de sortie' },
+          { letter: 'D', text: 'Définir une nouvelle variable' }
+        ],
+        explain: 'return permet à une fonction de « remettre » son résultat. Par exemple, double(5) renvoie 10, et l\'appelant peut le récupérer avec result = double(5).'
+      }
+    }
   },
 
   // ===== 模块5：调试思维 =====
@@ -1648,7 +2485,31 @@ var QUESTIONS = [
       { letter: 'D', text: '程序中的错误或缺陷' }
     ],
     answer: 3,
-    explain: 'Bug 原意是"虫子"，历史上第一个 Bug 真的是一只飞蛾卡在电脑里！现在指程序中的各种错误。'
+    explain: 'Bug 原意是"虫子"，历史上第一个 Bug 真的是一只飞蛾卡在电脑里！现在指程序中的各种错误。',
+    i18n: {
+      en: {
+        concept: 'Bug originally means "insect". In 1947, engineers actually found a moth stuck in a computer relay causing a failure — the word "Bug" has been used ever since to mean any error in a program.',
+        question: 'What does "Bug" mean in programming?',
+        options: [
+          { letter: 'A', text: 'A programming language' },
+          { letter: 'B', text: 'A data type' },
+          { letter: 'C', text: 'A program running very fast' },
+          { letter: 'D', text: 'An error or flaw in a program' }
+        ],
+        explain: 'Bug originally means "insect". The first Bug in history was literally a moth stuck in a computer! Now it refers to all kinds of errors in programs.'
+      },
+      fr: {
+        concept: 'Bug signifie à l\'origine « insecte ». En 1947, des ingénieurs ont vraiment trouvé un papillon de nuit coincé dans un relais de calculateur provoquant une panne — le mot « Bug » est utilisé depuis pour désigner toute erreur dans un programme.',
+        question: 'Que signifie « Bug » en programmation ?',
+        options: [
+          { letter: 'A', text: 'Un langage de programmation' },
+          { letter: 'B', text: 'Un type de données' },
+          { letter: 'C', text: 'Un programme qui s\'exécute très vite' },
+          { letter: 'D', text: 'Une erreur ou un défaut dans un programme' }
+        ],
+        explain: 'Bug signifie à l\'origine « insecte ». Le premier Bug de l\'histoire était littéralement un papillon coincé dans un ordinateur ! Désigne maintenant toutes sortes d\'erreurs dans les programmes.'
+      }
+    }
   },
   {
     module: 5,
@@ -1663,7 +2524,31 @@ var QUESTIONS = [
       { letter: 'D', text: '请别人帮你写' }
     ],
     answer: 2,
-    explain: '调试（Debug）的步骤：①看错误提示 ②找到出错的行 ③理解为什么出错 ④修改并验证。'
+    explain: '调试（Debug）的步骤：①看错误提示 ②找到出错的行 ③理解为什么出错 ④修改并验证。',
+    i18n: {
+      en: {
+        concept: 'Debugging in four steps: 1) Read the error message → 2) Locate the error line → 3) Understand the cause → 4) Fix and re-verify. Stay calm, one step at a time.',
+        question: 'What should you do first when you find a Bug?',
+        options: [
+          { letter: 'A', text: 'Delete all code and rewrite immediately' },
+          { letter: 'B', text: 'Turn off the computer and restart' },
+          { letter: 'C', text: 'Analyze the error message and find the problem' },
+          { letter: 'D', text: 'Ask someone else to write it for you' }
+        ],
+        explain: 'Debugging steps: 1) Read the error message 2) Find the error line 3) Understand why it failed 4) Fix and verify.'
+      },
+      fr: {
+        concept: 'Le débogage en quatre étapes : 1) Lire le message d\'erreur → 2) Localiser la ligne en erreur → 3) Comprendre la cause → 4) Corriger et revérifier. Restez calme, une étape à la fois.',
+        question: 'Que faut-il faire en premier quand on trouve un Bug ?',
+        options: [
+          { letter: 'A', text: 'Supprimer tout le code et réécrire immédiatement' },
+          { letter: 'B', text: 'Éteindre l\'ordinateur et redémarrer' },
+          { letter: 'C', text: 'Analyser le message d\'erreur et trouver le problème' },
+          { letter: 'D', text: 'Demander à quelqu\'un d\'autre de l\'écrire' }
+        ],
+        explain: 'Étapes du débogage : 1) Lire le message d\'erreur 2) Trouver la ligne en erreur 3) Comprendre pourquoi 4) Corriger et vérifier.'
+      }
+    }
   },
   {
     module: 5,
@@ -1678,7 +2563,31 @@ var QUESTIONS = [
       { letter: 'D', text: 'return 写错了' }
     ],
     answer: 2,
-    explain: 'Python函数定义的格式是 def 函数名(参数): 末尾必须有冒号，这里漏掉了。'
+    explain: 'Python函数定义的格式是 def 函数名(参数): 末尾必须有冒号，这里漏掉了。',
+    i18n: {
+      en: {
+        concept: 'Python function definition format: def function_name(parameters): — the colon at the end is required! This is a syntax detail many beginners forget. Look carefully at the code below.',
+        question: 'What is wrong with this code?',
+        options: [
+          { letter: 'A', text: 'Wrong function name' },
+          { letter: 'B', text: 'Too many parameters' },
+          { letter: 'C', text: 'Missing colon :' },
+          { letter: 'D', text: 'return is wrong' }
+        ],
+        explain: 'Python function definition format is def function_name(parameters): — the colon at the end is required. It\'s missing here.'
+      },
+      fr: {
+        concept: 'Format de définition de fonction Python : def nom_fonction(paramètres): — les deux points à la fin sont obligatoires ! C\'est un détail de syntaxe que beaucoup de débutants oublient. Regardez attentivement le code ci-dessous.',
+        question: 'Qu\'est-ce qui ne va pas dans ce code ?',
+        options: [
+          { letter: 'A', text: 'Mauvais nom de fonction' },
+          { letter: 'B', text: 'Trop de paramètres' },
+          { letter: 'C', text: 'Il manque les deux points :' },
+          { letter: 'D', text: 'return est faux' }
+        ],
+        explain: 'Le format de définition de fonction Python est def nom_fonction(paramètres): — les deux points à la fin sont obligatoires. Ils manquent ici.'
+      }
+    }
   },
   {
     module: 5,
@@ -1693,7 +2602,31 @@ var QUESTIONS = [
       { letter: 'D', text: '想计算 1+2，却写了 1*2' }
     ],
     answer: 3,
-    explain: '想算加法却写了乘法——程序能运行（没有语法错误），但结果不对，这就是逻辑错误。语法错误会让程序跑不起来，逻辑错误会让程序给出错误答案。'
+    explain: '想算加法却写了乘法——程序能运行（没有语法错误），但结果不对，这就是逻辑错误。语法错误会让程序跑不起来，逻辑错误会让程序给出错误答案。',
+    i18n: {
+      en: {
+        concept: 'A syntax error is "writing it wrong" (missing colon, misspelled keyword) — the program can\'t run at all and reports an error. A logic error is "thinking it wrong" (wrong algorithm) — the program runs but gives the wrong result.',
+        question: 'Which of the following is an example of a "logic error"?',
+        options: [
+          { letter: 'A', text: 'Missing colon :' },
+          { letter: 'B', text: 'Misspelled print' },
+          { letter: 'C', text: 'Mismatched parentheses' },
+          { letter: 'D', text: 'Wanted to calculate 1+2, but wrote 1*2' }
+        ],
+        explain: 'Wanting addition but writing multiplication — the program runs (no syntax error), but the result is wrong. That\'s a logic error. Syntax errors prevent the program from running; logic errors make it give wrong answers.'
+      },
+      fr: {
+        concept: 'Une erreur de syntaxe est « mal écrire » (deux-points manquants, mot-clé mal orthographié) — le programme ne peut pas du tout s\'exécuter et signale une erreur. Une erreur de logique est « mal réfléchir » (mauvais algorithme) — le programme s\'exécute mais donne un mauvais résultat.',
+        question: 'Lequel des suivants est un exemple d\'« erreur de logique » ?',
+        options: [
+          { letter: 'A', text: 'Deux-points : manquants' },
+          { letter: 'B', text: 'print mal orthographié' },
+          { letter: 'C', text: 'Parenthèses non appariées' },
+          { letter: 'D', text: 'Voulait calculer 1+2, mais a écrit 1*2' }
+        ],
+        explain: 'Vouloir une addition mais écrire une multiplication — le programme s\'exécute (pas d\'erreur de syntaxe), mais le résultat est faux. C\'est une erreur de logique. Les erreurs de syntaxe empêchent le programme de s\'exécuter ; les erreurs de logique lui font donner de mauvaises réponses.'
+      }
+    }
   },
 
   // ===== 第2阶（新增30题）=====
@@ -1713,7 +2646,33 @@ var QUESTIONS = [
       { letter: 'D', text: '会报错' }
     ],
     answer: 0,
-    explain: '第1行把"小明"存入变量name，第2行 print(name) 会输出变量name里的值，也就是"小明"。注意：print 输出的是变量的值，不是变量名！'
+    explain: '第1行把"小明"存入变量name，第2行 print(name) 会输出变量name里的值，也就是"小明"。注意：print 输出的是变量的值，不是变量名！',
+    i18n: {
+      en: {
+        concept: 'Reading code is like reading a story — top to bottom, line by line. Each line executes in order, and earlier results affect later ones.',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">name</span> = <span class="str">"Alice"</span>\n<span class="fn">print</span>(name)',
+        options: [
+          { letter: 'A', text: 'Alice' },
+          { letter: 'B', text: 'name' },
+          { letter: 'C', text: 'print(name)' },
+          { letter: 'D', text: 'An error' }
+        ],
+        explain: 'Line 1 stores "Alice" in the variable name. Line 2 print(name) outputs the value of name, which is "Alice". Note: print outputs the variable\'s value, not its name!'
+      },
+      fr: {
+        concept: 'Lire du code, c\'est comme lire une histoire — de haut en bas, ligne par ligne. Chaque ligne s\'exécute dans l\'ordre, et les résultats précédents influencent les suivants.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">name</span> = <span class="str">"Alice"</span>\n<span class="fn">print</span>(name)',
+        options: [
+          { letter: 'A', text: 'Alice' },
+          { letter: 'B', text: 'name' },
+          { letter: 'C', text: 'print(name)' },
+          { letter: 'D', text: 'Une erreur' }
+        ],
+        explain: 'La ligne 1 stocke "Alice" dans la variable name. La ligne 2 print(name) affiche la valeur de name, c\'est-à-dire "Alice". Note : print affiche la valeur de la variable, pas son nom !'
+      }
+    }
   },
   {
     stage: 2,
@@ -1729,7 +2688,33 @@ var QUESTIONS = [
       { letter: 'D', text: '只输出"第一"' }
     ],
     answer: 1,
-    explain: '代码从上到下依次执行，每个 print 输出一行。所以按顺序输出三行："第一"、"第二"、"第三"。'
+    explain: '代码从上到下依次执行，每个 print 输出一行。所以按顺序输出三行："第一"、"第二"、"第三"。',
+    i18n: {
+      en: {
+        concept: 'Code executes top to bottom in order. Each print outputs a separate line, so three prints produce three lines of output.',
+        question: 'What will the code above output when run?',
+        code: '<span class="fn">print</span>(<span class="str">"First"</span>)\n<span class="fn">print</span>(<span class="str">"Second"</span>)\n<span class="fn">print</span>(<span class="str">"Third"</span>)',
+        options: [
+          { letter: 'A', text: 'Third Second First' },
+          { letter: 'B', text: 'First\\nSecond\\nThird (three lines)' },
+          { letter: 'C', text: 'FirstSecondThird (joined together)' },
+          { letter: 'D', text: 'Only outputs "First"' }
+        ],
+        explain: 'Code executes top to bottom, each print outputs one line. So three lines are printed in order: "First", "Second", "Third".'
+      },
+      fr: {
+        concept: 'Le code s\'exécute de haut en bas dans l\'ordre. Chaque print affiche une ligne distincte, donc trois prints produisent trois lignes de sortie.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="fn">print</span>(<span class="str">"Premier"</span>)\n<span class="fn">print</span>(<span class="str">"Deuxième"</span>)\n<span class="fn">print</span>(<span class="str">"Troisième"</span>)',
+        options: [
+          { letter: 'A', text: 'Troisième Deuxième Premier' },
+          { letter: 'B', text: 'Premier\\nDeuxième\\nTroisième (trois lignes)' },
+          { letter: 'C', text: 'PremierDeuxièmeTroisième (collés ensemble)' },
+          { letter: 'D', text: 'Affiche seulement "Premier"' }
+        ],
+        explain: 'Le code s\'exécute de haut en bas, chaque print affiche une ligne. Donc trois lignes sont affichées dans l\'ordre : "Premier", "Deuxième", "Troisième".'
+      }
+    }
   },
   {
     stage: 2,
@@ -1745,7 +2730,31 @@ var QUESTIONS = [
       { letter: 'D', text: '7' }
     ],
     answer: 3,
-    explain: 'x=3，y=4。print(x+y) 先计算 3+4=7，再输出 7。注意不是"34"——那是字符串拼接，而这里是数字加法。'
+    explain: 'x=3，y=4。print(x+y) 先计算 3+4=7，再输出 7。注意不是"34"——那是字符串拼接，而这里是数字加法。',
+    i18n: {
+      en: {
+        concept: 'Expressions inside print are calculated first, then the result is output. print(x + y) doesn\'t output the text "x + y" — it outputs the calculated number.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: 'x + y' },
+          { letter: 'B', text: '3 + 4' },
+          { letter: 'C', text: '34' },
+          { letter: 'D', text: '7' }
+        ],
+        explain: 'x=3, y=4. print(x+y) first calculates 3+4=7, then outputs 7. Note it\'s not "34" — that would be string concatenation; this is numeric addition.'
+      },
+      fr: {
+        concept: 'Les expressions dans print sont d\'abord calculées, puis le résultat est affiché. print(x + y) n\'affiche pas le texte "x + y" — il affiche le nombre calculé.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: 'x + y' },
+          { letter: 'B', text: '3 + 4' },
+          { letter: 'C', text: '34' },
+          { letter: 'D', text: '7' }
+        ],
+        explain: 'x=3, y=4. print(x+y) calcule d\'abord 3+4=7, puis affiche 7. Note : ce n\'est pas "34" — ce serait une concaténation de chaînes ; ici c\'est une addition numérique.'
+      }
+    }
   },
   {
     stage: 2,
@@ -1761,7 +2770,31 @@ var QUESTIONS = [
       { letter: 'D', text: '5010' }
     ],
     answer: 0,
-    explain: '第1行 score=50。第2行 score=score+10：先算右边 50+10=60，再存回 score。所以最终 score=60。常见错误是选"5010"——那是字符串拼接，这里是数字加法。'
+    explain: '第1行 score=50。第2行 score=score+10：先算右边 50+10=60，再存回 score。所以最终 score=60。常见错误是选"5010"——那是字符串拼接，这里是数字加法。',
+    i18n: {
+      en: {
+        concept: 'A variable can "update itself": score = score + 10 means "add 10 to the current value." Calculate the right side first, then assign to the left side.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '60' },
+          { letter: 'B', text: '10' },
+          { letter: 'C', text: '50' },
+          { letter: 'D', text: '5010' }
+        ],
+        explain: 'Line 1: score=50. Line 2: score=score+10 — first calculate 50+10=60 on the right, then store it back in score. So score=60. A common mistake is choosing "5010" — that\'s string concatenation; this is numeric addition.'
+      },
+      fr: {
+        concept: 'Une variable peut « se mettre à jour » : score = score + 10 signifie « ajouter 10 à la valeur actuelle ». Calculez d\'abord le côté droit, puis assignez au côté gauche.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '60' },
+          { letter: 'B', text: '10' },
+          { letter: 'C', text: '50' },
+          { letter: 'D', text: '5010' }
+        ],
+        explain: 'Ligne 1 : score=50. Ligne 2 : score=score+10 — on calcule d\'abord 50+10=60 à droite, puis on le stocke dans score. Donc score=60. Une erreur courante est de choisir "5010" — c\'est une concaténation de chaînes ; ici c\'est une addition numérique.'
+      }
+    }
   },
 
   // ----- 模块7：变量进阶（4题）-----
@@ -1779,7 +2812,31 @@ var QUESTIONS = [
       { letter: 'D', text: '会报错' }
     ],
     answer: 2,
-    explain: '第1行 a=5，第2行 b=a 所以 b=5（抄了 a 当时的值），第3行 a 变成 10——但 b 已经保存了 5，不会跟着变！所以输出 5。'
+    explain: '第1行 a=5，第2行 b=a 所以 b=5（抄了 a 当时的值），第3行 a 变成 10——但 b 已经保存了 5，不会跟着变！所以输出 5。',
+    i18n: {
+      en: {
+        concept: 'b = a copies the current value of a to b. After that, no matter how a changes, b won\'t follow — like copying notes from a book: if the book changes later, your notes don\'t auto-update.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '10' },
+          { letter: 'B', text: '15' },
+          { letter: 'C', text: '5' },
+          { letter: 'D', text: 'An error' }
+        ],
+        explain: 'Line 1: a=5. Line 2: b=a so b=5 (copied a\'s value at that time). Line 3: a becomes 10 — but b already holds 5 and won\'t change! So the output is 5.'
+      },
+      fr: {
+        concept: 'b = a copie la valeur actuelle de a dans b. Après cela, peu importe comment a change, b ne suivra pas — comme copier des notes d\'un livre : si le livre change ensuite, vos notes ne se mettent pas à jour automatiquement.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '10' },
+          { letter: 'B', text: '15' },
+          { letter: 'C', text: '5' },
+          { letter: 'D', text: 'Une erreur' }
+        ],
+        explain: 'Ligne 1 : a=5. Ligne 2 : b=a donc b=5 (a copié la valeur de a à ce moment). Ligne 3 : a devient 10 — mais b conserve déjà 5 et ne change pas ! Donc la sortie est 5.'
+      }
+    }
   },
   {
     stage: 2,
@@ -1795,7 +2852,31 @@ var QUESTIONS = [
       { letter: 'D', text: 'a * b' }
     ],
     answer: 1,
-    explain: 'a=3，b=4，c=a*b 即 3×4=12，所以输出 12。干扰项"34"是字符串拼接的结果，这里是数字乘法。'
+    explain: 'a=3，b=4，c=a*b 即 3×4=12，所以输出 12。干扰项"34"是字符串拼接的结果，这里是数字乘法。',
+    i18n: {
+      en: {
+        concept: 'Multiple variables can participate in operations together. c = a * b stores the result of multiplying a and b into c.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '7' },
+          { letter: 'B', text: '12' },
+          { letter: 'C', text: '34' },
+          { letter: 'D', text: 'a * b' }
+        ],
+        explain: 'a=3, b=4, c=a*b means 3×4=12, so the output is 12. The distractor "34" is the result of string concatenation; this is numeric multiplication.'
+      },
+      fr: {
+        concept: 'Plusieurs variables peuvent participer à des opérations ensemble. c = a * b stocke le résultat de la multiplication de a et b dans c.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '7' },
+          { letter: 'B', text: '12' },
+          { letter: 'C', text: '34' },
+          { letter: 'D', text: 'a * b' }
+        ],
+        explain: 'a=3, b=4, c=a*b signifie 3×4=12, donc la sortie est 12. La distractrice "34" est le résultat d\'une concaténation de chaînes ; ici c\'est une multiplication numérique.'
+      }
+    }
   },
   {
     stage: 2,
@@ -1811,7 +2892,31 @@ var QUESTIONS = [
       { letter: 'D', text: '2 2' }
     ],
     answer: 0,
-    explain: '这是经典的变量交换！temp 先保存 a 的值(1)，然后 a 拿走 b 的值(2)，最后 b 从 temp 拿回原来的1。所以 a=2, b=1，输出"2 1"。'
+    explain: '这是经典的变量交换！temp 先保存 a 的值(1)，然后 a 拿走 b 的值(2)，最后 b 从 temp 拿回原来的1。所以 a=2, b=1，输出"2 1"。',
+    i18n: {
+      en: {
+        concept: 'Swapping two variables requires a "temporary helper" temp. Like swapping two cups of liquid (one cola, one juice) — you need an empty cup to pour into first.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '2 1' },
+          { letter: 'B', text: '1 2' },
+          { letter: 'C', text: '1 1' },
+          { letter: 'D', text: '2 2' }
+        ],
+        explain: 'This is the classic variable swap! temp first saves a\'s value (1), then a takes b\'s value (2), and finally b takes back the original 1 from temp. So a=2, b=1, output is "2 1".'
+      },
+      fr: {
+        concept: 'Échanger deux variables nécessite un « assistant temporaire » temp. Comme échanger deux verres de liquide (un cola, un jus) — il faut d\'abord un verre vide pour verser.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '2 1' },
+          { letter: 'B', text: '1 2' },
+          { letter: 'C', text: '1 1' },
+          { letter: 'D', text: '2 2' }
+        ],
+        explain: 'C\'est l\'échange classique de variables ! temp sauvegarde d\'abord la valeur de a (1), puis a prend la valeur de b (2), et enfin b reprend le 1 original depuis temp. Donc a=2, b=1, la sortie est "2 1".'
+      }
+    }
   },
   {
     stage: 2,
@@ -1827,7 +2932,31 @@ var QUESTIONS = [
       { letter: 'D', text: '111' }
     ],
     answer: 1,
-    explain: 'n 从0开始，每次 n=n+1 让 n 增加1。加了3次：0+1=1，1+1=2，2+1=3。所以输出3。不是"111"——那是字符串拼接。'
+    explain: 'n 从0开始，每次 n=n+1 让 n 增加1。加了3次：0+1=1，1+1=2，2+1=3。所以输出3。不是"111"——那是字符串拼接。',
+    i18n: {
+      en: {
+        concept: 'n = n + 1 is like a pedometer, adding 1 with each step. Executing it 3 times goes from 0 to 3. This "add 1 each time" pattern is very common in counting.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '0' },
+          { letter: 'B', text: '3' },
+          { letter: 'C', text: '1' },
+          { letter: 'D', text: '111' }
+        ],
+        explain: 'n starts at 0, each n=n+1 increases n by 1. After 3 additions: 0+1=1, 1+1=2, 2+1=3. So the output is 3. Not "111" — that\'s string concatenation.'
+      },
+      fr: {
+        concept: 'n = n + 1 est comme un podomètre, ajoutant 1 à chaque pas. L\'exécuter 3 fois passe de 0 à 3. Ce motif « ajouter 1 à chaque fois » est très courant pour compter.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '0' },
+          { letter: 'B', text: '3' },
+          { letter: 'C', text: '1' },
+          { letter: 'D', text: '111' }
+        ],
+        explain: 'n commence à 0, chaque n=n+1 augmente n de 1. Après 3 additions : 0+1=1, 1+1=2, 2+1=3. Donc la sortie est 3. Pas "111" — c\'est une concaténation de chaînes.'
+      }
+    }
   },
 
   // ----- 模块8：条件进阶（5题）-----
@@ -1845,7 +2974,33 @@ var QUESTIONS = [
       { letter: 'D', text: '未成年' }
     ],
     answer: 3,
-    explain: 'age=10，10>=18 为假(False)，所以执行 else 里的代码，输出"未成年"。if 和 else 只会执行其中一个，不会都执行。'
+    explain: 'age=10，10>=18 为假(False)，所以执行 else 里的代码，输出"未成年"。if 和 else 只会执行其中一个，不会都执行。',
+    i18n: {
+      en: {
+        concept: 'if-else is like a fork in the road: if the condition is true, take the if branch; if false, take the else branch. You must choose one. When reading code, first determine if the condition is true or false, then decide which path to follow.',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">age</span> = <span class="num">10</span>\n<span class="kw">if</span> age &gt;= <span class="num">18</span>:\n    <span class="fn">print</span>(<span class="str">"Adult"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Minor"</span>)',
+        options: [
+          { letter: 'A', text: 'Adult' },
+          { letter: 'B', text: 'Outputs nothing' },
+          { letter: 'C', text: 'Adult Minor' },
+          { letter: 'D', text: 'Minor' }
+        ],
+        explain: 'age=10, 10>=18 is false (False), so the else branch executes, outputting "Minor". Only one of if or else will execute, never both.'
+      },
+      fr: {
+        concept: 'if-else est comme un embranchement : si la condition est vraie, prenez la branche if ; si fausse, prenez la branche else. Vous devez en choisir une. En lisant le code, déterminez d\'abord si la condition est vraie ou fausse, puis décidez quel chemin suivre.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">age</span> = <span class="num">10</span>\n<span class="kw">if</span> age &gt;= <span class="num">18</span>:\n    <span class="fn">print</span>(<span class="str">"Adulte"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Mineur"</span>)',
+        options: [
+          { letter: 'A', text: 'Adulte' },
+          { letter: 'B', text: 'N\'affiche rien' },
+          { letter: 'C', text: 'Adulte Mineur' },
+          { letter: 'D', text: 'Mineur' }
+        ],
+        explain: 'age=10, 10>=18 est faux (False), donc la branche else s\'exécute, affichant "Mineur". Seul un des deux entre if ou else s\'exécute, jamais les deux.'
+      }
+    }
   },
   {
     stage: 2,
@@ -1861,7 +3016,35 @@ var QUESTIONS = [
       { letter: 'D', text: '优秀 良好 加油' }
     ],
     answer: 2,
-    explain: 'score=85。先检查 >=90？不满足。再检查 >=80？满足！输出"良好"，后面的 else 不再执行。elif 从上到下找到第一个满足的就停止。'
+    explain: 'score=85。先检查 >=90？不满足。再检查 >=80？满足！输出"良好"，后面的 else 不再执行。elif 从上到下找到第一个满足的就停止。',
+    i18n: {
+      en: {
+        concept: 'elif is like "else if". It checks from top to bottom, and executes the first condition that is satisfied, skipping the rest. Like grading an exam: first check if it\'s ≥90, if not, check if it\'s ≥80...',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">score</span> = <span class="num">85</span>\n<span class="kw">if</span> score &gt;= <span class="num">90</span>:\n    <span class="fn">print</span>(<span class="str">"Excellent"</span>)\n<span class="kw">elif</span> score &gt;= <span class="num">80</span>:\n    <span class="fn">print</span>(<span class="str">"Good"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Keep going"</span>)',
+        visual: { type: 'condition', params: { cond: 'elif chain', takePath: 'middle' } },
+        options: [
+          { letter: 'A', text: 'Excellent' },
+          { letter: 'B', text: 'Keep going' },
+          { letter: 'C', text: 'Good' },
+          { letter: 'D', text: 'Excellent Good Keep going' }
+        ],
+        explain: 'score=85. First check >=90? No. Then check >=80? Yes! Output "Good", and the else after it won\'t execute. elif finds the first satisfied condition from top to bottom and stops.'
+      },
+      fr: {
+        concept: 'elif est comme « sinon si ». Il vérifie de haut en bas, et exécute la première condition satisfaite, en ignorant le reste. Comme noter un examen : d\'abord vérifier si c\'est ≥90, sinon vérifier si c\'est ≥80...',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">score</span> = <span class="num">85</span>\n<span class="kw">if</span> score &gt;= <span class="num">90</span>:\n    <span class="fn">print</span>(<span class="str">"Excellent"</span>)\n<span class="kw">elif</span> score &gt;= <span class="num">80</span>:\n    <span class="fn">print</span>(<span class="str">"Bien"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Continue"</span>)',
+        visual: { type: 'condition', params: { cond: 'chaîne elif', takePath: 'middle' } },
+        options: [
+          { letter: 'A', text: 'Excellent' },
+          { letter: 'B', text: 'Continue' },
+          { letter: 'C', text: 'Bien' },
+          { letter: 'D', text: 'Excellent Bien Continue' }
+        ],
+        explain: 'score=85. D\'abord >=90 ? Non. Ensuite >=80 ? Oui ! Affiche "Bien", et le else suivant ne s\'exécute pas. elif trouve la première condition satisfaite de haut en bas et s\'arrête.'
+      }
+    }
   },
   {
     stage: 2,
@@ -1877,7 +3060,35 @@ var QUESTIONS = [
       { letter: 'D', text: '什么都不输出' }
     ],
     answer: 2,
-    explain: 'x=7。先过第一关 x>5？7>5 为真，进入外层 if。再过第二关 x<10？7<10 为真，输出"在5和10之间"。'
+    explain: 'x=7。先过第一关 x>5？7>5 为真，进入外层 if。再过第二关 x<10？7<10 为真，输出"在5和10之间"。',
+    i18n: {
+      en: {
+        concept: 'An if can be nested inside another if, like "a big box containing a small box." First pass the first gate (outer if), then pass the second gate (inner if) — only when both are satisfied does the innermost code execute.',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">x</span> = <span class="num">7</span>\n<span class="kw">if</span> x &gt; <span class="num">5</span>:\n    <span class="kw">if</span> x &lt; <span class="num">10</span>:\n        <span class="fn">print</span>(<span class="str">"Between 5 and 10"</span>)\n    <span class="kw">else</span>:\n        <span class="fn">print</span>(<span class="str">"&gt;= 10"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"&lt;= 5"</span>)',
+        visual: { type: 'condition', params: { cond: 'nested if', takePath: 'left' } },
+        options: [
+          { letter: 'A', text: '&lt;= 5' },
+          { letter: 'B', text: '&gt;= 10' },
+          { letter: 'C', text: 'Between 5 and 10' },
+          { letter: 'D', text: 'Outputs nothing' }
+        ],
+        explain: 'x=7. First gate: x>5? 7>5 is true, enter the outer if. Second gate: x<10? 7<10 is true, output "Between 5 and 10".'
+      },
+      fr: {
+        concept: 'Un if peut être imbriqué dans un autre if, comme « une grande boîte contenant une petite boîte ». D\'abord franchir la première porte (if externe), puis la deuxième (if interne) — ce n\'est que lorsque les deux sont satisfaits que le code le plus interne s\'exécute.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">x</span> = <span class="num">7</span>\n<span class="kw">if</span> x &gt; <span class="num">5</span>:\n    <span class="kw">if</span> x &lt; <span class="num">10</span>:\n        <span class="fn">print</span>(<span class="str">"Entre 5 et 10"</span>)\n    <span class="kw">else</span>:\n        <span class="fn">print</span>(<span class="str">"&gt;= 10"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"&lt;= 5"</span>)',
+        visual: { type: 'condition', params: { cond: 'if imbriqué', takePath: 'left' } },
+        options: [
+          { letter: 'A', text: '&lt;= 5' },
+          { letter: 'B', text: '&gt;= 10' },
+          { letter: 'C', text: 'Entre 5 et 10' },
+          { letter: 'D', text: 'N\'affiche rien' }
+        ],
+        explain: 'x=7. Première porte : x>5 ? 7>5 est vrai, on entre dans le if externe. Deuxième porte : x<10 ? 7<10 est vrai, affiche "Entre 5 et 10".'
+      }
+    }
   },
   {
     stage: 2,
@@ -1893,7 +3104,33 @@ var QUESTIONS = [
       { letter: 'D', text: '什么都不输出' }
     ],
     answer: 1,
-    explain: 'and 要求两个条件都为真。has_ticket=True ✓，age=12>=12 ✓，两个都满足，所以输出"可以入场"。如果任意一个不满足，就会走 else。'
+    explain: 'and 要求两个条件都为真。has_ticket=True ✓，age=12>=12 ✓，两个都满足，所以输出"可以入场"。如果任意一个不满足，就会走 else。',
+    i18n: {
+      en: {
+        concept: 'and means "both" — both conditions must be satisfied to be true. Like "you need a ticket AND be at least 12 to watch this movie" — missing either one won\'t work.',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">has_ticket</span> = <span class="kw">True</span>\n<span class="kw">age</span> = <span class="num">12</span>\n<span class="kw">if</span> has_ticket <span class="kw">and</span> age &gt;= <span class="num">12</span>:\n    <span class="fn">print</span>(<span class="str">"Can enter"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Cannot enter"</span>)',
+        options: [
+          { letter: 'A', text: 'Cannot enter' },
+          { letter: 'B', text: 'Can enter' },
+          { letter: 'C', text: 'An error' },
+          { letter: 'D', text: 'Outputs nothing' }
+        ],
+        explain: 'and requires both conditions to be true. has_ticket=True ✓, age=12>=12 ✓, both satisfied, so output "Can enter". If either one fails, it goes to else.'
+      },
+      fr: {
+        concept: 'and signifie « et » — les deux conditions doivent être satisfaites pour être vraies. Comme « il faut un billet ET avoir au moins 12 ans pour regarder ce film » — il en manque un seul et ça ne marche pas.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">has_ticket</span> = <span class="kw">True</span>\n<span class="kw">age</span> = <span class="num">12</span>\n<span class="kw">if</span> has_ticket <span class="kw">and</span> age &gt;= <span class="num">12</span>:\n    <span class="fn">print</span>(<span class="str">"Peut entrer"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Ne peut pas entrer"</span>)',
+        options: [
+          { letter: 'A', text: 'Ne peut pas entrer' },
+          { letter: 'B', text: 'Peut entrer' },
+          { letter: 'C', text: 'Une erreur' },
+          { letter: 'D', text: 'N\'affiche rien' }
+        ],
+        explain: 'and exige que les deux conditions soient vraies. has_ticket=True ✓, age=12>=12 ✓, les deux sont satisfaites, donc affiche "Peut entrer". Si l\'une échoue, on passe au else.'
+      }
+    }
   },
   {
     stage: 2,
@@ -1909,7 +3146,33 @@ var QUESTIONS = [
       { letter: 'D', text: '会报错' }
     ],
     answer: 0,
-    explain: 'or 只要有一个为真就为真。is_weekend=False ✗，但 is_holiday=True ✓，有一个满足就行，所以输出"不用上学"。'
+    explain: 'or 只要有一个为真就为真。is_weekend=False ✗，但 is_holiday=True ✓，有一个满足就行，所以输出"不用上学"。',
+    i18n: {
+      en: {
+        concept: 'or means "either" — as long as one condition is satisfied, it\'s true. Like "no school on weekends OR holidays" — satisfying either one is enough.',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">is_weekend</span> = <span class="kw">False</span>\n<span class="kw">is_holiday</span> = <span class="kw">True</span>\n<span class="kw">if</span> is_weekend <span class="kw">or</span> is_holiday:\n    <span class="fn">print</span>(<span class="str">"No school"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Go to school"</span>)',
+        options: [
+          { letter: 'A', text: 'No school' },
+          { letter: 'B', text: 'Go to school' },
+          { letter: 'C', text: 'No school Go to school' },
+          { letter: 'D', text: 'An error' }
+        ],
+        explain: 'or is true as long as one is true. is_weekend=False ✗, but is_holiday=True ✓, one is enough, so output "No school".'
+      },
+      fr: {
+        concept: 'or signifie « ou » — tant qu\'une condition est satisfaite, c\'est vrai. Comme « pas d\'école le week-end OU pendant les vacances » — satisfaire l\'un suffit.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">is_weekend</span> = <span class="kw">False</span>\n<span class="kw">is_holiday</span> = <span class="kw">True</span>\n<span class="kw">if</span> is_weekend <span class="kw">or</span> is_holiday:\n    <span class="fn">print</span>(<span class="str">"Pas d\'école"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Va à l\'école"</span>)',
+        options: [
+          { letter: 'A', text: 'Pas d\'école' },
+          { letter: 'B', text: 'Va à l\'école' },
+          { letter: 'C', text: 'Pas d\'école Va à l\'école' },
+          { letter: 'D', text: 'Une erreur' }
+        ],
+        explain: 'or est vrai dès qu\'un seul est vrai. is_weekend=False ✗, mais is_holiday=True ✓, un seul suffit, donc affiche "Pas d\'école".'
+      }
+    }
   },
 
   // ----- 模块9：循环进阶（5题）-----
@@ -1927,7 +3190,31 @@ var QUESTIONS = [
       { letter: 'D', text: '0 1 2' }
     ],
     answer: 3,
-    explain: 'range(3) 生成 0、1、2 三个数（从0开始，不包含3）。循环3次，i 依次为 0、1、2，所以输出 0、1、2（分三行）。'
+    explain: 'range(3) 生成 0、1、2 三个数（从0开始，不包含3）。循环3次，i 依次为 0、1、2，所以输出 0、1、2（分三行）。',
+    i18n: {
+      en: {
+        concept: 'for i in range(3) makes i take 0, 1, 2 in turn (starting from 0, not including 3). The print(i) in the loop body executes 3 times, printing the current value of i each time.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '1 2 3' },
+          { letter: 'B', text: '3' },
+          { letter: 'C', text: '0 1 2 3' },
+          { letter: 'D', text: '0 1 2' }
+        ],
+        explain: 'range(3) generates 0, 1, 2 (starting from 0, not including 3). Loops 3 times, i takes 0, 1, 2 in turn, so output is 0, 1, 2 (three lines).'
+      },
+      fr: {
+        concept: 'for i in range(3) fait prendre à i les valeurs 0, 1, 2 tour à tour (en partant de 0, sans inclure 3). Le print(i) dans le corps de la boucle s\'exécute 3 fois, affichant la valeur actuelle de i à chaque fois.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '1 2 3' },
+          { letter: 'B', text: '3' },
+          { letter: 'C', text: '0 1 2 3' },
+          { letter: 'D', text: '0 1 2' }
+        ],
+        explain: 'range(3) génère 0, 1, 2 (en partant de 0, sans inclure 3). Boucle 3 fois, i prend 0, 1, 2 tour à tour, donc la sortie est 0, 1, 2 (trois lignes).'
+      }
+    }
   },
   {
     stage: 2,
@@ -1943,7 +3230,31 @@ var QUESTIONS = [
       { letter: 'D', text: '2 3 4' }
     ],
     answer: 3,
-    explain: 'range(2, 5) 从2开始到5结束（不包含5），生成 2、3、4。所以输出 2、3、4。记住口诀："包含开头，不包含结尾"。'
+    explain: 'range(2, 5) 从2开始到5结束（不包含5），生成 2、3、4。所以输出 2、3、4。记住口诀："包含开头，不包含结尾"。',
+    i18n: {
+      en: {
+        concept: 'range(2, 5) starts from 2 and goes up to 5, but does NOT include 5! It generates 2, 3, 4. Like "read from page 2 to before page 5" — stop at page 4.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '2 3 4 5' },
+          { letter: 'B', text: '0 1 2 3 4' },
+          { letter: 'C', text: '2 3' },
+          { letter: 'D', text: '2 3 4' }
+        ],
+        explain: 'range(2, 5) starts from 2 to 5 (not including 5), generating 2, 3, 4. So the output is 2, 3, 4. Remember: "includes the start, excludes the end".'
+      },
+      fr: {
+        concept: 'range(2, 5) commence à 2 et va jusqu\'à 5, mais N\'INCLUT PAS 5 ! Il génère 2, 3, 4. Comme « lire de la page 2 à avant la page 5 » — arrêtez à la page 4.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '2 3 4 5' },
+          { letter: 'B', text: '0 1 2 3 4' },
+          { letter: 'C', text: '2 3' },
+          { letter: 'D', text: '2 3 4' }
+        ],
+        explain: 'range(2, 5) commence à 2 jusqu\'à 5 (sans inclure 5), générant 2, 3, 4. Donc la sortie est 2, 3, 4. Retenez : « inclut le début, exclut la fin ».'
+      }
+    }
   },
   {
     stage: 2,
@@ -1959,7 +3270,31 @@ var QUESTIONS = [
       { letter: 'D', text: '0' }
     ],
     answer: 2,
-    explain: 'total 从0开始。range(1,4) 生成 1、2、3。i=1时 total=0+1=1；i=2时 total=1+2=3；i=3时 total=3+3=6。所以输出6。'
+    explain: 'total 从0开始。range(1,4) 生成 1、2、3。i=1时 total=0+1=1；i=2时 total=1+2=3；i=3时 total=3+3=6。所以输出6。',
+    i18n: {
+      en: {
+        concept: 'An accumulator is one of the most common patterns in programming: first use a variable to store 0, then keep adding to it in a loop. Like a piggy bank — each loop iteration drops in a coin.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '3' },
+          { letter: 'B', text: '10' },
+          { letter: 'C', text: '6' },
+          { letter: 'D', text: '0' }
+        ],
+        explain: 'total starts at 0. range(1,4) generates 1, 2, 3. i=1: total=0+1=1; i=2: total=1+2=3; i=3: total=3+3=6. So the output is 6.'
+      },
+      fr: {
+        concept: 'Un accumulateur est l\'un des motifs les plus courants en programmation : d\'abord utiliser une variable pour stocker 0, puis continuer à ajouter dans une boucle. Comme une tirelire — chaque itération de boucle y dépose une pièce.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '3' },
+          { letter: 'B', text: '10' },
+          { letter: 'C', text: '6' },
+          { letter: 'D', text: '0' }
+        ],
+        explain: 'total commence à 0. range(1,4) génère 1, 2, 3. i=1 : total=0+1=1 ; i=2 : total=1+2=3 ; i=3 : total=3+3=6. Donc la sortie est 6.'
+      }
+    }
   },
   {
     stage: 2,
@@ -1975,7 +3310,31 @@ var QUESTIONS = [
       { letter: 'D', text: '2 3 4' }
     ],
     answer: 1,
-    explain: 'i 依次取 0、1、2、3、4。每次先判断 i>2：0>2✗ 1>2✗ 2>2✗ 3>2✓打印3 4>2✓打印4。所以只输出3和4。'
+    explain: 'i 依次取 0、1、2、3、4。每次先判断 i>2：0>2✗ 1>2✗ 2>2✗ 3>2✓打印3 4>2✓打印4。所以只输出3和4。',
+    i18n: {
+      en: {
+        concept: 'You can put an if inside a loop, like "count from 1 to 10, only say the even numbers." Each loop iteration first checks the condition, and only prints if it\'s satisfied.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '0 1 2 3 4' },
+          { letter: 'B', text: '3 4' },
+          { letter: 'C', text: '0 1 2' },
+          { letter: 'D', text: '2 3 4' }
+        ],
+        explain: 'i takes 0, 1, 2, 3, 4 in turn. Each time first checks i>2: 0>2✗ 1>2✗ 2>2✗ 3>2✓ prints 3, 4>2✓ prints 4. So only 3 and 4 are output.'
+      },
+      fr: {
+        concept: 'On peut mettre un if dans une boucle, comme « compter de 1 à 10, seulement dire les nombres pairs ». Chaque itération de boucle vérifie d\'abord la condition, et n\'affiche que si elle est satisfaite.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '0 1 2 3 4' },
+          { letter: 'B', text: '3 4' },
+          { letter: 'C', text: '0 1 2' },
+          { letter: 'D', text: '2 3 4' }
+        ],
+        explain: 'i prend 0, 1, 2, 3, 4 tour à tour. Chaque fois vérifie d\'abord i>2 : 0>2✗ 1>2✗ 2>2✗ 3>2✓ affiche 3, 4>2✓ affiche 4. Donc seuls 3 et 4 sont affichés.'
+      }
+    }
   },
   {
     stage: 2,
@@ -1991,7 +3350,33 @@ var QUESTIONS = [
       { letter: 'D', text: '无限次' }
     ],
     answer: 0,
-    explain: 'count=0：0<3✓ 打印"嗨"，count变1。count=1：1<3✓ 打印，count变2。count=2：2<3✓ 打印，count变3。count=3：3<3✗ 停止。共打印3次。'
+    explain: 'count=0：0<3✓ 打印"嗨"，count变1。count=1：1<3✓ 打印，count变2。count=2：2<3✓ 打印，count变3。count=3：3<3✗ 停止。共打印3次。',
+    i18n: {
+      en: {
+        concept: 'A while loop keeps executing as long as the condition is true. Each loop body must gradually make the condition false, otherwise it becomes an infinite loop. Here count increases by 1 each time, and stops satisfying <3 when it reaches 3.',
+        question: 'How many times will "Hi" be printed?',
+        code: '<span class="kw">count</span> = <span class="num">0</span>\n<span class="kw">while</span> count &lt; <span class="num">3</span>:\n    <span class="fn">print</span>(<span class="str">"Hi"</span>)\n    count = count + <span class="num">1</span>',
+        options: [
+          { letter: 'A', text: '3 times' },
+          { letter: 'B', text: '2 times' },
+          { letter: 'C', text: '1 time' },
+          { letter: 'D', text: 'Infinitely' }
+        ],
+        explain: 'count=0: 0<3✓ prints "Hi", count becomes 1. count=1: 1<3✓ prints, count becomes 2. count=2: 2<3✓ prints, count becomes 3. count=3: 3<3✗ stops. Total 3 prints.'
+      },
+      fr: {
+        concept: 'Une boucle while continue de s\'exécuter tant que la condition est vraie. Le corps de la boucle doit rendre la condition progressivement fausse, sinon cela devient une boucle infinie. Ici count augmente de 1 à chaque fois, et cesse de satisfaire <3 lorsqu\'il atteint 3.',
+        question: 'Combien de fois "Salut" sera-t-il affiché ?',
+        code: '<span class="kw">count</span> = <span class="num">0</span>\n<span class="kw">while</span> count &lt; <span class="num">3</span>:\n    <span class="fn">print</span>(<span class="str">"Salut"</span>)\n    count = count + <span class="num">1</span>',
+        options: [
+          { letter: 'A', text: '3 fois' },
+          { letter: 'B', text: '2 fois' },
+          { letter: 'C', text: '1 fois' },
+          { letter: 'D', text: 'À l\'infini' }
+        ],
+        explain: 'count=0 : 0<3✓ affiche "Salut", count devient 1. count=1 : 1<3✓ affiche, count devient 2. count=2 : 2<3✓ affiche, count devient 3. count=3 : 3<3✗ s\'arrête. Total 3 affichages.'
+      }
+    }
   },
 
   // ----- 模块10：函数进阶（4题）-----
@@ -2009,7 +3394,31 @@ var QUESTIONS = [
       { letter: 'D', text: '35' }
     ],
     answer: 1,
-    explain: '调用 add(3, 5)，a=3, b=5，函数返回 3+5=8。result 接住返回值8。print(result) 输出8。不是"35"——那是字符串拼接。'
+    explain: '调用 add(3, 5)，a=3, b=5，函数返回 3+5=8。result 接住返回值8。print(result) 输出8。不是"35"——那是字符串拼接。',
+    i18n: {
+      en: {
+        concept: 'When calling a function, parameters are passed into the function. add(3, 5) gives 3 to a and 5 to b; the function calculates a+b=8 and returns it. The caller uses result to capture the return value.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '3' },
+          { letter: 'B', text: '8' },
+          { letter: 'C', text: '5' },
+          { letter: 'D', text: '35' }
+        ],
+        explain: 'Call add(3, 5), a=3, b=5, the function returns 3+5=8. result captures the return value 8. print(result) outputs 8. Not "35" — that\'s string concatenation.'
+      },
+      fr: {
+        concept: 'Lors de l\'appel d\'une fonction, les paramètres sont passés dans la fonction. add(3, 5) donne 3 à a et 5 à b ; la fonction calcule a+b=8 et le renvoie. L\'appelant utilise result pour capturer la valeur de retour.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '3' },
+          { letter: 'B', text: '8' },
+          { letter: 'C', text: '5' },
+          { letter: 'D', text: '35' }
+        ],
+        explain: 'Appel add(3, 5), a=3, b=5, la fonction renvoie 3+5=8. result capture la valeur de retour 8. print(result) affiche 8. Pas "35" — c\'est une concaténation de chaînes.'
+      }
+    }
   },
   {
     stage: 2,
@@ -2025,7 +3434,35 @@ var QUESTIONS = [
       { letter: 'D', text: '小明12' }
     ],
     answer: 3,
-    explain: '调用 greet("小明", 12)，name="小明"，age=12。str(12) 把数字变文字"12"，"小明"+"12"拼接成"小明12"。'
+    explain: '调用 greet("小明", 12)，name="小明"，age=12。str(12) 把数字变文字"12"，"小明"+"12"拼接成"小明12"。',
+    i18n: {
+      en: {
+        concept: 'A function can have multiple parameters, matched in order. name is the 1st parameter, age is the 2nd. str(12) converts the number 12 to the text "12", so it can be concatenated with "Alice".',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">def</span> <span class="fn">greet</span>(name, age):\n    <span class="kw">return</span> name + <span class="fn">str</span>(age)\n\n<span class="fn">print</span>(<span class="fn">greet</span>(<span class="str">"Alice"</span>, <span class="num">12</span>))',
+        visual: { type: 'function', params: { input: '"Alice", 12', output: '"Alice12"' } },
+        options: [
+          { letter: 'A', text: 'Alice' },
+          { letter: 'B', text: '12' },
+          { letter: 'C', text: 'nameage' },
+          { letter: 'D', text: 'Alice12' }
+        ],
+        explain: 'Call greet("Alice", 12), name="Alice", age=12. str(12) converts the number to text "12", "Alice"+"12" concatenates to "Alice12".'
+      },
+      fr: {
+        concept: 'Une fonction peut avoir plusieurs paramètres, correspondant dans l\'ordre. name est le 1er paramètre, age le 2e. str(12) convertit le nombre 12 en texte "12", pour pouvoir le concaténer avec "Alice".',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">def</span> <span class="fn">greet</span>(name, age):\n    <span class="kw">return</span> name + <span class="fn">str</span>(age)\n\n<span class="fn">print</span>(<span class="fn">greet</span>(<span class="str">"Alice"</span>, <span class="num">12</span>))',
+        visual: { type: 'function', params: { input: '"Alice", 12', output: '"Alice12"' } },
+        options: [
+          { letter: 'A', text: 'Alice' },
+          { letter: 'B', text: '12' },
+          { letter: 'C', text: 'nameage' },
+          { letter: 'D', text: 'Alice12' }
+        ],
+        explain: 'Appel greet("Alice", 12), name="Alice", age=12. str(12) convertit le nombre en texte "12", "Alice"+"12" se concatène en "Alice12".'
+      }
+    }
   },
   {
     stage: 2,
@@ -2041,7 +3478,31 @@ var QUESTIONS = [
       { letter: 'D', text: '3' }
     ],
     answer: 2,
-    explain: 'double(3) 返回 3×2=6，x=6。double(x) 即 double(6) 返回 6×2=12，y=12。所以输出12。函数的结果可以继续传给下一个函数！'
+    explain: 'double(3) 返回 3×2=6，x=6。double(x) 即 double(6) 返回 6×2=12，y=12。所以输出12。函数的结果可以继续传给下一个函数！',
+    i18n: {
+      en: {
+        concept: 'A function\'s return value can serve as input to another function, like a factory assembly line: the first factory\'s product is sent to the second factory for further processing.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '6' },
+          { letter: 'B', text: '4' },
+          { letter: 'C', text: '12' },
+          { letter: 'D', text: '3' }
+        ],
+        explain: 'double(3) returns 3×2=6, x=6. double(x) i.e. double(6) returns 6×2=12, y=12. So the output is 12. A function\'s result can be passed on to the next function!'
+      },
+      fr: {
+        concept: 'La valeur de retour d\'une fonction peut servir d\'entrée à une autre fonction, comme une chaîne de montage d\'usine : le produit de la première usine est envoyé à la deuxième pour un traitement ultérieur.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '6' },
+          { letter: 'B', text: '4' },
+          { letter: 'C', text: '12' },
+          { letter: 'D', text: '3' }
+        ],
+        explain: 'double(3) renvoie 3×2=6, x=6. double(x) c\'est-à-dire double(6) renvoie 6×2=12, y=12. Donc la sortie est 12. Le résultat d\'une fonction peut être transmis à la fonction suivante !'
+      }
+    }
   },
   {
     stage: 2,
@@ -2057,7 +3518,33 @@ var QUESTIONS = [
       { letter: 'D', text: '会报错' }
     ],
     answer: 0,
-    explain: '调用 say_hi() 先执行函数内的 print("你好")，输出"你好"。但函数没有 return，所以返回 None。result=None，print(result) 输出 None。总共两行："你好"和"None"。'
+    explain: '调用 say_hi() 先执行函数内的 print("你好")，输出"你好"。但函数没有 return，所以返回 None。result=None，print(result) 输出 None。总共两行："你好"和"None"。',
+    i18n: {
+      en: {
+        concept: 'print "displays on the screen", while return "hands the result to the caller." A function without return returns None (empty value). This is the concept beginners confuse most easily!',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">def</span> <span class="fn">say_hi</span>():\n    <span class="fn">print</span>(<span class="str">"Hello"</span>)\n\nresult = <span class="fn">say_hi</span>()\n<span class="fn">print</span>(result)',
+        options: [
+          { letter: 'A', text: 'Hello\\nNone (two lines)' },
+          { letter: 'B', text: 'Hello' },
+          { letter: 'C', text: 'None' },
+          { letter: 'D', text: 'An error' }
+        ],
+        explain: 'Calling say_hi() first executes print("Hello") inside the function, outputting "Hello". But the function has no return, so it returns None. result=None, print(result) outputs None. Total two lines: "Hello" and "None".'
+      },
+      fr: {
+        concept: 'print « affiche à l\'écran », tandis que return « remet le résultat à l\'appelant ». Une fonction sans return renvoie None (valeur vide). C\'est le concept que les débutants confondent le plus facilement !',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">def</span> <span class="fn">say_hi</span>():\n    <span class="fn">print</span>(<span class="str">"Bonjour"</span>)\n\nresult = <span class="fn">say_hi</span>()\n<span class="fn">print</span>(result)',
+        options: [
+          { letter: 'A', text: 'Bonjour\\nNone (deux lignes)' },
+          { letter: 'B', text: 'Bonjour' },
+          { letter: 'C', text: 'None' },
+          { letter: 'D', text: 'Une erreur' }
+        ],
+        explain: 'L\'appel à say_hi() exécute d\'abord print("Bonjour") dans la fonction, affichant "Bonjour". Mais la fonction n\'a pas de return, donc elle renvoie None. result=None, print(result) affiche None. Total deux lignes : "Bonjour" et "None".'
+      }
+    }
   },
 
   // ----- 模块11：列表入门（4题）-----
@@ -2075,7 +3562,35 @@ var QUESTIONS = [
       { letter: 'D', text: '会报错' }
     ],
     answer: 0,
-    explain: 'print 输出整个列表时，会显示完整的方括号和引号格式。所以输出 [\'苹果\', \'香蕉\', \'橘子\']。'
+    explain: 'print 输出整个列表时，会显示完整的方括号和引号格式。所以输出 [\'苹果\', \'香蕉\', \'橘子\']。',
+    i18n: {
+      en: {
+        concept: 'A list is like a shopping list — use square brackets [] to put multiple pieces of data in order, separated by commas. When print outputs the entire list, it includes the brackets and quotes.',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">fruits</span> = [<span class="str">"apple"</span>, <span class="str">"banana"</span>, <span class="str">"orange"</span>]\n<span class="fn">print</span>(fruits)',
+        visual: { type: 'list', params: { items: ['apple', 'banana', 'orange'] } },
+        options: [
+          { letter: 'A', text: "[\'apple\', \'banana\', \'orange\']" },
+          { letter: 'B', text: 'apple banana orange' },
+          { letter: 'C', text: 'apple' },
+          { letter: 'D', text: 'An error' }
+        ],
+        explain: 'When print outputs an entire list, it shows the complete bracket and quote format. So it outputs [\'apple\', \'banana\', \'orange\'].'
+      },
+      fr: {
+        concept: 'Une liste est comme une liste de courses — utilisez des crochets [] pour placer plusieurs données dans l\'ordre, séparées par des virgules. Quand print affiche toute la liste, elle inclut les crochets et les guillemets.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">fruits</span> = [<span class="str">"pomme"</span>, <span class="str">"banane"</span>, <span class="str">"orange"</span>]\n<span class="fn">print</span>(fruits)',
+        visual: { type: 'list', params: { items: ['pomme', 'banane', 'orange'] } },
+        options: [
+          { letter: 'A', text: "[\'pomme\', \'banane\', \'orange\']" },
+          { letter: 'B', text: 'pomme banane orange' },
+          { letter: 'C', text: 'pomme' },
+          { letter: 'D', text: 'Une erreur' }
+        ],
+        explain: 'Quand print affiche toute une liste, il montre le format complet avec crochets et guillemets. Donc il affiche [\'pomme\', \'banane\', \'orange\'].'
+      }
+    }
   },
   {
     stage: 2,
@@ -2091,7 +3606,35 @@ var QUESTIONS = [
       { letter: 'D', text: '1' }
     ],
     answer: 2,
-    explain: '列表索引从0开始！colors[0]="红"，colors[1]="黄"，colors[2]="蓝"。所以 colors[1] 输出"黄"。这是初学者最常犯的错——别忘了从0开始数！'
+    explain: '列表索引从0开始！colors[0]="红"，colors[1]="黄"，colors[2]="蓝"。所以 colors[1] 输出"黄"。这是初学者最常犯的错——别忘了从0开始数！',
+    i18n: {
+      en: {
+        concept: 'List indexing starts from 0! The 1st element is [0], the 2nd is [1], the 3rd is [2]... This is the biggest difference between programming and everyday life — programmers count from 0!',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">colors</span> = [<span class="str">"red"</span>, <span class="str">"yellow"</span>, <span class="str">"blue"</span>, <span class="str">"green"</span>]\n<span class="fn">print</span>(colors[<span class="num">1</span>])',
+        visual: { type: 'list', params: { items: ['red', 'yellow', 'blue', 'green'], highlight: 1 } },
+        options: [
+          { letter: 'A', text: 'red' },
+          { letter: 'B', text: 'blue' },
+          { letter: 'C', text: 'yellow' },
+          { letter: 'D', text: '1' }
+        ],
+        explain: 'List indices start from 0! colors[0]="red", colors[1]="yellow", colors[2]="blue". So colors[1] outputs "yellow". This is the most common mistake for beginners — don\'t forget to count from 0!'
+      },
+      fr: {
+        concept: 'L\'indexation des listes commence à 0 ! Le 1er élément est [0], le 2e est [1], le 3e est [2]... C\'est la plus grande différence entre la programmation et la vie quotidienne — les programmeurs comptent à partir de 0 !',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">colors</span> = [<span class="str">"rouge"</span>, <span class="str">"jaune"</span>, <span class="str">"bleu"</span>, <span class="str">"vert"</span>]\n<span class="fn">print</span>(colors[<span class="num">1</span>])',
+        visual: { type: 'list', params: { items: ['rouge', 'jaune', 'bleu', 'vert'], highlight: 1 } },
+        options: [
+          { letter: 'A', text: 'rouge' },
+          { letter: 'B', text: 'bleu' },
+          { letter: 'C', text: 'jaune' },
+          { letter: 'D', text: '1' }
+        ],
+        explain: 'Les indices de liste commencent à 0 ! colors[0]="rouge", colors[1]="jaune", colors[2]="bleu". Donc colors[1] affiche "jaune". C\'est l\'erreur la plus courante des débutants — n\'oubliez pas de compter à partir de 0 !'
+      }
+    }
   },
   {
     stage: 2,
@@ -2107,7 +3650,31 @@ var QUESTIONS = [
       { letter: 'D', text: '5' }
     ],
     answer: 3,
-    explain: 'len() 数的是列表里有几个元素，不是元素的值。nums 有5个元素（10、20、30、40、50），所以 len(nums)=5。'
+    explain: 'len() 数的是列表里有几个元素，不是元素的值。nums 有5个元素（10、20、30、40、50），所以 len(nums)=5。',
+    i18n: {
+      en: {
+        concept: 'The len() function counts how many elements are in a list. Like counting how many students are in a classroom — len() tells you the length of the list.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '150' },
+          { letter: 'B', text: '50' },
+          { letter: 'C', text: '10' },
+          { letter: 'D', text: '5' }
+        ],
+        explain: 'len() counts how many elements are in the list, not the values. nums has 5 elements (10, 20, 30, 40, 50), so len(nums)=5.'
+      },
+      fr: {
+        concept: 'La fonction len() compte combien d\'éléments il y a dans une liste. Comme compter combien d\'élèves sont dans une salle de classe — len() vous donne la longueur de la liste.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '150' },
+          { letter: 'B', text: '50' },
+          { letter: 'C', text: '10' },
+          { letter: 'D', text: '5' }
+        ],
+        explain: 'len() compte combien d\'éléments sont dans la liste, pas les valeurs. nums a 5 éléments (10, 20, 30, 40, 50), donc len(nums)=5.'
+      }
+    }
   },
   {
     stage: 2,
@@ -2123,7 +3690,35 @@ var QUESTIONS = [
       { letter: 'D', text: '会报错' }
     ],
     answer: 1,
-    explain: 'append() 在列表末尾添加元素。原列表 ["语文", "数学"]，添加"英语"后变成 ["语文", "数学", "英语"]。'
+    explain: 'append() 在列表末尾添加元素。原列表 ["语文", "数学"]，添加"英语"后变成 ["语文", "数学", "英语"]。',
+    i18n: {
+      en: {
+        concept: 'append() is like adding items to a shopping cart — it adds a new element at the end of the list. The original list is modified, and the new element goes last.',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">books</span> = [<span class="str">"Chinese"</span>, <span class="str">"Math"</span>]\nbooks.<span class="fn">append</span>(<span class="str">"English"</span>)\n<span class="fn">print</span>(books)',
+        visual: { type: 'list', params: { items: ['Chinese', 'Math', 'English'], appendMode: true } },
+        options: [
+          { letter: 'A', text: "[\'Chinese\', \'Math\']" },
+          { letter: 'B', text: "[\'Chinese\', \'Math\', \'English\']" },
+          { letter: 'C', text: "[\'English\']" },
+          { letter: 'D', text: 'An error' }
+        ],
+        explain: 'append() adds an element at the end of the list. The original list ["Chinese", "Math"], after adding "English" becomes ["Chinese", "Math", "English"].'
+      },
+      fr: {
+        concept: 'append() c\'est comme ajouter des articles à un panier — il ajoute un nouvel élément à la fin de la liste. La liste originale est modifiée, et le nouvel élément va en dernier.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">books</span> = [<span class="str">"Français"</span>, <span class="str">"Maths"</span>]\nbooks.<span class="fn">append</span>(<span class="str">"Anglais"</span>)\n<span class="fn">print</span>(books)',
+        visual: { type: 'list', params: { items: ['Français', 'Maths', 'Anglais'], appendMode: true } },
+        options: [
+          { letter: 'A', text: "[\'Français\', \'Maths\']" },
+          { letter: 'B', text: "[\'Français\', \'Maths\', \'Anglais\']" },
+          { letter: 'C', text: "[\'Anglais\']" },
+          { letter: 'D', text: 'Une erreur' }
+        ],
+        explain: 'append() ajoute un élément à la fin de la liste. La liste originale ["Français", "Maths"], après ajout de "Anglais" devient ["Français", "Maths", "Anglais"].'
+      }
+    }
   },
 
   // ----- 模块12：综合小案例（4题）-----
@@ -2141,7 +3736,33 @@ var QUESTIONS = [
       { letter: 'D', text: '小了' }
     ],
     answer: 3,
-    explain: 'answer=7，guess=5。先检查 5==7？不满足。再检查 5<7？满足！输出"小了"。这就是猜数字游戏的核心判断逻辑。'
+    explain: 'answer=7，guess=5。先检查 5==7？不满足。再检查 5<7？满足！输出"小了"。这就是猜数字游戏的核心判断逻辑。',
+    i18n: {
+      en: {
+        concept: 'The core logic of a number guessing game: use if-elif-else to check the relationship between the player\'s guess and the answer. == checks equality, < checks less than, > checks greater than.',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">answer</span> = <span class="num">7</span>\n<span class="kw">guess</span> = <span class="num">5</span>\n<span class="kw">if</span> guess == answer:\n    <span class="fn">print</span>(<span class="str">"Correct"</span>)\n<span class="kw">elif</span> guess &lt; answer:\n    <span class="fn">print</span>(<span class="str">"Too small"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Too big"</span>)',
+        options: [
+          { letter: 'A', text: 'Correct' },
+          { letter: 'B', text: 'Outputs nothing' },
+          { letter: 'C', text: 'Too big' },
+          { letter: 'D', text: 'Too small' }
+        ],
+        explain: 'answer=7, guess=5. First check 5==7? No. Then check 5<7? Yes! Output "Too small". This is the core judgment logic of the number guessing game.'
+      },
+      fr: {
+        concept: 'La logique principale du jeu de devinettes : utiliser if-elif-else pour vérifier la relation entre la supposition du joueur et la réponse. == vérifie l\'égalité, < vérifie inférieur à, > vérifie supérieur à.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">answer</span> = <span class="num">7</span>\n<span class="kw">guess</span> = <span class="num">5</span>\n<span class="kw">if</span> guess == answer:\n    <span class="fn">print</span>(<span class="str">"Correct"</span>)\n<span class="kw">elif</span> guess &lt; answer:\n    <span class="fn">print</span>(<span class="str">"Trop petit"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"Trop grand"</span>)',
+        options: [
+          { letter: 'A', text: 'Correct' },
+          { letter: 'B', text: 'N\'affiche rien' },
+          { letter: 'C', text: 'Trop grand' },
+          { letter: 'D', text: 'Trop petit' }
+        ],
+        explain: 'answer=7, guess=5. D\'abord 5==7 ? Non. Ensuite 5<7 ? Oui ! Affiche "Trop petit". C\'est la logique de jugement principale du jeu de devinettes.'
+      }
+    }
   },
   {
     stage: 2,
@@ -2157,7 +3778,31 @@ var QUESTIONS = [
       { letter: 'D', text: 'D' }
     ],
     answer: 1,
-    explain: 'score=75。>=90? 否。>=80? 否。>=60? 是！grade="C"。elif 从上到下找到第一个满足的就停止，后面的不再检查。'
+    explain: 'score=75。>=90? 否。>=80? 否。>=60? 是！grade="C"。elif 从上到下找到第一个满足的就停止，后面的不再检查。',
+    i18n: {
+      en: {
+        concept: 'Grade classification is a typical application of elif. It checks from high to low, stopping at the first satisfied grade. Note that 75 doesn\'t satisfy >=80, but does satisfy >=60.',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: 'A' },
+          { letter: 'B', text: 'C' },
+          { letter: 'C', text: 'B' },
+          { letter: 'D', text: 'D' }
+        ],
+        explain: 'score=75. >=90? No. >=80? No. >=60? Yes! grade="C". elif finds the first satisfied condition from top to bottom and stops; the rest are not checked.'
+      },
+      fr: {
+        concept: 'La classification des notes est une application typique de elif. On vérifie du haut vers le bas, en s\'arrêtant à la première note satisfaite. Notez que 75 ne satisfait pas >=80, mais satisfait >=60.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: 'A' },
+          { letter: 'B', text: 'C' },
+          { letter: 'C', text: 'B' },
+          { letter: 'D', text: 'D' }
+        ],
+        explain: 'score=75. >=90 ? Non. >=80 ? Non. >=60 ? Oui ! grade="C". elif trouve la première condition satisfaite de haut en bas et s\'arrête ; le reste n\'est pas vérifié.'
+      }
+    }
   },
   {
     stage: 2,
@@ -2173,7 +3818,33 @@ var QUESTIONS = [
       { letter: 'D', text: '0 1 2 3 发射！' }
     ],
     answer: 0,
-    explain: 'range(3, 0, -1) 从3开始每次减1，到0停止（不包含0），生成 3、2、1。循环打印 3、2、1，循环结束后打印"发射！"。注意"发射！"在循环外面，只执行一次。'
+    explain: 'range(3, 0, -1) 从3开始每次减1，到0停止（不包含0），生成 3、2、1。循环打印 3、2、1，循环结束后打印"发射！"。注意"发射！"在循环外面，只执行一次。',
+    i18n: {
+      en: {
+        concept: 'range(3, 0, -1) — the 3rd parameter -1 means decrease by 1 each time. It counts down from 3 to 1 (not including 0), like a rocket launch countdown! After the loop ends, the print outside the loop executes.',
+        question: 'What will the code above output when run?',
+        code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>, <span class="num">0</span>, <span class="num">-1</span>):\n    <span class="fn">print</span>(i)\n<span class="fn">print</span>(<span class="str">"Launch!"</span>)',
+        options: [
+          { letter: 'A', text: '3 2 1 Launch!' },
+          { letter: 'B', text: '3 2 1 0 Launch!' },
+          { letter: 'C', text: '1 2 3 Launch!' },
+          { letter: 'D', text: '0 1 2 3 Launch!' }
+        ],
+        explain: 'range(3, 0, -1) starts from 3, decreasing by 1 each time, stopping at 0 (not including 0), generating 3, 2, 1. The loop prints 3, 2, 1; after the loop ends it prints "Launch!". Note "Launch!" is outside the loop and executes only once.'
+      },
+      fr: {
+        concept: 'range(3, 0, -1) — le 3e paramètre -1 signifie diminuer de 1 à chaque fois. Il compte à rebours de 3 à 1 (sans inclure 0), comme un compte à rebours de lancement de fusée ! Après la fin de la boucle, le print extérieur à la boucle s\'exécute.',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>, <span class="num">0</span>, <span class="num">-1</span>):\n    <span class="fn">print</span>(i)\n<span class="fn">print</span>(<span class="str">"Décollage !"</span>)',
+        options: [
+          { letter: 'A', text: '3 2 1 Décollage !' },
+          { letter: 'B', text: '3 2 1 0 Décollage !' },
+          { letter: 'C', text: '1 2 3 Décollage !' },
+          { letter: 'D', text: '0 1 2 3 Décollage !' }
+        ],
+        explain: 'range(3, 0, -1) commence à 3, diminue de 1 à chaque fois, s\'arrête à 0 (sans inclure 0), générant 3, 2, 1. La boucle affiche 3, 2, 1 ; après la fin de la boucle, elle affiche "Décollage !". Note : "Décollage !" est en dehors de la boucle et ne s\'exécute qu\'une fois.'
+      }
+    }
   },
   {
     stage: 2,
@@ -2189,9 +3860,156 @@ var QUESTIONS = [
       { letter: 'D', text: '3' }
     ],
     answer: 2,
-    explain: 'total 从0开始。price=5时 total=0+5=5；price=3时 total=5+3=8；price=8时 total=8+8=16。所以输出16。这就是"累加器"在购物计算中的实际应用！'
+    explain: 'total 从0开始。price=5时 total=0+5=5；price=3时 total=5+3=8；price=8时 total=8+8=16。所以输出16。这就是"累加器"在购物计算中的实际应用！',
+    i18n: {
+      en: {
+        concept: 'This code uses a "loop + accumulator" to calculate a shopping total. for price in prices takes each price from the list in turn and adds it to total. This is one of the most practical patterns in programming!',
+        question: 'What will the code above output when run?',
+        options: [
+          { letter: 'A', text: '5 3 8' },
+          { letter: 'B', text: '538' },
+          { letter: 'C', text: '16' },
+          { letter: 'D', text: '3' }
+        ],
+        explain: 'total starts at 0. price=5: total=0+5=5; price=3: total=5+3=8; price=8: total=8+8=16. So the output is 16. This is the practical application of an "accumulator" in shopping calculations!'
+      },
+      fr: {
+        concept: 'Ce code utilise une « boucle + accumulateur » pour calculer un total d\'achats. for price in prices prend chaque prix de la liste à tour de rôle et l\'ajoute à total. C\'est l\'un des motifs les plus pratiques en programmation !',
+        question: 'Que affichera le code ci-dessus lorsqu\'il est exécuté ?',
+        options: [
+          { letter: 'A', text: '5 3 8' },
+          { letter: 'B', text: '538' },
+          { letter: 'C', text: '16' },
+          { letter: 'D', text: '3' }
+        ],
+        explain: 'total commence à 0. price=5 : total=0+5=5 ; price=3 : total=5+3=8 ; price=8 : total=8+8=16. Donc la sortie est 16. C\'est l\'application pratique d\'un « accumulateur » dans les calculs d\'achats !'
+      }
+    }
   }
 ];
+
+/* ============================================================
+ *  i18n 翻译函数
+ * ============================================================ */
+
+/* UI 文案翻译：t(key) → I18N[currentLang][key] → I18N.zh[key] → key */
+function t(key) {
+  var pack = I18N[currentLang] || I18N.zh;
+  if (pack[key] != null) return pack[key];
+  if (I18N.zh[key] != null) return I18N.zh[key];
+  return key;
+}
+
+/* 题目字段翻译：tQ(qIndex, field) → q.i18n[currentLang][field] → q[field]（中文原字段） */
+function tQ(qIndex, field) {
+  var q = QUESTIONS[qIndex];
+  if (!q) return '';
+  if (q.i18n && q.i18n[currentLang] && q.i18n[currentLang][field] != null) {
+    return q.i18n[currentLang][field];
+  }
+  return q[field] != null ? q[field] : '';
+}
+
+/* 模块字段翻译：tM(moduleIndex, field) → MODULES_I18N[currentLang][idx][field] → zh fallback */
+function tM(moduleIndex, field) {
+  var pack = MODULES_I18N[currentLang] || MODULES_I18N.zh;
+  var m = pack[moduleIndex];
+  if (m && m[field] != null) return m[field];
+  var zm = MODULES_I18N.zh[moduleIndex];
+  return zm && zm[field] != null ? zm[field] : '';
+}
+
+/* 获取当前语言的阶段数组 */
+function getStages() {
+  return STAGES_I18N[currentLang] || STAGES_I18N.zh;
+}
+
+/* 初始化语言：读取 localStorage，无值则自动检测浏览器语言 */
+function initLang() {
+  var saved = null;
+  try { saved = localStorage.getItem(LANG_KEY); } catch(e) {}
+  if (saved && LANGS.indexOf(saved) >= 0) {
+    currentLang = saved;
+  } else {
+    currentLang = detectLang();
+  }
+  document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : currentLang;
+  updateLangSwitcher();
+}
+
+/* 自动检测浏览器语言（P1） */
+function detectLang() {
+  var bl = (navigator.language || navigator.userLanguage || 'zh').toLowerCase();
+  if (bl.indexOf('fr') === 0) return 'fr';
+  if (bl.indexOf('en') === 0) return 'en';
+  return 'zh';
+}
+
+/* 切换语言：持久化 + 停止朗读 + 重新渲染 + 更新切换器UI */
+function setLang(lang) {
+  if (LANGS.indexOf(lang) < 0) lang = 'zh';
+  currentLang = lang;
+  try { localStorage.setItem(LANG_KEY, lang); } catch(e) {}
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+  if (window.tts) window.tts.stop();
+  /* 关闭语言菜单 */
+  var menu = document.getElementById('langMenu');
+  if (menu) menu.style.display = 'none';
+  rerenderCurrent();
+  updateLangSwitcher();
+}
+
+/* 根据当前 phase 重新渲染 */
+function rerenderCurrent() {
+  switch(state.phase) {
+    case 'start':       renderStart(); break;
+    case 'stageSelect': renderStart(); break;
+    case 'intro':       renderIntro(); break;
+    case 'question':    renderQuestion(); break;
+    case 'summary':     renderSummary(); break;
+    case 'unlock':      /* 解锁弹窗保持，底层成绩页已渲染 */ break;
+  }
+}
+
+/* 语言切换器下拉菜单开关 */
+function toggleLangMenu() {
+  var menu = document.getElementById('langMenu');
+  if (menu) {
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+/* 更新语言切换器UI状态（✓标记 + label） */
+function updateLangSwitcher() {
+  var labels = { zh: '中', en: 'EN', fr: 'FR' };
+  var langLabel = document.getElementById('langLabel');
+  if (langLabel) langLabel.textContent = labels[currentLang] || '中';
+  var opts = ['zh', 'en', 'fr'];
+  for (var i = 0; i < opts.length; i++) {
+    var el = document.getElementById('langOpt' + opts[i].charAt(0).toUpperCase() + opts[i].slice(1));
+    if (el) {
+      var names = { zh: '中文', en: 'English', fr: 'Français' };
+      el.innerHTML = (opts[i] === currentLang ? '✓ ' : '&nbsp; ') + names[opts[i]];
+    }
+  }
+  /* 更新按钮 title */
+  var langBtn = document.querySelector('.lang-btn');
+  if (langBtn) langBtn.setAttribute('title', t('lang_tooltip'));
+  var speakBtn = document.getElementById('speakBtn');
+  if (speakBtn) speakBtn.setAttribute('title', t('speak_tooltip'));
+  var themeBtn = document.getElementById('themeBtn');
+  if (themeBtn) {
+    /* 主题按钮 title 保持原样，用CSS token即可 */
+  }
+}
+
+/* 点击页面其他位置关闭语言菜单 */
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('langMenu');
+  if (!menu || menu.style.display === 'none') return;
+  var switcher = e.target.closest('.lang-switcher');
+  if (!switcher) menu.style.display = 'none';
+});
 
 /* ============================================================
  *  状态管理
@@ -2316,21 +4134,30 @@ function getPassThreshold(stage) {
   return 0.6;
 }
 
-/* ---- 朗读功能（Web Speech API）---- */
+/* ---- 朗读功能（纯 Web Speech API）---- */
 var tts = {
-  utter: null,
   speaking: false,
   paused: false,
-  _queue: [],      /* iOS Safari 单 utterance 超 ~200 字符会被截断，按句分段队列播放 */
+  _queue: [],              /* 分段队列 */
   _idx: 0,
   _onEnd: null,
 
-  speak: function(text, onEnd) {
-    this.stop();
+  /* 初始化：检测浏览器是否支持 speechSynthesis */
+  init: function() {
+    if (typeof speechSynthesis === 'undefined') {
+      console.warn('Web Speech API (speechSynthesis) is not supported in this browser.');
+    }
+  },
+
+  /* 获取当前语言对应的 TTS 语言代码 */
+  _getTTSLang: function() {
+    return TTS_LANG_MAP[currentLang] || 'zh-CN';
+  },
+
+  /* 文本分段 */
+  _chunk: function(text) {
     var clean = text.replace(/<[^>]+>/g, '').replace(/&[a-z]+;/g, '');
-    /* 1) 先按句号/问号/感叹号切句 */
     var chunks = clean.match(/[^。！？.!?]+[。！？.!?]?/g) || [clean];
-    /* 2) 超长句（>180字符）再按逗号细分 */
     var finalChunks = [];
     chunks.forEach(function(c) {
       if (c.length > 180) {
@@ -2341,40 +4168,57 @@ var tts = {
       }
     });
     if (finalChunks.length === 0) finalChunks = [clean];
+    return finalChunks;
+  },
 
-    var self = this;
-    this._queue = finalChunks;
+  /* 入口：分段 → 播放 */
+  speak: function(text, onEnd) {
+    this.stop();
+    var chunks = this._chunk(text);
+    this._queue = chunks;
     this._idx = 0;
     this._onEnd = onEnd;
+    this.speaking = true;
+    this.paused = false;
+    this.updateBtn();
+    this._playWithWebSpeech();
+  },
+
+  /* Web Speech API 引擎播放 */
+  _playWithWebSpeech: function() {
+    var self = this;
+    var lang = this._getTTSLang();
 
     function playNext() {
       if (self._idx >= self._queue.length) {
-        self.speaking = false;
-        self.paused = false;
-        self._queue = [];
-        self.updateBtn();
-        if (self._onEnd) self._onEnd();
+        self._finish();
         return;
       }
       var u = new SpeechSynthesisUtterance(self._queue[self._idx]);
-      u.lang = 'zh-CN';
+      u.lang = lang;
       u.rate = 0.88;
       u.pitch = 1.0;
       u.onend = function() { self._idx++; playNext(); };
       u.onerror = function() { self._idx++; playNext(); };
-      self.utter = u;
       speechSynthesis.speak(u);
     }
     playNext();
-    this.speaking = true;
-    this.paused = false;
-    this.updateBtn();
   },
 
+  /* 播放完成清理 */
+  _finish: function() {
+    this.speaking = false;
+    this.paused = false;
+    this._queue = [];
+    this.updateBtn();
+    if (this._onEnd) this._onEnd();
+  },
+
+  /* 停止播放 */
   stop: function() {
     this._queue = [];
     this._idx = 0;
-    if (speechSynthesis.speaking || speechSynthesis.pending) {
+    if (typeof speechSynthesis !== 'undefined' && (speechSynthesis.speaking || speechSynthesis.pending)) {
       speechSynthesis.cancel();
     }
     this.speaking = false;
@@ -2382,6 +4226,7 @@ var tts = {
     this.updateBtn();
   },
 
+  /* 暂停/恢复/开始播放 */
   toggle: function(text) {
     if (this.speaking && !this.paused) {
       speechSynthesis.pause();
@@ -2393,12 +4238,17 @@ var tts = {
       this.paused = false;
       this.updateBtn();
       return 'resumed';
-    } else {
-      this.speak(text);
-      return 'speaking';
     }
+    this.speak(text);
+    return 'speaking';
   },
 
+  /* 是否正在朗读 */
+  isSpeaking: function() {
+    return this.speaking;
+  },
+
+  /* 更新按钮 UI 状态 */
   updateBtn: function() {
     var btns = document.querySelectorAll('.speak-btn, .fb-speak-btn');
     btns.forEach(function(btn) {
@@ -2421,8 +4271,9 @@ function toggleSpeak() {
   if (window.tts.speaking && !window.tts.paused) {
     window.tts.toggle();
   } else {
-    var q = QUESTIONS[state.qIndex];
-    var text = q.concept.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'') + '。' + q.question;
+    var conceptText = tQ(state.qIndex, 'concept').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'');
+    var questionText = tQ(state.qIndex, 'question');
+    var text = conceptText + '。' + questionText;
     window.tts.speak(text);
   }
 }
@@ -2467,11 +4318,7 @@ function renderStart() {
     state.stageStars = { 1: 0, 2: 0, 3: 0 };
   }
 
-  var stages = [
-    { id: 1, emoji: '🌱', name: '入门', count: 22, desc: '认识5大编程基础概念' },
-    { id: 2, emoji: '📖', name: '初级', count: 30, desc: '读懂代码，预测运行结果' },
-    { id: 3, emoji: '🚀', name: '中级', count: 32, desc: '综合应用（即将开放）' }
-  ];
+  var stages = getStages();
 
   var cardsHTML = stages.map(function(st) {
     var unlocked = state.unlocked.indexOf(st.id) >= 0;
@@ -2481,22 +4328,22 @@ function renderStart() {
     var score = state.stageScore[st.id] || 0;
 
     if (unlocked) {
-      var passedBadge = score > 0 ? '<div class="stage-passed-badge">✓ 已通过</div>' : '';
+      var passedBadge = score > 0 ? '<div class="stage-passed-badge">'+t('passed_badge')+'</div>' : '';
       return '<div class="stage-card" onclick="startGame(' + st.id + ')" style="cursor:pointer;">' +
         passedBadge +
         '<span style="font-size:2rem;">' + st.emoji + '</span>' +
         '<div class="stage-name">' + st.name + '</div>' +
-        '<div class="stage-count">' + st.count + '题</div>' +
+        '<div class="stage-count">' + st.count + t('unit_questions') + '</div>' +
         '<div class="stage-stars-mini">' + starStr + '</div>' +
-        (score > 0 ? '<div class="stage-best">最高 ' + score + '/' + st.count + '</div>' : '<div class="stage-status">已解锁</div>') +
+        (score > 0 ? '<div class="stage-best">'+t('best_score').replace('{score}', score).replace('{total}', st.count)+'</div>' : '<div class="stage-status">'+t('status_unlocked')+'</div>') +
       '</div>';
     } else {
       return '<div class="stage-card locked">' +
         '<span style="font-size:2rem;opacity:0.4;">' + st.emoji + '</span>' +
         '<div class="stage-name" style="opacity:0.5;">' + st.name + '</div>' +
-        '<div class="stage-count" style="opacity:0.5;">' + st.count + '题</div>' +
+        '<div class="stage-count" style="opacity:0.5;">' + st.count + t('unit_questions') + '</div>' +
         '<div class="lock-icon">🔒</div>' +
-        '<div class="stage-status" style="opacity:0.5;">未解锁</div>' +
+        '<div class="stage-status" style="opacity:0.5;">'+t('status_locked')+'</div>' +
       '</div>';
     }
   }).join('');
@@ -2507,18 +4354,18 @@ function renderStart() {
   if (hasSave) {
     var stageName = stages[save.stage - 1] ? stages[save.stage - 1].name : '';
     var stageQNum = getStageQNumber(save.stage, save.qIndex);
-    continueHTML = '<div class="continue-info">上次进度：' + stageName + '阶段 · 第' + stageQNum + '题 · ' + save.score + '分</div>' +
+    continueHTML = '<div class="continue-info">'+t('continue_info').replace('{stage}', stageName).replace('{n}', stageQNum).replace('{score}', save.score)+'</div>' +
       '<div class="btn-row">' +
-        '<button class="btn" onclick="continueGame()">继续闯关</button>' +
-        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.06);" onclick="startGame(' + (state.unlocked[state.unlocked.length - 1]) + ')">重新选择</button>' +
+        '<button class="btn" onclick="continueGame()">'+t('btn_continue')+'</button>' +
+        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.06);" onclick="startGame(' + (state.unlocked[state.unlocked.length - 1]) + ')">'+t('btn_reselect')+'</button>' +
       '</div>';
   }
 
   content.innerHTML =
     '<div class="page start-page">' +
       '<div class="logo-wrap"><svg viewBox="0 0 64 64" width="56" height="56"><rect width="64" height="64" rx="14" fill="#4361ee"/><rect x="10" y="14" width="44" height="36" rx="6" fill="#1e1e2e"/><rect x="10" y="14" width="44" height="10" rx="6" fill="#313244"/><rect x="10" y="22" width="44" height="2" fill="#313244"/><circle cx="17" cy="19" r="2" fill="#f72585"/><circle cx="23" cy="19" r="2" fill="#2d9e6b"/><circle cx="29" cy="19" r="2" fill="#e07b00"/><text x="15" y="40" font-size="13" font-family="monospace" font-weight="bold" fill="#6b8cff">&gt;_</text></svg></div>' +
-      '<h1 class="big-title">编程小达人</h1>' +
-      '<p class="sub-title">知识闯关 · 3大阶段 · 84道题<br>从认识概念到读懂代码</p>' +
+      '<h1 class="big-title">'+t('app_title')+'</h1>' +
+      '<p class="sub-title">'+t('app_subtitle')+'<br>'+t('app_subtitle2')+'</p>' +
       '<div class="stage-selector">' + cardsHTML + '</div>' +
       continueHTML +
     '</div>';
@@ -2532,9 +4379,9 @@ function renderIntro() {
   var m = MODULES[state.moduleIndex];
   topbar.style.display = 'flex';
   progressTrack.style.display = 'block';
-  moduleTag.textContent = m.emoji + ' ' + m.name;
+  moduleTag.textContent = m.emoji + ' ' + tM(state.moduleIndex, 'name');
   moduleTag.style.background = 'rgba(255,255,255,0.25)';
-  scoreBox.textContent = state.score + ' 分';
+  scoreBox.textContent = state.score + ' ' + t('unit_score');
   updateProgress();
 
   var animHTML = getAnimHTML(m.anim, m.color);
@@ -2542,10 +4389,10 @@ function renderIntro() {
   content.innerHTML =
     '<div class="page intro-page">' +
       '<span class="intro-emoji">' + m.emoji + '</span>' +
-      '<h2 class="intro-title" style="color:'+m.color+'">第 ' + m.id + ' 关：' + m.name + '</h2>' +
-      '<p class="intro-desc">' + m.desc + '</p>' +
+      '<h2 class="intro-title" style="color:'+m.color+'">'+t('intro_title_prefix').replace('{id}', m.id) + tM(state.moduleIndex, 'name')+'</h2>' +
+      '<p class="intro-desc">' + tM(state.moduleIndex, 'desc') + '</p>' +
       '<div class="anim-stage" id="animStage">' + animHTML + '</div>' +
-      '<button class="btn" style="background:'+m.color+';box-shadow:0 1px 2px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.10);" onclick="startQuestions()">开始答题</button>' +
+      '<button class="btn" style="background:'+m.color+';box-shadow:0 1px 2px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.10);" onclick="startQuestions()">'+t('btn_start_quiz')+'</button>' +
     '</div>';
 }
 
@@ -2556,17 +4403,17 @@ function getAnimHTML(type, color) {
       return '<div style="position:relative;display:flex;flex-direction:column;align-items:center;">' +
         '<div class="var-arrow" style="color:var(--c-primary);">↓</div>' +
         '<div class="var-box" id="varBox">' +
-          '<span class="label">变量 msg</span>' +
+          '<span class="label">'+t('svg_var_label')+'</span>' +
           '<span class="value" id="varValue">"hello"</span>' +
         '</div>' +
-        '<div style="margin-top:14px;font-size:0.78rem;color:var(--c-text-3);letter-spacing:0.03em;">值可以随时替换</div>' +
+        '<div style="margin-top:14px;font-size:0.78rem;color:var(--c-text-3);letter-spacing:0.03em;">'+t('svg_var_hint')+'</div>' +
       '</div>';
     case 'condition':
       return '<div class="cond-scene">' +
-        '<div class="cond-ask">if 下雨?</div>' +
+        '<div class="cond-ask">'+t('svg_cond_ask')+'</div>' +
         '<div class="cond-path"></div>' +
-        '<div class="cond-left">带伞</div>' +
-        '<div class="cond-right">不带</div>' +
+        '<div class="cond-left">'+t('svg_cond_left')+'</div>' +
+        '<div class="cond-right">'+t('svg_cond_right')+'</div>' +
         '<div class="cond-walker">🧒</div>' +
         '<div class="cond-walker2">🧒</div>' +
       '</div>';
@@ -2575,13 +4422,13 @@ function getAnimHTML(type, color) {
         '<div class="loop-circle" style="border-color:'+color+';border-top-color:transparent;"></div>' +
         '<div class="loop-dot" style="background:'+color+';"></div>' +
         '<div class="loop-center" style="font-size:1.4rem;color:var(--c-warn);">loop</div>' +
-        '<div class="loop-count">重复执行，无需复制代码</div>' +
+        '<div class="loop-count">'+t('svg_loop_hint')+'</div>' +
       '</div>';
     case 'function':
       return '<div class="func-scene">' +
         '<div class="func-in func-in-move">3,5</div>' +
         '<div class="func-arrow-mini">→</div>' +
-        '<div class="func-machine" style="font-size:1rem;font-weight:700;color:var(--c-text-2);letter-spacing:-0.02em;">fn()</div>' +
+        '<div class="func-machine" data-label="'+t('svg_func_label')+'" style="font-size:1rem;font-weight:700;color:var(--c-text-2);letter-spacing:-0.02em;">fn()</div>' +
         '<div class="func-arrow-mini">→</div>' +
         '<div class="func-out func-out-move">8</div>' +
       '</div>';
@@ -2590,30 +4437,30 @@ function getAnimHTML(type, color) {
         '<div class="bug-bug">🐞</div>' +
         '<div class="bug-magnifier">🔎</div>' +
         '<div class="bug-zap" style="font-size:1.6rem;">×</div>' +
-        '<div class="bug-fixed">Bug 已修复</div>' +
+        '<div class="bug-fixed">'+t('svg_bug_fixed')+'</div>' +
       '</div>';
     case 'reading':
       return '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">' +
         '<div style="font-size:2.4rem;">📖</div>' +
         '<div style="background:#1e1e2e;border-radius:8px;padding:10px 18px;font-family:monospace;font-size:0.85rem;color:#cdd6f4;line-height:1.8;">' +
-          '<span style="color:#cba6f7;">name</span> = <span style="color:#a6e3a1;">"小明"</span><br>' +
+          '<span style="color:#cba6f7;">name</span> = <span style="color:#a6e3a1;">'+(currentLang === 'zh' ? '"小明"' : '"Alice"')+'</span><br>' +
           '<span style="color:#89b4fa;">print</span>(name)' +
         '</div>' +
-        '<div style="font-size:0.78rem;color:var(--c-text-3);letter-spacing:0.03em;">从上到下 · 逐行阅读 · 预测结果</div>' +
+        '<div style="font-size:0.78rem;color:var(--c-text-3);letter-spacing:0.03em;">'+t('svg_reading_hint')+'</div>' +
       '</div>';
     case 'list':
       return '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;">' +
         '<div style="display:flex;gap:6px;">' +
-          '<div style="width:40px;height:48px;background:#ef4444;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">苹果</div>' +
-          '<div style="width:40px;height:48px;background:#f59e0b;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">香蕉</div>' +
-          '<div style="width:40px;height:48px;background:#10b981;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">橘子</div>' +
+          '<div style="width:40px;height:48px;background:#ef4444;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">'+t('lang_zh')+'</div>' +
+          '<div style="width:40px;height:48px;background:#f59e0b;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">EN</div>' +
+          '<div style="width:40px;height:48px;background:#10b981;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">FR</div>' +
         '</div>' +
         '<div style="display:flex;gap:6px;font-size:0.72rem;color:var(--c-text-3);font-weight:600;">' +
           '<span style="width:40px;text-align:center;">[0]</span>' +
           '<span style="width:40px;text-align:center;">[1]</span>' +
           '<span style="width:40px;text-align:center;">[2]</span>' +
         '</div>' +
-        '<div style="font-size:0.78rem;color:var(--c-text-3);letter-spacing:0.03em;">有序排列 · 索引从0开始</div>' +
+        '<div style="font-size:0.78rem;color:var(--c-text-3);letter-spacing:0.03em;">'+t('svg_list_hint')+'</div>' +
       '</div>';
     default:
       return '';
@@ -2639,8 +4486,8 @@ function renderQuestion() {
   state.answered = false;
   var q = QUESTIONS[state.qIndex];
   var m = MODULES[state.moduleIndex];
-  moduleTag.textContent = m.emoji + ' ' + m.name;
-  scoreBox.textContent = state.score + ' 分';
+  moduleTag.textContent = m.emoji + ' ' + tM(state.moduleIndex, 'name');
+  scoreBox.textContent = state.score + ' ' + t('unit_score');
   updateProgress();
 
   // 阶段内题号计算
@@ -2648,39 +4495,42 @@ function renderQuestion() {
   var stageQNum = getStageQNumber(state.stage, state.qIndex);
   var stageTotal = stageQs.length;
 
-  var codeHTML = q.code
-    ? '<div class="code-block" style="border-left-color:'+m.color+';"><pre>'+q.code+'</pre></div>'
+  var qCode = tQ(state.qIndex, 'code');
+  var codeHTML = qCode
+    ? '<div class="code-block" style="border-left-color:'+m.color+';"><pre>'+qCode+'</pre></div>'
     : '';
 
-  var optionsHTML = q.options.map(function(opt, i){
+  var tQOpts = tQ(state.qIndex, 'options');
+  var optionsHTML = tQOpts.map(function(opt, i){
     return '<button class="option" data-index="'+i+'" onclick="selectOption('+i+')" style="--mc:'+m.color+';">' +
       '<span class="opt-letter">'+opt.letter+'</span>' +
       '<span>'+opt.text+'</span>' +
     '</button>';
   }).join('');
 
-  // 生成图文插图
-  var visualHTML = q.visual ? getQuestionVisual(q.visual, q.module) : getDefaultVisual(q.module, m);
+  // 生成图文插图（优先使用当前语言的 visual 翻译）
+  var qVisual = tQ(state.qIndex, 'visual');
+  var visualHTML = qVisual ? getQuestionVisual(qVisual, q.module) : getDefaultVisual(q.module, m);
 
   content.innerHTML =
     '<div class="page question-page">' +
-      '<span class="q-number" style="color:'+m.color+';">第 '+stageQNum+' 题 / 共'+stageTotal+'题</span>' +
-      '<div class="q-concept" style="border-left-color:'+m.color+';">'+q.concept+'</div>' +
+      '<span class="q-number" style="color:'+m.color+';">'+t('q_number').replace('{n}', stageQNum).replace('{total}', stageTotal)+'</span>' +
+      '<div class="q-concept" style="border-left-color:'+m.color+';">'+tQ(state.qIndex, 'concept')+'</div>' +
       visualHTML +
-      '<div class="q-text">'+q.question+'</div>' +
+      '<div class="q-text">'+tQ(state.qIndex, 'question')+'</div>' +
       codeHTML +
       '<div class="options">'+optionsHTML+'</div>' +
       '<div class="feedback" id="feedback"></div>' +
       '<div class="next-btn-wrap" id="nextWrap">' +
         '<button class="btn '+(stageQNum >= stageTotal ? 'green' : '')+'" onclick="goNext()">'+
-          (stageQNum >= stageTotal ? '查看成绩' : '下一题')+
+          (stageQNum >= stageTotal ? t('btn_view_results') : t('btn_next'))+
         '</button>' +
       '</div>' +
     '</div>';
   saveProgress();
 
   // 更新朗读按钮
-  var speakText = q.concept.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'') + '。' + q.question;
+  var speakText = tQ(state.qIndex, 'concept').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'') + '。' + tQ(state.qIndex, 'question');
   window._currentSpeakText = speakText;
 }
 
@@ -2708,25 +4558,26 @@ function selectOption(index) {
   if (window.tts) window.tts.stop();
 
   // 将解析文本存到全局变量，供朗读按钮引用
-  window._explainText = q.explain.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'');
+  window._explainText = tQ(state.qIndex, 'explain').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'');
 
   if (isRight) {
     state.score++;
     state.moduleScore[state.moduleIndex]++;
-    scoreBox.textContent = state.score + ' 分';
+    scoreBox.textContent = state.score + ' ' + t('unit_score');
     feedback.className = 'feedback right show';
     feedback.innerHTML =
-      '<div class="fb-title">答对了</div>' +
-      '<div class="fb-body"><strong>知识点小结：</strong>'+q.explain+'</div>' +
-      '<button class="fb-speak-btn" onclick="speakExplain()">🔊 朗读解析</button>';
+      '<div class="fb-title">'+t('fb_correct_title')+'</div>' +
+      '<div class="fb-body"><strong>'+t('fb_summary_label')+'</strong>'+tQ(state.qIndex, 'explain')+'</div>' +
+      '<button class="fb-speak-btn" onclick="speakExplain()">'+t('speak_explain')+'</button>';
   } else {
     feedback.className = 'feedback wrong-fb show';
-    var correctText = q.options[correctIdx].text;
+    var tQOpts = tQ(state.qIndex, 'options');
+    var correctText = tQOpts[correctIdx].text;
     feedback.innerHTML =
-      '<div class="fb-title">答错了，没关系</div>' +
-      '<div class="fb-body">正确答案是 <span class="answer-tag">'+q.options[correctIdx].letter+'</span>'+
-      '  '+correctText+'<br><br><strong>解析：</strong>'+q.explain+'</div>' +
-      '<button class="fb-speak-btn" onclick="speakExplain()">🔊 朗读解析</button>';
+      '<div class="fb-title">'+t('fb_wrong_title')+'</div>' +
+      '<div class="fb-body">'+t('fb_correct_answer')+' <span class="answer-tag">'+tQOpts[correctIdx].letter+'</span>'+
+      '  '+correctText+'<br><br><strong>'+t('fb_explain_label')+'</strong>'+tQ(state.qIndex, 'explain')+'</div>' +
+      '<button class="fb-speak-btn" onclick="speakExplain()">'+t('speak_explain')+'</button>';
   }
 
   nextWrap.classList.add('show');
@@ -2801,8 +4652,8 @@ function renderSummary() {
   topbar.style.display = 'flex';
   progressTrack.style.display = 'block';
   progressFill.style.width = '100%';
-  moduleTag.textContent = '闯关完成';
-  scoreBox.textContent = state.score + ' 分';
+  moduleTag.textContent = t('summary_module_tag');
+  scoreBox.textContent = state.score + ' ' + t('unit_score');
 
   var stars = '';
   for (var i = 0; i < 3; i++) stars += i < starCount ? '⭐' : '☆';
@@ -2818,7 +4669,7 @@ function renderSummary() {
     return '<div class="mr-item">' +
       '<span class="mr-emoji">'+m.emoji+'</span>' +
       '<div class="mr-info">' +
-        '<div class="mr-name">'+m.name+'</div>' +
+        '<div class="mr-name">'+tM(globalIdx, 'name')+'</div>' +
         '<div class="mr-bar"><div class="mr-bar-fill" data-target="'+pct.toFixed(1)+'" style="width:0%;background:'+barColor+';"></div></div>' +
       '</div>' +
       '<span class="mr-stat" style="color:'+barColor+';">'+ms+'/'+moduleCount+'</span>' +
@@ -2826,11 +4677,7 @@ function renderSummary() {
   }).join('');
 
   // 阶段总览
-  var allStages = [
-    { id: 1, emoji: '🌱', name: '入门', count: 22 },
-    { id: 2, emoji: '📖', name: '初级', count: 30 },
-    { id: 3, emoji: '🚀', name: '中级', count: 32 }
-  ];
+  var allStages = getStages();
   var overviewHTML = '<div class="stage-overview-grid">' + allStages.map(function(st) {
     var unlocked = state.unlocked.indexOf(st.id) >= 0;
     var stScore = state.stageScore[st.id] || 0;
@@ -2845,16 +4692,16 @@ function renderSummary() {
         '<div class="soc-name">' + st.name + '</div>' +
         '<div class="soc-stars">' + starStr + '</div>' +
         '<div class="soc-score">' + stScore + '/' + st.count + '</div>' +
-        '<div class="soc-status">已通过</div>';
+        '<div class="soc-status">'+t('overview_passed')+'</div>';
     } else if (unlocked) {
       inner = '<span class="soc-emoji">' + st.emoji + '</span>' +
         '<div class="soc-name">' + st.name + '</div>' +
         '<div class="soc-stars">' + starStr + '</div>' +
-        '<div class="soc-status">已解锁</div>';
+        '<div class="soc-status">'+t('overview_unlocked')+'</div>';
     } else {
       inner = '<span class="soc-lock">🔒</span>' +
         '<div class="soc-name">' + st.name + '</div>' +
-        '<div class="soc-status">未解锁</div>';
+        '<div class="soc-status">'+t('overview_locked')+'</div>';
     }
     return '<div class="' + cardCls + '">' + inner + '</div>';
   }).join('') + '</div>';
@@ -2862,30 +4709,30 @@ function renderSummary() {
   // 鼓励语（按阶段区分）
   var encourage = '';
   if (state.stage === 1) {
-    if (ratio >= 0.9) encourage = '太棒了！你对编程基础概念掌握得非常扎实，可以去挑战初级阶段了！';
-    else if (ratio >= 0.6) encourage = '恭喜通过入门阶段！正确率达到60%就能解锁初级阶段。再多练几次会更扎实！';
-    else encourage = '正确率达到60%就能解锁初级阶段，再来一次吧！相信你能做到！';
+    if (ratio >= 0.9) encourage = t('encourage_s1_3star');
+    else if (ratio >= 0.6) encourage = t('encourage_s1_pass');
+    else encourage = t('encourage_s1_fail');
   } else {
-    if (ratio >= 0.9) encourage = '非常扎实！你的代码阅读能力很强！';
-    else if (ratio >= 0.7) encourage = '做得不错！大部分代码都能读懂了，继续加油！';
-    else if (ratio >= 0.6) encourage = '通过啦！代码阅读需要练习，多读几遍会更熟练。';
-    else encourage = '代码阅读需要多练习，把每道题的解析认真读一遍，再来一次会有很大提升！';
+    if (ratio >= 0.9) encourage = t('encourage_s2_3star');
+    else if (ratio >= 0.7) encourage = t('encourage_s2_pass');
+    else if (ratio >= 0.6) encourage = t('encourage_s2_low_pass');
+    else encourage = t('encourage_s2_fail');
   }
 
-  var stageName = state.stage === 1 ? '入门' : (state.stage === 2 ? '初级' : '中级');
+  var stageName = getStages()[state.stage - 1].name;
 
   content.innerHTML =
     '<div class="page summary-page">' +
       '<div class="summary-crown">🎓</div>' +
-      '<h2 class="summary-title">'+stageName+'阶段 闯关完成</h2>' +
+      '<h2 class="summary-title">'+t('summary_title').replace('{stage}', stageName)+'</h2>' +
       '<div class="summary-score">'+state.score+'<small> / '+total+'</small></div>' +
       '<div class="summary-stars" style="letter-spacing:8px;">'+stars+'</div>' +
       '<div class="module-results">'+resultsHTML+'</div>' +
       '<div class="stage-overview">'+overviewHTML+'</div>' +
       '<div class="summary-encourage">'+encourage+'</div>' +
       '<div class="btn-row">' +
-        '<button class="btn green" onclick="startGame(state.stage)">重答本阶段</button>' +
-        '<button class="btn" onclick="renderStart()">回阶段选择</button>' +
+        '<button class="btn green" onclick="startGame(state.stage)">'+t('btn_retry_stage')+'</button>' +
+        '<button class="btn" onclick="renderStart()">'+t('btn_back_to_stages')+'</button>' +
       '</div>' +
     '</div>';
 
@@ -2908,8 +4755,8 @@ function renderSummary() {
 function renderUnlock(passedStage, score, total) {
   state.phase = 'unlock';
   var nextStage = passedStage + 1;
-  var stageNames = { 1: '入门', 2: '初级', 3: '中级' };
-  var nextName = stageNames[nextStage] || '下一阶段';
+  var stagesArr = getStages();
+  var nextName = (stagesArr[nextStage - 1] ? stagesArr[nextStage - 1].name : '');
   var starCount = calcStars(score, total);
   var pct = total > 0 ? Math.round((score / total) * 100) : 0;
 
@@ -2953,14 +4800,14 @@ function renderUnlock(passedStage, score, total) {
     confHTML +
     '<div class="unlock-modal">' +
       '<div class="unlock-icon">🎉</div>' +
-      '<h2 class="unlock-title">恭喜过关！</h2>' +
-      '<div class="unlock-score-row">本阶段成绩：<b id="uoScoreNum">0</b> / ' + total + '</div>' +
+      '<h2 class="unlock-title">'+t('unlock_title')+'</h2>' +
+      '<div class="unlock-score-row">'+t('unlock_score_label')+'<b id="uoScoreNum">0</b> / ' + total + '</div>' +
       '<div class="unlock-stars">' + starsHTML + '</div>' +
-      '<div class="unlock-pct">正确率 <b>' + pct + '%</b></div>' +
-      '<div class="unlock-pill">🔓 已解锁：' + nextName + '阶段</div>' +
+      '<div class="unlock-pct">'+t('unlock_accuracy')+' <b>' + pct + '%</b></div>' +
+      '<div class="unlock-pill">🔓 '+t('unlock_unlocked') + nextName + '</div>' +
       '<div class="btn-row">' +
-        '<button class="btn green" onclick="closeUnlockAndStart(' + nextStage + ')">去' + nextName + '阶段</button>' +
-        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.10);" onclick="closeUnlock()">再练练</button>' +
+        '<button class="btn green" onclick="closeUnlockAndStart(' + nextStage + ')">'+t('unlock_go_next').replace('{stage}', nextName)+'</button>' +
+        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.10);" onclick="closeUnlock()">'+t('unlock_practice')+'</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
@@ -3248,7 +5095,7 @@ function getVarVisual(p, m){
   /* 小机器人（开心，伸手够盒子） */
   s += _robot(98, 104, 'happy', 1.05, gid);
   /* 说明 */
-  s += '<text x="140" y="158" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">变量 '+_esc(vn)+' 里放的是 '+_esc(v)+'</text>';
+  s += '<text x="140" y="158" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">'+t('svg_var_caption').replace('{name}', _esc(vn)).replace('{value}', _esc(v))+'</text>';
   s += '</svg></div>';
   return s;
 }
@@ -3288,7 +5135,7 @@ function getCondVisual(p, m){
   /* 小机器人（思考） */
   s += _robot(140, 68, 'thinking', 0.82, gid);
   /* 说明 */
-  s += '<text x="140" y="158" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">'+(takeLeft?'条件成立 → 走左边':'条件不成立 → 走右边')+'</text>';
+  s += '<text x="140" y="158" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">'+(takeLeft?t('svg_cond_true'):t('svg_cond_false'))+'</text>';
   s += '</svg></div>';
   return s;
 }
@@ -3319,20 +5166,40 @@ function getLoopVisual(p, m){
   s += _drop(58,54);
   /* 计数气泡：第 N 圈 */
   s += '<rect x="184" y="44" width="60" height="22" rx="11" style="fill:var(--c-surface)" stroke="'+c+'" stroke-width="1.6"/>';
-  s += '<text x="214" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="'+c+'">第 '+_esc(n)+' 圈</text>';
+  s += '<text x="214" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="'+c+'">'+t('svg_loop_lap').replace('{n}', _esc(n))+'</text>';
   /* 小机器人（专注，在跑道左侧跑步） */
   s += _robot(58, 94, 'focus', 0.82, gid);
   /* 说明 */
-  s += '<text x="130" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">重复执行 '+_esc(n)+' 次</text>';
+  s += '<text x="130" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">'+t('svg_loop_caption').replace('{n}', _esc(n))+'</text>';
   s += '</svg></div>';
   return s;
 }
 
 /* --- 函数：齿轮工坊 --- */
+/* 翻译函数插图的 input/output 概念标签（代码值不翻译） */
+function _trFuncParam(val) {
+  var map = {
+    '原料': { en: 'Input', fr: 'Entrée' },
+    '成品': { en: 'Output', fr: 'Sortie' },
+    '参数': { en: 'Parameter', fr: 'Paramètre' },
+    '返回值': { en: 'Return', fr: 'Retour' },
+    '名字': { en: 'Name', fr: 'Nom' },
+    '问好': { en: 'Greeting', fr: 'Salut' },
+    '数据': { en: 'Data', fr: 'Données' },
+    '处理后': { en: 'Processed', fr: 'Traité' },
+    '数字': { en: 'Number', fr: 'Nombre' },
+    '双倍': { en: 'Double', fr: 'Double' },
+    '无': { en: 'None', fr: 'Aucun' },
+    '结果': { en: 'Result', fr: 'Résultat' }
+  };
+  if (map[val] && map[val][currentLang]) return map[val][currentLang];
+  return val;
+}
+
 function getFuncVisual(p, m){
   var c = m ? m.color : '#2d9e6b';
-  var inp = p.input || '原料';
-  var out = p.output || '成品';
+  var inp = _trFuncParam(p.input || '原料');
+  var out = _trFuncParam(p.output || '成品');
   var uid = (Math.random()*1e6|0).toString(36);
   var gid='rbFunc_'+uid;
   var s = '<div class="q-visual"><svg width="300" height="160" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">';
@@ -3373,7 +5240,7 @@ function getFuncVisual(p, m){
   /* 小机器人（专注，站在工坊门口） */
   s += _robot(157, 108, 'focus', 0.72, gid);
   /* 说明 */
-  s += '<text x="150" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">函数：原料 → 加工 → 成品</text>';
+  s += '<text x="150" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">'+t('svg_func_caption')+'</text>';
   s += '</svg></div>';
   return s;
 }
@@ -3409,7 +5276,7 @@ function getBugVisual(p, m){
   s += _hat(80, 79);
   s += _magnifier(116, 108);
   /* 说明 */
-  s += '<text x="140" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">找虫 · 分析 · 修复 · 验证</text>';
+  s += '<text x="140" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">'+t('svg_bug_caption')+'</text>';
   s += '</svg></div>';
   return s;
 }
@@ -3453,7 +5320,7 @@ function getReadingVisual(p, m) {
   s += _sparkle(60, 60, '#ffd54f', 6);
   s += _sparkle(235, 70, '#ffe082', 5);
   /* 说明 */
-  s += '<text x="140" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">读代码 · 理解 · 预测结果</text>';
+  s += '<text x="140" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">'+t('svg_reading_caption')+'</text>';
   s += '</svg></div>';
   return s;
 }
@@ -3512,7 +5379,7 @@ function getListVisual(p, m) {
   /* 小机器人（开心，站在左侧看格子） */
   s += _robot(70, 100, 'happy', 0.85, gid);
   /* 说明 */
-  s += '<text x="140" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">列表 · 有序排列 · 索引从0开始</text>';
+  s += '<text x="140" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">'+t('svg_list_caption')+'</text>';
   s += '</svg></div>';
   return s;
 }
@@ -3613,6 +5480,8 @@ function toggleTheme() {
 /* ============================================================
  *  初始化
  * ============================================================ */
+initLang();
+tts.init();
 renderStart();
   window.tts = tts;
 </script>

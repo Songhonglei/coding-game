@@ -1,0 +1,149 @@
+%% ============================================================
+%% 编程小达人 i18n + TTS 升级 — 时序图
+%% 架构师：高见远
+%% ============================================================
+
+%% ---------- D.1 语言切换流程 ----------
+sequenceDiagram
+    participant U as 用户
+    participant LS as LangSwitcher
+    participant SL as setLang()
+    participant LS2 as localStorage
+    participant TTS as tts
+    participant RC as rerenderCurrent()
+    participant RF as RenderFunc
+    participant ULS as updateLangSwitcher()
+
+    U->>LS: 点击 🌐 按钮
+    LS->>LS: toggleLangMenu() 显示下拉菜单
+    U->>LS: 选择语言（如 'en'）
+    LS->>SL: setLang('en')
+    SL->>SL: 校验 lang ∈ LANGS
+    SL->>LS2: localStorage.setItem(LANG_KEY, 'en')
+    SL->>SL: document.documentElement.lang = 'en'
+    SL->>TTS: tts.stop()（停止当前朗读）
+    SL->>RC: rerenderCurrent()
+    RC->>RC: switch(state.phase)
+    alt phase === 'start'
+        RC->>RF: renderStart()（用 t()/getStages()）
+    else phase === 'intro'
+        RC->>RF: renderIntro()（用 t()/tM()）
+    else phase === 'question'
+        RC->>RF: renderQuestion()（用 tQ()/t()）
+    else phase === 'summary'
+        RC->>RF: renderSummary()（用 t()/tM()）
+    else phase === 'unlock'
+        RC->>RF: 底层成绩页已渲染，弹窗保持
+    end
+    RF-->>U: 界面即时切换为新语言
+    SL->>ULS: updateLangSwitcher()
+    ULS->>LS: 更新 ✓ 标记 + lang-label
+
+%% ---------- D.2 TTS朗读流程（双引擎） ----------
+sequenceDiagram
+    participant U as 用户
+    participant TS as toggleSpeak()
+    participant TTS as tts
+    participant CHK as _chunk()
+    participant P as Puter.ai
+    participant WS as Web Speech API
+    participant AU as Audio对象
+
+    U->>TS: 点击 🔊 朗读按钮
+    TS->>TTS: tts.speak(text)
+    TTS->>TTS: stop()（清理上一次播放）
+    TTS->>CHK: _chunk(text) 文本分段
+    CHK-->>TTS: 返回 segments[]
+    TTS->>TTS: _queue = segments, _idx = 0, speaking = true
+    TTS->>TTS: updateBtn()（按钮高亮）
+
+    alt _puterReady === true
+        TTS->>TTS: _playWithPuter()
+        loop 遍历 _queue 每一段
+            TTS->>P: puter.ai.txt2speech(segment, lang)
+            P-->>TTS: audio 对象
+            TTS->>AU: audio.play()
+            AU-->>TTS: onended 事件
+            TTS->>TTS: _idx++, 播放下一段
+        end
+        TTS->>TTS: _finish()（清理状态）
+    else _puterReady === false
+        TTS->>TTS: _playWithWebSpeech()
+        loop 遍历 _queue 每一段
+            TTS->>WS: speechSynthesis.speak(utterance)
+            WS-->>TTS: onend 事件
+            TTS->>TTS: _idx++, 播放下一段
+        end
+        TTS->>TTS: _finish()
+    end
+    TTS->>TTS: updateBtn()（按钮恢复）
+
+%% ---------- D.3 Fallback 降级流程 ----------
+sequenceDiagram
+    participant TTS as tts
+    participant P as Puter.ai
+    participant WS as Web Speech API
+
+    TTS->>TTS: speak() 被调用
+    TTS->>TTS: 检查 _puterReady
+
+    alt Puter 已就绪 (_puterReady === true)
+        TTS->>TTS: _engine = 'puter'
+        TTS->>P: txt2speech(segment, lang)
+        alt 调用成功
+            P-->>TTS: audio 对象
+            TTS->>TTS: 正常播放
+        else 调用失败 (catch)
+            P-->>TTS: Error
+            TTS->>TTS: console.warn('Puter TTS failed')
+            TTS->>TTS: _engine = 'web'（切换引擎）
+            TTS->>WS: _playWithWebSpeech()
+            Note over TTS: 本次会话后续不再重试 Puter
+        end
+    else Puter 未就绪 (_puterReady === false)
+        TTS->>TTS: _engine = 'web'
+        TTS->>WS: 直接使用 _playWithWebSpeech()
+        Note over TTS: 脚本未加载/加载失败/触发登录弹窗
+    end
+
+%% ---------- D.4 初始化流程 ----------
+sequenceDiagram
+    participant DOM as DOMContentLoaded
+    participant IL as initLang()
+    participant LS as localStorage
+    participant DL as detectLang()
+    participant TI as tts.init()
+    participant P as Puter.js
+    participant RS as renderStart()
+
+    DOM->>IL: initLang()
+    IL->>LS: localStorage.getItem(LANG_KEY)
+    alt 有合法语言值
+        LS-->>IL: 'en'
+        IL->>IL: currentLang = 'en'
+    else 无值或非法
+        LS-->>IL: null
+        IL->>DL: detectLang()
+        DL->>DL: 读取 navigator.language
+        alt 以 'fr' 开头
+            DL-->>IL: 'fr'
+        else 以 'en' 开头
+            DL-->>IL: 'en'
+        else 其他
+            DL-->>IL: 'zh'（默认中文）
+        end
+        IL->>IL: currentLang = 检测结果
+    end
+    IL->>IL: document.documentElement.lang 设置
+
+    DOM->>TI: tts.init()
+    TI->>TI: 检查 typeof puter !== 'undefined'
+    alt Puter 已加载
+        TI->>TI: _puterReady = true, _engine = 'puter'
+    else Puter 未加载
+        TI->>P: 监听 DOMContentLoaded 再次检测
+        P-->>TI: 加载完成 → _puterReady = true
+    end
+
+    DOM->>RS: renderStart()
+    RS->>RS: 使用 currentLang 渲染开始页

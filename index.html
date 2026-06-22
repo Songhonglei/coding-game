@@ -2,13 +2,18 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>编程小达人 - 知识闯关大冒险</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
   /* ===== 全局重置 ===== */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 
   /* ===== 设计 Token ===== */
   :root {
@@ -52,12 +57,16 @@
     font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
     background: var(--c-bg);
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: var(--sp-md);
+    /* safe-area：刘海屏/底部 Home 条不遮挡内容；桌面端 env() 返回 0 即普通内边距 */
+    padding: calc(var(--sp-md) + env(safe-area-inset-top)) calc(var(--sp-md) + env(safe-area-inset-right)) calc(var(--sp-md) + env(safe-area-inset-bottom)) calc(var(--sp-md) + env(safe-area-inset-left));
     color: var(--c-text-1);
     -webkit-font-smoothing: antialiased;
+    touch-action: manipulation;     /* 消除移动端 300ms 点击延迟 */
+    overscroll-behavior: none;      /* 防止下拉刷新/回弹 */
   }
 
   /* ===== 游戏容器 ===== */
@@ -65,6 +74,7 @@
     width: 100%;
     max-width: 740px;
     min-height: calc(100vh - 32px);
+    min-height: calc(100dvh - var(--sp-md) - var(--sp-md) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     background: var(--c-surface);
     border-radius: var(--r-lg);
     box-shadow: var(--shadow-card);
@@ -219,6 +229,7 @@
     transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
     font-family: inherit;
     letter-spacing: 0.01em;
+    min-height: 44px;               /* iOS HIG / Material 触摸目标最小值 */
   }
   .btn:hover {
     background: #3451d1;
@@ -560,6 +571,7 @@
     font-family: inherit;
     color: var(--c-text-1);
     line-height: 1.5;
+    min-height: 44px;               /* 触摸目标最小值 */
   }
   .option .opt-letter {
     width: 28px; height: 28px; border-radius: var(--r-sm);
@@ -674,6 +686,8 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    min-width: 44px;
+    min-height: 44px;               /* 触摸目标最小值 */
   }
   .speak-btn:hover {
     background: var(--c-primary-lt);
@@ -692,20 +706,25 @@
   }
   .q-visual {
     width: 100%;
-    height: 170px;
-    background: var(--c-bg);
+    height: 174px;
+    background: linear-gradient(155deg, #f0f4ff 0%, #fef9f0 55%, #f5fff9 100%);
     border-radius: var(--r-md);
     margin: var(--sp-sm) 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--c-border);
+    border: 1.5px solid var(--c-border);
     overflow: hidden;
     position: relative;
+    box-shadow: 0 2px 8px rgba(67,97,238,0.07);
+  }
+  [data-theme="dark"] .q-visual {
+    background: linear-gradient(155deg, #181d35 0%, #1e1a2e 55%, #161e1e 100%);
   }
   .q-visual svg {
     width: auto;
-    height: 150px;
+    height: 158px;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.10));
   }
   .fb-speak-btn {
     background: none;
@@ -820,8 +839,8 @@
     position: absolute;
     top: 14px;
     right: var(--sp-lg);
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     border: 1.5px solid var(--c-border);
     border-radius: var(--r-md);
     background: var(--c-bg);
@@ -841,14 +860,351 @@
   .content::-webkit-scrollbar { width: 4px; }
   .content::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: var(--r-full); }
 
-  /* 响应式 */
+  /* ===== 响应式：平板 ===== */
+  @media (max-width: 768px) {
+    #game    { max-width: 100%; border-radius: var(--r-md); border: none; box-shadow: none; }
+    .topbar  { padding: 12px var(--sp-md) 10px; }
+    .content { padding: var(--sp-md) var(--sp-md) var(--sp-xl); }
+  }
+
+  /* ===== 响应式：手机 ===== */
   @media (max-width: 600px) {
     .options { grid-template-columns: 1fr; }
-    .topbar  { padding: 12px var(--sp-md) 8px; }
-    .content { padding: var(--sp-md) var(--sp-md) var(--sp-xl); }
     .start-page .big-title { font-size: 1.6rem; }
     .q-text  { font-size: 1rem; }
-    #game    { border-radius: var(--r-md); }
+    .q-visual { height: 150px; }
+    .q-visual svg { height: 135px; }
+    .module-card .mc-emoji { font-size: 1.4rem; }
+    .btn { padding: 12px 20px; font-size: 0.95rem; }
+    .option { padding: 14px 14px; font-size: 0.92rem; }
+  }
+
+  /* ===== 响应式：小手机（iPhone SE） ===== */
+  @media (max-width: 380px) {
+    .start-page .big-title { font-size: 1.4rem; }
+    .q-text  { font-size: 0.95rem; }
+    .q-visual { height: 130px; }
+    .q-visual svg { height: 118px; }
+    .topbar  { padding: 10px 12px 8px; }
+    .content { padding: var(--sp-sm) var(--sp-sm) var(--sp-lg); }
+  }
+
+  /* ===== 响应式：横屏手机（高度受限） ===== */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .q-visual { height: 110px; }
+    .q-visual svg { height: 100px; }
+    .start-page .big-title { font-size: 1.3rem; }
+  }
+
+  /* ===== 第2阶新增：阶段选择器 ===== */
+  .stage-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 560px;
+    margin: 0 auto var(--sp-lg);
+  }
+  .stage-card {
+    background: var(--c-bg);
+    border-radius: var(--r-md);
+    padding: 18px 10px 14px;
+    text-align: center;
+    border: 1px solid var(--c-border);
+    border-top: 4px solid var(--c-primary);
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .stage-card:hover:not(.locked) {
+    box-shadow: var(--shadow-card);
+    transform: translateY(-3px);
+    border-color: var(--c-primary);
+  }
+  .stage-card.locked {
+    opacity: 0.55;
+    cursor: not-allowed;
+    border-top-color: var(--c-text-3);
+  }
+  .stage-card .stage-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text-1);
+    letter-spacing: -0.01em;
+  }
+  .stage-card .stage-count {
+    font-size: 0.8rem;
+    color: var(--c-text-3);
+    font-weight: 500;
+  }
+  .stage-card .stage-stars-mini {
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    margin: 2px 0;
+  }
+  .stage-card .stage-best {
+    font-size: 0.72rem;
+    color: var(--c-success);
+    font-weight: 600;
+  }
+  .stage-card .stage-status {
+    font-size: 0.72rem;
+    color: var(--c-text-3);
+    font-weight: 500;
+  }
+  .stage-card .lock-icon {
+    font-size: 1.4rem;
+    margin: 2px 0;
+  }
+  /* 已通过徽章（首页阶段卡片右上角） */
+  .stage-card .stage-passed-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--c-success);
+    color: #fff;
+    font-size: 0.66rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--r-full);
+    letter-spacing: 0.02em;
+    box-shadow: 0 1px 4px rgba(45,158,107,0.3);
+    line-height: 1.5;
+    z-index: 1;
+  }
+  .continue-info {
+    font-size: 0.85rem;
+    color: var(--c-text-3);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ===== 阶段总览（成绩页卡片化）===== */
+  .stage-overview {
+    max-width: 500px;
+    margin: 0 auto 20px;
+  }
+  .stage-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .stage-overview-card {
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    padding: 12px 8px 10px;
+    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    transition: transform 0.2s;
+  }
+  .stage-overview-card.passed {
+    border-color: var(--c-success);
+    background: var(--c-success-lt);
+    box-shadow: 0 0 0 1px var(--c-success) inset;
+  }
+  .stage-overview-card.locked {
+    opacity: 0.55;
+  }
+  .stage-overview-card .soc-emoji { font-size: 1.4rem; line-height: 1; }
+  .stage-overview-card .soc-name { font-size: 0.82rem; font-weight: 700; color: var(--c-text-1); }
+  .stage-overview-card .soc-stars { font-size: 0.72rem; letter-spacing: 1px; margin: 1px 0; }
+  .stage-overview-card .soc-score { font-size: 0.7rem; font-weight: 600; color: var(--c-success); }
+  .stage-overview-card .soc-status { font-size: 0.66rem; color: var(--c-text-3); font-weight: 600; }
+  .stage-overview-card .soc-lock { font-size: 1.1rem; line-height: 1; margin-bottom: 1px; }
+  @media (max-width: 380px) {
+    .stage-overview-grid { grid-template-columns: 1fr; max-width: 240px; margin: 0 auto; }
+  }
+
+  /* ===== 解锁弹窗（精美庆祝版）===== */
+  .unlock-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(20,12,48,0.86) 0%, rgba(36,18,72,0.88) 45%, rgba(58,22,90,0.90) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: uoFadeIn 0.4s ease;
+    overflow: hidden;
+  }
+  /* 星光粒子层 */
+  .unlock-overlay .uo-sparkles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .unlock-overlay .uo-spark {
+    position: absolute;
+    color: #ffe082;
+    opacity: 0;
+    animation: uoSparkle 2.4s ease-in-out infinite;
+    text-shadow: 0 0 6px rgba(255,224,130,0.8);
+    line-height: 1;
+  }
+  /* 彩带层 */
+  .unlock-overlay .uo-confetti {
+    position: absolute;
+    top: -24px;
+    width: 8px;
+    height: 16px;
+    border-radius: 2px;
+    opacity: 0.92;
+    animation: uoConfettiFall linear infinite;
+  }
+  .unlock-modal {
+    position: relative;
+    background: var(--c-surface);
+    border-radius: var(--r-lg);
+    padding: 30px 26px 24px;
+    text-align: center;
+    max-width: 340px;
+    width: 90%;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.45), 0 0 60px rgba(247,37,133,0.22);
+    animation: uoModalIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), uoGlowPulse 2.6s ease-in-out 0.5s infinite;
+    z-index: 2;
+  }
+  /* 渐变流动顶边 */
+  .unlock-modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    background: linear-gradient(90deg, #4361ee, #f72585, #e07b00, #2d9e6b);
+    background-size: 200% 100%;
+    animation: uoBorderShift 3s linear infinite;
+  }
+  .unlock-icon {
+    font-size: 3.2rem;
+    line-height: 1;
+    margin-bottom: 6px;
+    display: inline-block;
+    animation: uoIconBounce 1.6s ease-in-out infinite;
+  }
+  .unlock-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+    background: linear-gradient(90deg, #4361ee, #f72585);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .unlock-score-row {
+    font-size: 1rem;
+    color: var(--c-text-2);
+    margin-bottom: 8px;
+  }
+  .unlock-score-row b {
+    color: var(--c-text-1);
+    font-weight: 700;
+  }
+  .unlock-stars {
+    font-size: 2rem;
+    letter-spacing: 6px;
+    margin: 6px 0 10px;
+    line-height: 1;
+  }
+  .unlock-stars .uo-star {
+    display: inline-block;
+    opacity: 0;
+    transform: scale(0) rotate(-180deg);
+    animation: uoStarPop 0.5s cubic-bezier(0.34, 1.8, 0.64, 1) forwards;
+  }
+  .unlock-pct {
+    font-size: 0.9rem;
+    color: var(--c-text-3);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  .unlock-pct b { color: var(--c-success); }
+  .unlock-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: var(--r-full);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(90deg, #2d9e6b, #4361ee);
+    box-shadow: 0 4px 14px rgba(45,158,107,0.35);
+    margin-bottom: 20px;
+  }
+  .unlock-modal .btn-row { margin-top: 4px; }
+  .unlock-modal .btn {
+    transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+  }
+  .unlock-modal .btn:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 0 18px rgba(247,37,133,0.45), 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .unlock-modal .btn:active { transform: scale(0.96); }
+
+  @keyframes uoFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes uoModalIn {
+    from { opacity: 0; transform: scale(0.7) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes uoGlowPulse {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.45), 0 0 50px rgba(247,37,133,0.18); }
+    50%      { box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 12px 40px rgba(0,0,0,0.45), 0 0 70px rgba(247,37,133,0.34); }
+  }
+  @keyframes uoBorderShift { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+  @keyframes uoIconBounce {
+    0%, 100% { transform: translateY(0) rotate(-6deg); }
+    50%      { transform: translateY(-8px) rotate(6deg); }
+  }
+  @keyframes uoStarPop {
+    0%   { opacity: 0; transform: scale(0) rotate(-180deg); }
+    60%  { opacity: 1; transform: scale(1.3) rotate(20deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+  }
+  @keyframes uoSparkle {
+    0%, 100% { opacity: 0; transform: scale(0.4); }
+    50%      { opacity: 1; transform: scale(1); }
+  }
+  @keyframes uoConfettiFall {
+    0%   { transform: translateY(0) rotate(0); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.6; }
+  }
+
+  /* 移动端：弹窗略缩小，粒子数量由 JS 动态减少 */
+  @media (max-width: 600px) {
+    .unlock-modal { padding: 24px 18px 20px; }
+    .unlock-icon { font-size: 2.6rem; }
+    .unlock-title { font-size: 1.3rem; }
+    .unlock-stars { font-size: 1.7rem; }
+  }
+
+  /* ===== 响应式：阶段选择器 ===== */
+  @media (max-width: 600px) {
+    .stage-selector { gap: 8px; }
+    .stage-card { padding: 14px 6px 12px; }
+    .stage-card .stage-name { font-size: 0.9rem; }
+    .stage-card .stage-count { font-size: 0.74rem; }
+  }
+  @media (max-width: 380px) {
+    .stage-selector { grid-template-columns: 1fr; max-width: 240px; }
   }
 </style>
 </head>
@@ -937,6 +1293,63 @@ var MODULES = [
     color: '#7c3aed',
     desc: '程序出错了怎么办？学会像侦探一样分析错误，一步步找出并修复 Bug！',
     anim: 'bug'
+  },
+  // ===== 第2阶（新增）=====
+  {
+    id: 6,
+    emoji: '📖',
+    name: '代码阅读基础',
+    color: '#0ea5e9',
+    desc: '学会像读故事一样读代码，从上到下一行一行理解执行顺序。',
+    anim: 'reading'
+  },
+  {
+    id: 7,
+    emoji: '📦',
+    name: '变量进阶',
+    color: '#4361ee',
+    desc: '变量可以互相赋值、连续更新，还能交换——来看看变量的进阶用法！',
+    anim: 'variable'
+  },
+  {
+    id: 8,
+    emoji: '⚖️',
+    name: '条件进阶',
+    color: '#d62839',
+    desc: 'elif 多分支、嵌套 if、and/or 逻辑运算符——让程序做更复杂的判断！',
+    anim: 'condition'
+  },
+  {
+    id: 9,
+    emoji: '🔄',
+    name: '循环进阶',
+    color: '#e07b00',
+    desc: 'range 范围、累加器、循环里加条件——循环的威力远超你的想象！',
+    anim: 'loop'
+  },
+  {
+    id: 10,
+    emoji: '🔧',
+    name: '函数进阶',
+    color: '#2d9e6b',
+    desc: '带参数、有返回值、函数套函数——函数是代码复用的利器！',
+    anim: 'function'
+  },
+  {
+    id: 11,
+    emoji: '📋',
+    name: '列表入门',
+    color: '#ec4899',
+    desc: '列表就像购物清单，把多个数据排成一排存放。学会创建、访问和添加元素！',
+    anim: 'list'
+  },
+  {
+    id: 12,
+    emoji: '🧩',
+    name: '综合小案例',
+    color: '#7c3aed',
+    desc: '把前面学的知识串起来，读懂完整的小程序——猜数字、成绩判断、倒计时、购物计算！',
+    anim: 'reading'
   }
 ];
 
@@ -952,11 +1365,11 @@ var QUESTIONS = [
     code: null,
     options: [
       { letter: 'A', text: '一本书' },
-      { letter: 'B', text: '一个贴了标签的盒子' },
-      { letter: 'C', text: '一扇门' },
+      { letter: 'B', text: '一扇门' },
+      { letter: 'C', text: '一个贴了标签的盒子' },
       { letter: 'D', text: '一张地图' }
     ],
-    answer: 1,
+    answer: 2,
     explain: '变量就像一个贴了标签的盒子，可以存放各种数据，随时取用或更换里面的内容。'
   },
   {
@@ -966,12 +1379,12 @@ var QUESTIONS = [
     question: '下面哪个变量名是正确的？',
     code: null,
     options: [
-      { letter: 'A', text: '1name' },
+      { letter: 'A', text: 'myName' },
       { letter: 'B', text: 'my name' },
-      { letter: 'C', text: 'myName' },
+      { letter: 'C', text: '1name' },
       { letter: 'D', text: 'my-name' }
     ],
-    answer: 2,
+    answer: 0,
     explain: '变量名不能以数字开头，不能含空格，通常用字母、数字、下划线，myName 是驼峰命名法。'
   },
   {
@@ -982,11 +1395,11 @@ var QUESTIONS = [
     code: '<span class="kw">x</span> = <span class="num">12</span>',
     options: [
       { letter: 'A', text: '判断 x 是否等于 12' },
-      { letter: 'B', text: '把数字 12 存入名为 x 的变量' },
+      { letter: 'B', text: '删除变量 x' },
       { letter: 'C', text: '输出数字 12' },
-      { letter: 'D', text: '删除变量 x' }
+      { letter: 'D', text: '把数字 12 存入名为 x 的变量' }
     ],
-    answer: 1,
+    answer: 3,
     explain: '= 在编程中是"赋值"符号，表示把右边的值存入左边的变量。'
   },
   {
@@ -1030,10 +1443,10 @@ var QUESTIONS = [
     options: [
       { letter: 'A', text: '重复执行代码' },
       { letter: 'B', text: '定义一个函数' },
-      { letter: 'C', text: '根据条件决定执行哪段代码' },
-      { letter: 'D', text: '打印输出内容' }
+      { letter: 'C', text: '打印输出内容' },
+      { letter: 'D', text: '根据条件决定执行哪段代码' }
     ],
-    answer: 2,
+    answer: 3,
     explain: 'if 就像我们生活中的"如果……就……"，比如"如果下雨了，就带伞"。'
   },
   {
@@ -1043,12 +1456,12 @@ var QUESTIONS = [
     question: 'score > 60 中的 > 表示什么？',
     code: '<span class="kw">score</span> &gt; <span class="num">60</span>',
     options: [
-      { letter: 'A', text: 'score 赋值为 60' },
-      { letter: 'B', text: 'score 大于 60' },
+      { letter: 'A', text: 'score 大于 60' },
+      { letter: 'B', text: 'score 赋值为 60' },
       { letter: 'C', text: 'score 等于 60' },
       { letter: 'D', text: 'score 小于 60' }
     ],
-    answer: 1,
+    answer: 0,
     explain: '> 是"大于"，< 是"小于"，== 是"等于"，!= 是"不等于"。'
   },
   {
@@ -1074,11 +1487,11 @@ var QUESTIONS = [
     code: null,
     options: [
       { letter: 'A', text: '让代码重复执行' },
-      { letter: 'B', text: '根据条件二选一执行' },
+      { letter: 'B', text: '打印输出内容' },
       { letter: 'C', text: '定义一个新变量' },
-      { letter: 'D', text: '打印输出内容' }
+      { letter: 'D', text: '根据条件二选一执行' }
     ],
-    answer: 1,
+    answer: 3,
     explain: 'if-else 提供两条路：条件成立走 if，不成立走 else。就像"如果下雨带伞，否则戴帽子"。'
   },
   {
@@ -1089,11 +1502,11 @@ var QUESTIONS = [
     code: null,
     options: [
       { letter: 'A', text: '数字' },
-      { letter: 'B', text: '字符串' },
-      { letter: 'C', text: '布尔值（真或假）' },
+      { letter: 'B', text: '布尔值（真或假）' },
+      { letter: 'C', text: '字符串' },
       { letter: 'D', text: '函数' }
     ],
-    answer: 2,
+    answer: 1,
     explain: 'True（真）和 False（假）叫做"布尔值"，是以数学家乔治·布尔命名的。条件判断的结果就是布尔值。'
   },
 
@@ -1106,11 +1519,11 @@ var QUESTIONS = [
     code: null,
     options: [
       { letter: 'A', text: '让程序更难理解' },
-      { letter: 'B', text: '避免重复写同样的代码' },
-      { letter: 'C', text: '让程序运行更慢' },
+      { letter: 'B', text: '让程序运行更慢' },
+      { letter: 'C', text: '避免重复写同样的代码' },
       { letter: 'D', text: '存储数据' }
     ],
-    answer: 1,
+    answer: 2,
     explain: '如果要打印100次"你好"，用循环只需几行代码，不用复制100次！'
   },
   {
@@ -1120,12 +1533,12 @@ var QUESTIONS = [
     question: 'for i in range(5) 会循环几次？',
     code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):\n    <span class="fn">print</span>(<span class="str">"你好"</span>)',
     options: [
-      { letter: 'A', text: '4次' },
-      { letter: 'B', text: '5次' },
+      { letter: 'A', text: '5次' },
+      { letter: 'B', text: '4次' },
       { letter: 'C', text: '6次' },
       { letter: 'D', text: '无限次' }
     ],
-    answer: 1,
+    answer: 0,
     explain: 'range(5) 生成 0,1,2,3,4 共5个数，所以循环5次。'
   },
   {
@@ -1135,12 +1548,12 @@ var QUESTIONS = [
     question: 'while 循环什么时候停止？',
     code: '<span class="kw">while</span> 条件:\n    <span class="cmt"># 重复执行的代码</span>',
     options: [
-      { letter: 'A', text: '执行了10次之后' },
+      { letter: 'A', text: '当条件变为假（False）时' },
       { letter: 'B', text: '程序员手动停止' },
-      { letter: 'C', text: '当条件变为假（False）时' },
+      { letter: 'C', text: '执行了10次之后' },
       { letter: 'D', text: '永远不停止' }
     ],
-    answer: 2,
+    answer: 0,
     explain: 'while 循环会一直执行，直到条件不成立。如果条件一直为真，就会变成"死循环"。'
   },
   {
@@ -1151,11 +1564,11 @@ var QUESTIONS = [
     code: '<span class="kw">while</span> <span class="kw">True</span>:\n    <span class="fn">print</span>(<span class="str">"停不下来！"</span>)',
     options: [
       { letter: 'A', text: '正常结束，不打印任何内容' },
-      { letter: 'B', text: '会死循环，一直打印"停不下来！"' },
-      { letter: 'C', text: '只打印一次后停止' },
+      { letter: 'B', text: '只打印一次后停止' },
+      { letter: 'C', text: '会死循环，一直打印"停不下来！"' },
       { letter: 'D', text: '代码有语法错误，跑不起来' }
     ],
-    answer: 1,
+    answer: 2,
     explain: 'while True 表示条件永远为真，循环体（打印）会永远执行，这就是"死循环"。要避免它！'
   },
 
@@ -1183,11 +1596,11 @@ var QUESTIONS = [
     code: '<span class="cmt"># A. 定义函数</span>\n<span class="kw">def</span> <span class="fn">sayHello</span>():\n    <span class="fn">print</span>(<span class="str">"Hi"</span>)\n\n<span class="cmt"># B. 调用函数</span>\n<span class="fn">sayHello</span>()',
     options: [
       { letter: 'A', text: 'def sayHello():' },
-      { letter: 'B', text: 'sayHello()' },
+      { letter: 'B', text: '# 这是一个函数' },
       { letter: 'C', text: 'return "Hello"' },
-      { letter: 'D', text: '# 这是一个函数' }
+      { letter: 'D', text: 'sayHello()' }
     ],
-    answer: 1,
+    answer: 3,
     explain: 'def 是定义函数，函数名() 是调用函数。调用时才会真正执行里面的代码。'
   },
   {
@@ -1198,12 +1611,27 @@ var QUESTIONS = [
     code: '<span class="kw">def</span> <span class="fn">add</span>(a, b):\n    <span class="kw">return</span> a + b\n\n<span class="fn">add</span>(<span class="num">3</span>, <span class="num">5</span>)  <span class="cmt"># 3和5是参数</span>',
     options: [
       { letter: 'A', text: '函数的名字' },
-      { letter: 'B', text: '函数执行后返回的结果' },
-      { letter: 'C', text: '传入函数的输入数据' },
+      { letter: 'B', text: '传入函数的输入数据' },
+      { letter: 'C', text: '函数执行后返回的结果' },
       { letter: 'D', text: '函数里的注释' }
     ],
-    answer: 2,
+    answer: 1,
     explain: '参数就像工厂的原材料，比如 add(3, 5) 中的 3 和 5 就是参数，函数用它们来计算。'
+  },
+  {
+    module: 4,
+    visual: { type: 'function', params: { input: "数字", output: "双倍" } },
+    concept: 'return 是函数把计算结果"交还"给调用者的方式。没有 return，函数做完事情就消失了；有了 return，调用者才能拿到结果继续使用。',
+    question: '函数中 return 的作用是什么？',
+    code: '<span class="kw">def</span> <span class="fn">double</span>(n):\n    <span class="kw">return</span> n * <span class="num">2</span>\n\nresult = <span class="fn">double</span>(<span class="num">5</span>)\n<span class="fn">print</span>(result)  <span class="cmt"># 输出 10</span>',
+    options: [
+      { letter: 'A', text: '把结果返回给调用者' },
+      { letter: 'B', text: '结束程序运行' },
+      { letter: 'C', text: '打印输出内容' },
+      { letter: 'D', text: '定义一个新变量' }
+    ],
+    answer: 0,
+    explain: 'return 让函数把计算结果"交出去"，比如 double(5) 返回 10，调用者可以用 result = double(5) 来接收这个结果。'
   },
 
   // ===== 模块5：调试思维 =====
@@ -1215,11 +1643,11 @@ var QUESTIONS = [
     code: null,
     options: [
       { letter: 'A', text: '一种编程语言' },
-      { letter: 'B', text: '程序中的错误或缺陷' },
+      { letter: 'B', text: '一种数据类型' },
       { letter: 'C', text: '程序运行得很快' },
-      { letter: 'D', text: '一种数据类型' }
+      { letter: 'D', text: '程序中的错误或缺陷' }
     ],
-    answer: 1,
+    answer: 3,
     explain: 'Bug 原意是"虫子"，历史上第一个 Bug 真的是一只飞蛾卡在电脑里！现在指程序中的各种错误。'
   },
   {
@@ -1230,11 +1658,11 @@ var QUESTIONS = [
     code: null,
     options: [
       { letter: 'A', text: '立刻删掉所有代码重写' },
-      { letter: 'B', text: '分析错误信息，找出问题所在' },
-      { letter: 'C', text: '关掉电脑重启' },
+      { letter: 'B', text: '关掉电脑重启' },
+      { letter: 'C', text: '分析错误信息，找出问题所在' },
       { letter: 'D', text: '请别人帮你写' }
     ],
-    answer: 1,
+    answer: 2,
     explain: '调试（Debug）的步骤：①看错误提示 ②找到出错的行 ③理解为什么出错 ④修改并验证。'
   },
   {
@@ -1261,11 +1689,507 @@ var QUESTIONS = [
     options: [
       { letter: 'A', text: '少了冒号 :' },
       { letter: 'B', text: '拼错了 print' },
-      { letter: 'C', text: '想计算 1+2，却写了 1*2' },
-      { letter: 'D', text: '括号不匹配' }
+      { letter: 'C', text: '括号不匹配' },
+      { letter: 'D', text: '想计算 1+2，却写了 1*2' }
+    ],
+    answer: 3,
+    explain: '想算加法却写了乘法——程序能运行（没有语法错误），但结果不对，这就是逻辑错误。语法错误会让程序跑不起来，逻辑错误会让程序给出错误答案。'
+  },
+
+  // ===== 第2阶（新增30题）=====
+
+  // ----- 模块6：代码阅读基础（4题）-----
+  {
+    stage: 2,
+    module: 6,
+    visual: { type: 'reading', params: { mode: 'basic' } },
+    concept: '读代码就像读故事——从上往下一行一行读。每行代码按顺序执行，前面的结果会影响后面。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">name</span> = <span class="str">"小明"</span>\n<span class="fn">print</span>(name)',
+    options: [
+      { letter: 'A', text: '小明' },
+      { letter: 'B', text: 'name' },
+      { letter: 'C', text: 'print(name)' },
+      { letter: 'D', text: '会报错' }
+    ],
+    answer: 0,
+    explain: '第1行把"小明"存入变量name，第2行 print(name) 会输出变量name里的值，也就是"小明"。注意：print 输出的是变量的值，不是变量名！'
+  },
+  {
+    stage: 2,
+    module: 6,
+    visual: { type: 'reading', params: { mode: 'sequence' } },
+    concept: '代码从上到下依次执行。每个 print 会单独输出一行，所以三个 print 就是三行输出。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="fn">print</span>(<span class="str">"第一"</span>)\n<span class="fn">print</span>(<span class="str">"第二"</span>)\n<span class="fn">print</span>(<span class="str">"第三"</span>)',
+    options: [
+      { letter: 'A', text: '第三 第二 第一' },
+      { letter: 'B', text: '第一\\n第二\\n第三（分三行）' },
+      { letter: 'C', text: '第一第二第三（连在一起）' },
+      { letter: 'D', text: '只输出"第一"' }
+    ],
+    answer: 1,
+    explain: '代码从上到下依次执行，每个 print 输出一行。所以按顺序输出三行："第一"、"第二"、"第三"。'
+  },
+  {
+    stage: 2,
+    module: 6,
+    visual: { type: 'reading', params: { mode: 'calc' } },
+    concept: 'print 里的表达式会先计算，再输出结果。print(x + y) 不是输出"x + y"这几个字，而是输出计算后的数字。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">x</span> = <span class="num">3</span>\n<span class="kw">y</span> = <span class="num">4</span>\n<span class="fn">print</span>(x + y)',
+    options: [
+      { letter: 'A', text: 'x + y' },
+      { letter: 'B', text: '3 + 4' },
+      { letter: 'C', text: '34' },
+      { letter: 'D', text: '7' }
+    ],
+    answer: 3,
+    explain: 'x=3，y=4。print(x+y) 先计算 3+4=7，再输出 7。注意不是"34"——那是字符串拼接，而这里是数字加法。'
+  },
+  {
+    stage: 2,
+    module: 6,
+    visual: { type: 'reading', params: { mode: 'update' } },
+    concept: '变量可以"自我更新"：score = score + 10 的意思是"在原来的基础上加10"。要先算右边，再赋值给左边。',
+    question: '上面代码运行后，输出的结果是？',
+    code: '<span class="kw">score</span> = <span class="num">50</span>\n<span class="kw">score</span> = score + <span class="num">10</span>\n<span class="fn">print</span>(score)',
+    options: [
+      { letter: 'A', text: '60' },
+      { letter: 'B', text: '10' },
+      { letter: 'C', text: '50' },
+      { letter: 'D', text: '5010' }
+    ],
+    answer: 0,
+    explain: '第1行 score=50。第2行 score=score+10：先算右边 50+10=60，再存回 score。所以最终 score=60。常见错误是选"5010"——那是字符串拼接，这里是数字加法。'
+  },
+
+  // ----- 模块7：变量进阶（4题）-----
+  {
+    stage: 2,
+    module: 7,
+    visual: { type: 'variable', params: { varName: 'b', values: ['5'] } },
+    concept: 'b = a 是把 a 当前的值抄一份给 b。之后 a 怎么变，b 都不会跟着变——就像抄完笔记后，原书改了，你的笔记不会自动改。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">a</span> = <span class="num">5</span>\n<span class="kw">b</span> = a\n<span class="kw">a</span> = <span class="num">10</span>\n<span class="fn">print</span>(b)',
+    options: [
+      { letter: 'A', text: '10' },
+      { letter: 'B', text: '15' },
+      { letter: 'C', text: '5' },
+      { letter: 'D', text: '会报错' }
     ],
     answer: 2,
-    explain: '想算加法却写了乘法——程序能运行（没有语法错误），但结果不对，这就是逻辑错误。语法错误会让程序跑不起来，逻辑错误会让程序给出错误答案。'
+    explain: '第1行 a=5，第2行 b=a 所以 b=5（抄了 a 当时的值），第3行 a 变成 10——但 b 已经保存了 5，不会跟着变！所以输出 5。'
+  },
+  {
+    stage: 2,
+    module: 7,
+    visual: { type: 'variable', params: { varName: 'c', values: ['12'] } },
+    concept: '多个变量可以一起参与运算。c = a * b 就是把 a 和 b 相乘的结果存入 c。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">a</span> = <span class="num">3</span>\n<span class="kw">b</span> = <span class="num">4</span>\n<span class="kw">c</span> = a * b\n<span class="fn">print</span>(c)',
+    options: [
+      { letter: 'A', text: '7' },
+      { letter: 'B', text: '12' },
+      { letter: 'C', text: '34' },
+      { letter: 'D', text: 'a * b' }
+    ],
+    answer: 1,
+    explain: 'a=3，b=4，c=a*b 即 3×4=12，所以输出 12。干扰项"34"是字符串拼接的结果，这里是数字乘法。'
+  },
+  {
+    stage: 2,
+    module: 7,
+    visual: { type: 'variable', params: { varName: 'swap', values: ['a=2, b=1'] } },
+    concept: '交换两个变量的值需要一个"临时帮手"temp。就像两杯水（一杯可乐、一杯果汁）要交换，得先拿一个空杯子倒一下。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">a</span> = <span class="num">1</span>\n<span class="kw">b</span> = <span class="num">2</span>\n<span class="kw">temp</span> = a\n<span class="kw">a</span> = b\n<span class="kw">b</span> = temp\n<span class="fn">print</span>(a, b)',
+    options: [
+      { letter: 'A', text: '2 1' },
+      { letter: 'B', text: '1 2' },
+      { letter: 'C', text: '1 1' },
+      { letter: 'D', text: '2 2' }
+    ],
+    answer: 0,
+    explain: '这是经典的变量交换！temp 先保存 a 的值(1)，然后 a 拿走 b 的值(2)，最后 b 从 temp 拿回原来的1。所以 a=2, b=1，输出"2 1"。'
+  },
+  {
+    stage: 2,
+    module: 7,
+    visual: { type: 'variable', params: { varName: 'n', values: ['0→1→2→3'] } },
+    concept: 'n = n + 1 就像计步器，每走一步加1。执行3次就从0变成3。这种"每次加1"的模式在计数时非常常用。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">n</span> = <span class="num">0</span>\n<span class="kw">n</span> = n + <span class="num">1</span>\n<span class="kw">n</span> = n + <span class="num">1</span>\n<span class="kw">n</span> = n + <span class="num">1</span>\n<span class="fn">print</span>(n)',
+    options: [
+      { letter: 'A', text: '0' },
+      { letter: 'B', text: '3' },
+      { letter: 'C', text: '1' },
+      { letter: 'D', text: '111' }
+    ],
+    answer: 1,
+    explain: 'n 从0开始，每次 n=n+1 让 n 增加1。加了3次：0+1=1，1+1=2，2+1=3。所以输出3。不是"111"——那是字符串拼接。'
+  },
+
+  // ----- 模块8：条件进阶（5题）-----
+  {
+    stage: 2,
+    module: 8,
+    visual: { type: 'condition', params: { cond: 'age >= 18', takePath: 'right' } },
+    concept: 'if-else 像岔路口：条件成立走 if，不成立走 else，两条路必选其一。读代码时先判断条件是真是假，再决定走哪条路。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">age</span> = <span class="num">10</span>\n<span class="kw">if</span> age &gt;= <span class="num">18</span>:\n    <span class="fn">print</span>(<span class="str">"成年"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"未成年"</span>)',
+    options: [
+      { letter: 'A', text: '成年' },
+      { letter: 'B', text: '什么都不输出' },
+      { letter: 'C', text: '成年 未成年' },
+      { letter: 'D', text: '未成年' }
+    ],
+    answer: 3,
+    explain: 'age=10，10>=18 为假(False)，所以执行 else 里的代码，输出"未成年"。if 和 else 只会执行其中一个，不会都执行。'
+  },
+  {
+    stage: 2,
+    module: 8,
+    visual: { type: 'condition', params: { cond: 'elif 链', takePath: 'middle' } },
+    concept: 'elif 就像"再如果"。从上到下依次检查，找到第一个满足的条件就执行，后面的不再检查。就像考试分等级：先看够不够90，不够再看够不够80……',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">score</span> = <span class="num">85</span>\n<span class="kw">if</span> score &gt;= <span class="num">90</span>:\n    <span class="fn">print</span>(<span class="str">"优秀"</span>)\n<span class="kw">elif</span> score &gt;= <span class="num">80</span>:\n    <span class="fn">print</span>(<span class="str">"良好"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"加油"</span>)',
+    options: [
+      { letter: 'A', text: '优秀' },
+      { letter: 'B', text: '加油' },
+      { letter: 'C', text: '良好' },
+      { letter: 'D', text: '优秀 良好 加油' }
+    ],
+    answer: 2,
+    explain: 'score=85。先检查 >=90？不满足。再检查 >=80？满足！输出"良好"，后面的 else 不再执行。elif 从上到下找到第一个满足的就停止。'
+  },
+  {
+    stage: 2,
+    module: 8,
+    visual: { type: 'condition', params: { cond: '嵌套判断', takePath: 'left' } },
+    concept: 'if 里面还可以再套 if，就像"大盒子里装小盒子"。先过第一关（外层 if），再过第二关（内层 if），两层都满足才执行最里面的代码。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">x</span> = <span class="num">7</span>\n<span class="kw">if</span> x &gt; <span class="num">5</span>:\n    <span class="kw">if</span> x &lt; <span class="num">10</span>:\n        <span class="fn">print</span>(<span class="str">"在5和10之间"</span>)\n    <span class="kw">else</span>:\n        <span class="fn">print</span>(<span class="str">"大于等于10"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"小于等于5"</span>)',
+    options: [
+      { letter: 'A', text: '小于等于5' },
+      { letter: 'B', text: '大于等于10' },
+      { letter: 'C', text: '在5和10之间' },
+      { letter: 'D', text: '什么都不输出' }
+    ],
+    answer: 2,
+    explain: 'x=7。先过第一关 x>5？7>5 为真，进入外层 if。再过第二关 x<10？7<10 为真，输出"在5和10之间"。'
+  },
+  {
+    stage: 2,
+    module: 8,
+    visual: { type: 'condition', params: { cond: 'A and B', takePath: 'left' } },
+    concept: 'and 表示"并且"——两个条件都满足才为真。就像"有票并且满12岁才能看这部电影"，缺一个都不行。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">has_ticket</span> = <span class="kw">True</span>\n<span class="kw">age</span> = <span class="num">12</span>\n<span class="kw">if</span> has_ticket <span class="kw">and</span> age &gt;= <span class="num">12</span>:\n    <span class="fn">print</span>(<span class="str">"可以入场"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"不能入场"</span>)',
+    options: [
+      { letter: 'A', text: '不能入场' },
+      { letter: 'B', text: '可以入场' },
+      { letter: 'C', text: '会报错' },
+      { letter: 'D', text: '什么都不输出' }
+    ],
+    answer: 1,
+    explain: 'and 要求两个条件都为真。has_ticket=True ✓，age=12>=12 ✓，两个都满足，所以输出"可以入场"。如果任意一个不满足，就会走 else。'
+  },
+  {
+    stage: 2,
+    module: 8,
+    visual: { type: 'condition', params: { cond: 'A or B', takePath: 'left' } },
+    concept: 'or 表示"或者"——只要有一个条件满足就为真。就像"周末或者放假就不用上学"，满足任意一个就行。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">is_weekend</span> = <span class="kw">False</span>\n<span class="kw">is_holiday</span> = <span class="kw">True</span>\n<span class="kw">if</span> is_weekend <span class="kw">or</span> is_holiday:\n    <span class="fn">print</span>(<span class="str">"不用上学"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"要上学"</span>)',
+    options: [
+      { letter: 'A', text: '不用上学' },
+      { letter: 'B', text: '要上学' },
+      { letter: 'C', text: '不用上学 要上学' },
+      { letter: 'D', text: '会报错' }
+    ],
+    answer: 0,
+    explain: 'or 只要有一个为真就为真。is_weekend=False ✗，但 is_holiday=True ✓，有一个满足就行，所以输出"不用上学"。'
+  },
+
+  // ----- 模块9：循环进阶（5题）-----
+  {
+    stage: 2,
+    module: 9,
+    visual: { type: 'loop', params: { count: 3 } },
+    concept: 'for i in range(3) 会让 i 依次取 0、1、2（从0开始，不包含3）。循环体里的 print(i) 会执行3次，每次打印当前的 i 值。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>):\n    <span class="fn">print</span>(i)',
+    options: [
+      { letter: 'A', text: '1 2 3' },
+      { letter: 'B', text: '3' },
+      { letter: 'C', text: '0 1 2 3' },
+      { letter: 'D', text: '0 1 2' }
+    ],
+    answer: 3,
+    explain: 'range(3) 生成 0、1、2 三个数（从0开始，不包含3）。循环3次，i 依次为 0、1、2，所以输出 0、1、2（分三行）。'
+  },
+  {
+    stage: 2,
+    module: 9,
+    visual: { type: 'loop', params: { count: 3 } },
+    concept: 'range(2, 5) 从2开始到5结束，但不包含5！生成 2、3、4。就像"从第2页读到第5页前"——读到第4页就停。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, <span class="num">5</span>):\n    <span class="fn">print</span>(i)',
+    options: [
+      { letter: 'A', text: '2 3 4 5' },
+      { letter: 'B', text: '0 1 2 3 4' },
+      { letter: 'C', text: '2 3' },
+      { letter: 'D', text: '2 3 4' }
+    ],
+    answer: 3,
+    explain: 'range(2, 5) 从2开始到5结束（不包含5），生成 2、3、4。所以输出 2、3、4。记住口诀："包含开头，不包含结尾"。'
+  },
+  {
+    stage: 2,
+    module: 9,
+    visual: { type: 'loop', params: { count: 3 } },
+    concept: '累加器是编程最常用的模式之一：先用一个变量存0，然后在循环里不断往上加。就像存钱罐，每循环一次就投一枚硬币进去。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">total</span> = <span class="num">0</span>\n<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">4</span>):\n    total = total + i\n<span class="fn">print</span>(total)',
+    options: [
+      { letter: 'A', text: '3' },
+      { letter: 'B', text: '10' },
+      { letter: 'C', text: '6' },
+      { letter: 'D', text: '0' }
+    ],
+    answer: 2,
+    explain: 'total 从0开始。range(1,4) 生成 1、2、3。i=1时 total=0+1=1；i=2时 total=1+2=3；i=3时 total=3+3=6。所以输出6。'
+  },
+  {
+    stage: 2,
+    module: 9,
+    visual: { type: 'loop', params: { count: 5 } },
+    concept: '循环里面可以放 if，就像"从1数到10，只把偶数说出来"。每次循环都先判断条件，满足才执行 print。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):\n    <span class="kw">if</span> i &gt; <span class="num">2</span>:\n        <span class="fn">print</span>(i)',
+    options: [
+      { letter: 'A', text: '0 1 2 3 4' },
+      { letter: 'B', text: '3 4' },
+      { letter: 'C', text: '0 1 2' },
+      { letter: 'D', text: '2 3 4' }
+    ],
+    answer: 1,
+    explain: 'i 依次取 0、1、2、3、4。每次先判断 i>2：0>2✗ 1>2✗ 2>2✗ 3>2✓打印3 4>2✓打印4。所以只输出3和4。'
+  },
+  {
+    stage: 2,
+    module: 9,
+    visual: { type: 'loop', params: { count: 3 } },
+    concept: 'while 循环在条件为真时一直执行。每次循环体里要让条件逐渐变成假，否则就死循环了。这里 count 每次加1，加到3就不满足 <3 了。',
+    question: '上面代码会打印几次"嗨"？',
+    code: '<span class="kw">count</span> = <span class="num">0</span>\n<span class="kw">while</span> count &lt; <span class="num">3</span>:\n    <span class="fn">print</span>(<span class="str">"嗨"</span>)\n    count = count + <span class="num">1</span>',
+    options: [
+      { letter: 'A', text: '3次' },
+      { letter: 'B', text: '2次' },
+      { letter: 'C', text: '1次' },
+      { letter: 'D', text: '无限次' }
+    ],
+    answer: 0,
+    explain: 'count=0：0<3✓ 打印"嗨"，count变1。count=1：1<3✓ 打印，count变2。count=2：2<3✓ 打印，count变3。count=3：3<3✗ 停止。共打印3次。'
+  },
+
+  // ----- 模块10：函数进阶（4题）-----
+  {
+    stage: 2,
+    module: 10,
+    visual: { type: 'function', params: { input: '3, 5', output: '8' } },
+    concept: '调用函数时，参数会被传入函数内部。add(3, 5) 就是把3给a、5给b，函数计算 a+b=8 并 return 返回。调用者用 result 接住返回值。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">def</span> <span class="fn">add</span>(a, b):\n    <span class="kw">return</span> a + b\n\nresult = <span class="fn">add</span>(<span class="num">3</span>, <span class="num">5</span>)\n<span class="fn">print</span>(result)',
+    options: [
+      { letter: 'A', text: '3' },
+      { letter: 'B', text: '8' },
+      { letter: 'C', text: '5' },
+      { letter: 'D', text: '35' }
+    ],
+    answer: 1,
+    explain: '调用 add(3, 5)，a=3, b=5，函数返回 3+5=8。result 接住返回值8。print(result) 输出8。不是"35"——那是字符串拼接。'
+  },
+  {
+    stage: 2,
+    module: 10,
+    visual: { type: 'function', params: { input: '"小明", 12', output: '"小明12"' } },
+    concept: '函数可以有多个参数，按顺序对应。name 是第1个参数，age 是第2个。str(12) 把数字12变成文字"12"，这样才能和"小明"拼在一起。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">def</span> <span class="fn">greet</span>(name, age):\n    <span class="kw">return</span> name + <span class="fn">str</span>(age)\n\n<span class="fn">print</span>(<span class="fn">greet</span>(<span class="str">"小明"</span>, <span class="num">12</span>))',
+    options: [
+      { letter: 'A', text: '小明' },
+      { letter: 'B', text: '12' },
+      { letter: 'C', text: 'nameage' },
+      { letter: 'D', text: '小明12' }
+    ],
+    answer: 3,
+    explain: '调用 greet("小明", 12)，name="小明"，age=12。str(12) 把数字变文字"12"，"小明"+"12"拼接成"小明12"。'
+  },
+  {
+    stage: 2,
+    module: 10,
+    visual: { type: 'function', params: { input: '3→6→12', output: '12' } },
+    concept: '函数的返回值可以继续作为另一个函数的输入，就像工厂流水线：第一个工厂的产品送给第二个工厂再加工。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">def</span> <span class="fn">double</span>(n):\n    <span class="kw">return</span> n * <span class="num">2</span>\n\nx = <span class="fn">double</span>(<span class="num">3</span>)\ny = <span class="fn">double</span>(x)\n<span class="fn">print</span>(y)',
+    options: [
+      { letter: 'A', text: '6' },
+      { letter: 'B', text: '4' },
+      { letter: 'C', text: '12' },
+      { letter: 'D', text: '3' }
+    ],
+    answer: 2,
+    explain: 'double(3) 返回 3×2=6，x=6。double(x) 即 double(6) 返回 6×2=12，y=12。所以输出12。函数的结果可以继续传给下一个函数！'
+  },
+  {
+    stage: 2,
+    module: 10,
+    visual: { type: 'function', params: { input: '无', output: 'None' } },
+    concept: 'print 是"显示在屏幕上"，return 是"把结果交给调用者"。没有 return 的函数返回 None（空值）。这是初学者最容易混淆的概念！',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">def</span> <span class="fn">say_hi</span>():\n    <span class="fn">print</span>(<span class="str">"你好"</span>)\n\nresult = <span class="fn">say_hi</span>()\n<span class="fn">print</span>(result)',
+    options: [
+      { letter: 'A', text: '你好\\nNone（分两行）' },
+      { letter: 'B', text: '你好' },
+      { letter: 'C', text: 'None' },
+      { letter: 'D', text: '会报错' }
+    ],
+    answer: 0,
+    explain: '调用 say_hi() 先执行函数内的 print("你好")，输出"你好"。但函数没有 return，所以返回 None。result=None，print(result) 输出 None。总共两行："你好"和"None"。'
+  },
+
+  // ----- 模块11：列表入门（4题）-----
+  {
+    stage: 2,
+    module: 11,
+    visual: { type: 'list', params: { items: ['苹果', '香蕉', '橘子'] } },
+    concept: '列表就像购物清单——用方括号 [] 把多个数据按顺序放在一起，用逗号隔开。print 输出整个列表时会带上方括号和引号。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">fruits</span> = [<span class="str">"苹果"</span>, <span class="str">"香蕉"</span>, <span class="str">"橘子"</span>]\n<span class="fn">print</span>(fruits)',
+    options: [
+      { letter: 'A', text: "[\'苹果\', \'香蕉\', \'橘子\']" },
+      { letter: 'B', text: '苹果 香蕉 橘子' },
+      { letter: 'C', text: '苹果' },
+      { letter: 'D', text: '会报错' }
+    ],
+    answer: 0,
+    explain: 'print 输出整个列表时，会显示完整的方括号和引号格式。所以输出 [\'苹果\', \'香蕉\', \'橘子\']。'
+  },
+  {
+    stage: 2,
+    module: 11,
+    visual: { type: 'list', params: { items: ['红', '黄', '蓝', '绿'], highlight: 1 } },
+    concept: '列表的编号从0开始！第1个元素是[0]，第2个是[1]，第3个是[2]……这是编程和生活的最大区别——程序员数数从0开始！',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">colors</span> = [<span class="str">"红"</span>, <span class="str">"黄"</span>, <span class="str">"蓝"</span>, <span class="str">"绿"</span>]\n<span class="fn">print</span>(colors[<span class="num">1</span>])',
+    options: [
+      { letter: 'A', text: '红' },
+      { letter: 'B', text: '蓝' },
+      { letter: 'C', text: '黄' },
+      { letter: 'D', text: '1' }
+    ],
+    answer: 2,
+    explain: '列表索引从0开始！colors[0]="红"，colors[1]="黄"，colors[2]="蓝"。所以 colors[1] 输出"黄"。这是初学者最常犯的错——别忘了从0开始数！'
+  },
+  {
+    stage: 2,
+    module: 11,
+    visual: { type: 'list', params: { items: ['10', '20', '30', '40', '50'], showLen: true } },
+    concept: 'len() 函数用来数列表里有几个元素。就像数教室里有几个同学一样，len() 帮你数一下列表的长度。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">nums</span> = [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>]\n<span class="fn">print</span>(<span class="fn">len</span>(nums))',
+    options: [
+      { letter: 'A', text: '150' },
+      { letter: 'B', text: '50' },
+      { letter: 'C', text: '10' },
+      { letter: 'D', text: '5' }
+    ],
+    answer: 3,
+    explain: 'len() 数的是列表里有几个元素，不是元素的值。nums 有5个元素（10、20、30、40、50），所以 len(nums)=5。'
+  },
+  {
+    stage: 2,
+    module: 11,
+    visual: { type: 'list', params: { items: ['语文', '数学', '英语'], appendMode: true } },
+    concept: 'append() 像往购物车里加东西——在列表末尾添加一个新元素。原列表会被改变，新元素排在最后面。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">books</span> = [<span class="str">"语文"</span>, <span class="str">"数学"</span>]\nbooks.<span class="fn">append</span>(<span class="str">"英语"</span>)\n<span class="fn">print</span>(books)',
+    options: [
+      { letter: 'A', text: "[\'语文\', \'数学\']" },
+      { letter: 'B', text: "[\'语文\', \'数学\', \'英语\']" },
+      { letter: 'C', text: "[\'英语\']" },
+      { letter: 'D', text: '会报错' }
+    ],
+    answer: 1,
+    explain: 'append() 在列表末尾添加元素。原列表 ["语文", "数学"]，添加"英语"后变成 ["语文", "数学", "英语"]。'
+  },
+
+  // ----- 模块12：综合小案例（4题）-----
+  {
+    stage: 2,
+    module: 12,
+    visual: { type: 'reading', params: { mode: 'game' } },
+    concept: '猜数字游戏的核心逻辑：用 if-elif-else 判断玩家猜的数和答案的关系。== 是判断相等，< 是判断小于，> 是判断大于。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">answer</span> = <span class="num">7</span>\n<span class="kw">guess</span> = <span class="num">5</span>\n<span class="kw">if</span> guess == answer:\n    <span class="fn">print</span>(<span class="str">"猜对了"</span>)\n<span class="kw">elif</span> guess &lt; answer:\n    <span class="fn">print</span>(<span class="str">"小了"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="str">"大了"</span>)',
+    options: [
+      { letter: 'A', text: '猜对了' },
+      { letter: 'B', text: '什么都不输出' },
+      { letter: 'C', text: '大了' },
+      { letter: 'D', text: '小了' }
+    ],
+    answer: 3,
+    explain: 'answer=7，guess=5。先检查 5==7？不满足。再检查 5<7？满足！输出"小了"。这就是猜数字游戏的核心判断逻辑。'
+  },
+  {
+    stage: 2,
+    module: 12,
+    visual: { type: 'reading', params: { mode: 'grade' } },
+    concept: '成绩分等级是 elif 的典型应用。从高到低依次判断，找到第一个满足的等级就停止。注意 75 不满足 >=80，但满足 >=60。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">score</span> = <span class="num">75</span>\n<span class="kw">if</span> score &gt;= <span class="num">90</span>:\n    grade = <span class="str">"A"</span>\n<span class="kw">elif</span> score &gt;= <span class="num">80</span>:\n    grade = <span class="str">"B"</span>\n<span class="kw">elif</span> score &gt;= <span class="num">60</span>:\n    grade = <span class="str">"C"</span>\n<span class="kw">else</span>:\n    grade = <span class="str">"D"</span>\n<span class="fn">print</span>(grade)',
+    options: [
+      { letter: 'A', text: 'A' },
+      { letter: 'B', text: 'C' },
+      { letter: 'C', text: 'B' },
+      { letter: 'D', text: 'D' }
+    ],
+    answer: 1,
+    explain: 'score=75。>=90? 否。>=80? 否。>=60? 是！grade="C"。elif 从上到下找到第一个满足的就停止，后面的不再检查。'
+  },
+  {
+    stage: 2,
+    module: 12,
+    visual: { type: 'loop', params: { count: 3 } },
+    concept: 'range(3, 0, -1) 第3个参数-1表示每次减1。从3开始倒数到1（不包含0），就像火箭发射倒计时！循环结束后再执行外面的 print。',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>, <span class="num">0</span>, <span class="num">-1</span>):\n    <span class="fn">print</span>(i)\n<span class="fn">print</span>(<span class="str">"发射！"</span>)',
+    options: [
+      { letter: 'A', text: '3 2 1 发射！' },
+      { letter: 'B', text: '3 2 1 0 发射！' },
+      { letter: 'C', text: '1 2 3 发射！' },
+      { letter: 'D', text: '0 1 2 3 发射！' }
+    ],
+    answer: 0,
+    explain: 'range(3, 0, -1) 从3开始每次减1，到0停止（不包含0），生成 3、2、1。循环打印 3、2、1，循环结束后打印"发射！"。注意"发射！"在循环外面，只执行一次。'
+  },
+  {
+    stage: 2,
+    module: 12,
+    visual: { type: 'list', params: { items: ['5', '3', '8'], showSum: true } },
+    concept: '这段代码用"循环 + 累加器"计算购物总价。for price in prices 会依次取出列表里的每个价格，加到 total 上。这是编程中最实用的模式之一！',
+    question: '上面代码运行后会输出什么？',
+    code: '<span class="kw">prices</span> = [<span class="num">5</span>, <span class="num">3</span>, <span class="num">8</span>]\n<span class="kw">total</span> = <span class="num">0</span>\n<span class="kw">for</span> price <span class="kw">in</span> prices:\n    total = total + price\n<span class="fn">print</span>(total)',
+    options: [
+      { letter: 'A', text: '5 3 8' },
+      { letter: 'B', text: '538' },
+      { letter: 'C', text: '16' },
+      { letter: 'D', text: '3' }
+    ],
+    answer: 2,
+    explain: 'total 从0开始。price=5时 total=0+5=5；price=3时 total=5+3=8；price=8时 total=8+8=16。所以输出16。这就是"累加器"在购物计算中的实际应用！'
   }
 ];
 
@@ -1273,12 +2197,16 @@ var QUESTIONS = [
  *  状态管理
  * ============================================================ */
 var state = {
-  phase: 'start',       // start | intro | question | summary
-  qIndex: 0,            // 当前题目索引 0-14
-  moduleIndex: 0,       // 当前模块索引 0-4
-  score: 0,             // 总分
-  moduleScore: [0,0,0,0,0], // 每模块得分
-  answered: false       // 当前题是否已答
+  phase: 'start',       // start | stageSelect | intro | question | summary | unlock
+  stage: 1,             // 当前阶段：1=入门 2=初级 3=中级
+  qIndex: 0,            // 当前题在【全局】QUESTIONS中的索引（0-based）
+  moduleIndex: 0,       // 当前模块在【全局】MODULES中的索引
+  score: 0,             // 当前阶段总分
+  moduleScore: [0,0,0,0,0,0,0,0,0,0,0,0], // 各模块得分（12位）
+  answered: false,      // 当前题是否已答
+  unlocked: [1],        // 已解锁阶段列表
+  stageScore: { 1: 0, 2: 0, 3: 0 },   // 各阶段历史最高分
+  stageStars: { 1: 0, 2: 0, 3: 0 }    // 各阶段历史最高星级(0-3)
 };
 
 var content = document.getElementById('content');
@@ -1293,10 +2221,14 @@ var SAVE_KEY = 'coding-game-save';
 function saveProgress() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
+      stage: state.stage,
       qIndex: state.qIndex,
       moduleIndex: state.moduleIndex,
       score: state.score,
       moduleScore: state.moduleScore,
+      unlocked: state.unlocked || [1],
+      stageScore: state.stageScore,
+      stageStars: state.stageStars,
       ts: Date.now()
     }));
   } catch(e) {}
@@ -1305,11 +2237,83 @@ function loadProgress() {
   try {
     var raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    var save = JSON.parse(raw);
+    // 兼容性处理：旧存档无 stage/unlocked/stageScore/stageStars 字段
+    if (save.stage == null) save.stage = 1;
+    if (!save.unlocked) save.unlocked = [1];
+    if (!save.stageScore) save.stageScore = { 1: 0, 2: 0, 3: 0 };
+    if (!save.stageStars) save.stageStars = { 1: 0, 2: 0, 3: 0 };
+    // moduleScore 补0到12位（兼容旧5位数组）
+    if (!save.moduleScore) save.moduleScore = [];
+    while (save.moduleScore.length < 12) save.moduleScore.push(0);
+    return save;
   } catch(e) { return null; }
 }
 function clearProgress() {
   try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+}
+
+/* ============================================================
+ *  阶段辅助函数（Stage Helpers）
+ * ============================================================ */
+
+/* 获取当前阶段的题目数组（全局QUESTIONS过滤） */
+function getStageQuestions(stage) {
+  return QUESTIONS.filter(function(q) {
+    return (q.stage || 1) === stage;
+  });
+}
+
+/* 获取当前阶段的模块数组 */
+function getStageModules(stage) {
+  if (stage === 1) return MODULES.slice(0, 5);     // 模块1-5
+  if (stage === 2) return MODULES.slice(5, 12);    // 模块6-12
+  if (stage === 3) return MODULES.slice(12);       // 模块13+（未来）
+  return MODULES;
+}
+
+/* 获取当前阶段第一题的全局索引 */
+function getStageStartIndex(stage) {
+  for (var i = 0; i < QUESTIONS.length; i++) {
+    if ((QUESTIONS[i].stage || 1) === stage) return i;
+  }
+  return 0;
+}
+
+/* 获取当前阶段最后一题的全局索引 */
+function getStageEndIndex(stage) {
+  var last = 0;
+  for (var i = 0; i < QUESTIONS.length; i++) {
+    if ((QUESTIONS[i].stage || 1) === stage) last = i;
+  }
+  return last;
+}
+
+/* 计算阶段内题号（1-based），传入全局qIndex */
+function getStageQNumber(stage, globalQIndex) {
+  var stageQs = getStageQuestions(stage);
+  for (var i = 0; i < stageQs.length; i++) {
+    if (QUESTIONS.indexOf(stageQs[i]) === globalQIndex) return i + 1;
+  }
+  return 1;
+}
+
+/* 计算星级（3星制）：≥90%→3星 / ≥70%→2星 / ≥60%→1星 / <60%→0星 */
+function calcStars(score, total) {
+  if (total === 0) return 0;
+  var ratio = score / total;
+  if (ratio >= 0.9) return 3;
+  if (ratio >= 0.7) return 2;
+  if (ratio >= 0.6) return 1;
+  return 0;
+}
+
+/* 各阶段过关阈值（解锁下一阶段所需正确率） */
+function getPassThreshold(stage) {
+  if (stage === 1) return 0.6;   // 60%
+  if (stage === 2) return 0.7;   // 70%
+  if (stage === 3) return 0.75;  // 75%
+  return 0.6;
 }
 
 /* ---- 朗读功能（Web Speech API）---- */
@@ -1317,32 +2321,59 @@ var tts = {
   utter: null,
   speaking: false,
   paused: false,
+  _queue: [],      /* iOS Safari 单 utterance 超 ~200 字符会被截断，按句分段队列播放 */
+  _idx: 0,
+  _onEnd: null,
 
   speak: function(text, onEnd) {
     this.stop();
     var clean = text.replace(/<[^>]+>/g, '').replace(/&[a-z]+;/g, '');
-    this.utter = new SpeechSynthesisUtterance(clean);
-    this.utter.lang = 'zh-CN';
-    this.utter.rate = 0.88;
-    this.utter.pitch = 1.0;
-    this.utter.onend = function() {
-      tts.speaking = false;
-      tts.paused = false;
-      tts.updateBtn();
-      if (onEnd) onEnd();
-    };
-    this.utter.onerror = function() {
-      tts.speaking = false;
-      tts.paused = false;
-      tts.updateBtn();
-    };
-    speechSynthesis.speak(this.utter);
+    /* 1) 先按句号/问号/感叹号切句 */
+    var chunks = clean.match(/[^。！？.!?]+[。！？.!?]?/g) || [clean];
+    /* 2) 超长句（>180字符）再按逗号细分 */
+    var finalChunks = [];
+    chunks.forEach(function(c) {
+      if (c.length > 180) {
+        var sub = c.match(/[^，,]+[，,]?/g) || [c];
+        sub.forEach(function(s) { if (s.trim()) finalChunks.push(s.trim()); });
+      } else if (c.trim()) {
+        finalChunks.push(c.trim());
+      }
+    });
+    if (finalChunks.length === 0) finalChunks = [clean];
+
+    var self = this;
+    this._queue = finalChunks;
+    this._idx = 0;
+    this._onEnd = onEnd;
+
+    function playNext() {
+      if (self._idx >= self._queue.length) {
+        self.speaking = false;
+        self.paused = false;
+        self._queue = [];
+        self.updateBtn();
+        if (self._onEnd) self._onEnd();
+        return;
+      }
+      var u = new SpeechSynthesisUtterance(self._queue[self._idx]);
+      u.lang = 'zh-CN';
+      u.rate = 0.88;
+      u.pitch = 1.0;
+      u.onend = function() { self._idx++; playNext(); };
+      u.onerror = function() { self._idx++; playNext(); };
+      self.utter = u;
+      speechSynthesis.speak(u);
+    }
+    playNext();
     this.speaking = true;
     this.paused = false;
     this.updateBtn();
   },
 
   stop: function() {
+    this._queue = [];
+    this._idx = 0;
     if (speechSynthesis.speaking || speechSynthesis.pending) {
       speechSynthesis.cancel();
     }
@@ -1403,11 +2434,15 @@ function speakExplain() {
 
 function continueGame() {
   var save = loadProgress();
-  if (!save || save.qIndex >= QUESTIONS.length) { startGame(); return; }
+  if (!save || save.qIndex >= QUESTIONS.length) { renderStart(); return; }
+  state.stage = save.stage || 1;
   state.qIndex = save.qIndex;
   state.moduleIndex = save.moduleIndex;
   state.score = save.score;
-  state.moduleScore = save.moduleScore || [0,0,0,0,0];
+  state.moduleScore = save.moduleScore;  // 已在loadProgress中补0到12位
+  state.unlocked = save.unlocked || [1];
+  state.stageScore = save.stageScore || { 1: 0, 2: 0, 3: 0 };
+  state.stageStars = save.stageStars || { 1: 0, 2: 0, 3: 0 };
   state.answered = false;
   renderQuestion();
 }
@@ -1421,34 +2456,71 @@ function renderStart() {
   progressTrack.style.display = 'none';
 
   var save = loadProgress();
-  var hasSave = save && save.qIndex < QUESTIONS.length;
+  /* 从save恢复unlocked/stageScore/stageStars到state（用于卡片显示） */
+  if (save) {
+    state.unlocked = save.unlocked;
+    state.stageScore = save.stageScore;
+    state.stageStars = save.stageStars;
+  } else {
+    state.unlocked = [1];
+    state.stageScore = { 1: 0, 2: 0, 3: 0 };
+    state.stageStars = { 1: 0, 2: 0, 3: 0 };
+  }
 
-  var cards = MODULES.map(function(m){
-    return '<div class="module-card" style="border-top:4px solid '+m.color+';">' +
-      '<span class="mc-emoji">'+m.emoji+'</span>' + m.name + '</div>';
+  var stages = [
+    { id: 1, emoji: '🌱', name: '入门', count: 22, desc: '认识5大编程基础概念' },
+    { id: 2, emoji: '📖', name: '初级', count: 30, desc: '读懂代码，预测运行结果' },
+    { id: 3, emoji: '🚀', name: '中级', count: 32, desc: '综合应用（即将开放）' }
+  ];
+
+  var cardsHTML = stages.map(function(st) {
+    var unlocked = state.unlocked.indexOf(st.id) >= 0;
+    var stars = state.stageStars[st.id] || 0;
+    var starStr = '';
+    for (var i = 0; i < 3; i++) starStr += i < stars ? '⭐' : '☆';
+    var score = state.stageScore[st.id] || 0;
+
+    if (unlocked) {
+      var passedBadge = score > 0 ? '<div class="stage-passed-badge">✓ 已通过</div>' : '';
+      return '<div class="stage-card" onclick="startGame(' + st.id + ')" style="cursor:pointer;">' +
+        passedBadge +
+        '<span style="font-size:2rem;">' + st.emoji + '</span>' +
+        '<div class="stage-name">' + st.name + '</div>' +
+        '<div class="stage-count">' + st.count + '题</div>' +
+        '<div class="stage-stars-mini">' + starStr + '</div>' +
+        (score > 0 ? '<div class="stage-best">最高 ' + score + '/' + st.count + '</div>' : '<div class="stage-status">已解锁</div>') +
+      '</div>';
+    } else {
+      return '<div class="stage-card locked">' +
+        '<span style="font-size:2rem;opacity:0.4;">' + st.emoji + '</span>' +
+        '<div class="stage-name" style="opacity:0.5;">' + st.name + '</div>' +
+        '<div class="stage-count" style="opacity:0.5;">' + st.count + '题</div>' +
+        '<div class="lock-icon">🔒</div>' +
+        '<div class="stage-status" style="opacity:0.5;">未解锁</div>' +
+      '</div>';
+    }
   }).join('');
 
-  var btnHTML;
+  /* 续玩按钮逻辑 */
+  var hasSave = save && save.qIndex < QUESTIONS.length && save.stage;
+  var continueHTML = '';
   if (hasSave) {
-    var saveModName = MODULES[save.moduleIndex] ? MODULES[save.moduleIndex].name : '';
-    var progressText = '上次进度：第 ' + (save.qIndex + 1) + ' / 21 题 · 已得 ' + save.score + ' 分 · 当前关卡：' + saveModName;
-    btnHTML =
-      '<div style="margin-bottom:14px;font-size:0.85rem;color:var(--c-text-3);line-height:1.6;">' + progressText + '</div>' +
-      '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
+    var stageName = stages[save.stage - 1] ? stages[save.stage - 1].name : '';
+    var stageQNum = getStageQNumber(save.stage, save.qIndex);
+    continueHTML = '<div class="continue-info">上次进度：' + stageName + '阶段 · 第' + stageQNum + '题 · ' + save.score + '分</div>' +
+      '<div class="btn-row">' +
         '<button class="btn" onclick="continueGame()">继续闯关</button>' +
-        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.06);" onclick="startGame()">重新开始</button>' +
+        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.06);" onclick="startGame(' + (state.unlocked[state.unlocked.length - 1]) + ')">重新选择</button>' +
       '</div>';
-  } else {
-    btnHTML = '<button class="btn" onclick="startGame()">开始闯关</button>';
   }
 
   content.innerHTML =
     '<div class="page start-page">' +
       '<div class="logo-wrap"><svg viewBox="0 0 64 64" width="56" height="56"><rect width="64" height="64" rx="14" fill="#4361ee"/><rect x="10" y="14" width="44" height="36" rx="6" fill="#1e1e2e"/><rect x="10" y="14" width="44" height="10" rx="6" fill="#313244"/><rect x="10" y="22" width="44" height="2" fill="#313244"/><circle cx="17" cy="19" r="2" fill="#f72585"/><circle cx="23" cy="19" r="2" fill="#2d9e6b"/><circle cx="29" cy="19" r="2" fill="#e07b00"/><text x="15" y="40" font-size="13" font-family="monospace" font-weight="bold" fill="#6b8cff">&gt;_</text></svg></div>' +
       '<h1 class="big-title">编程小达人</h1>' +
-      '<p class="sub-title">知识闯关 · 5大模块 · 21道题<br>系统学习编程基础概念</p>' +
-      '<div class="module-list">' + cards + '</div>' +
-      btnHTML +
+      '<p class="sub-title">知识闯关 · 3大阶段 · 84道题<br>从认识概念到读懂代码</p>' +
+      '<div class="stage-selector">' + cardsHTML + '</div>' +
+      continueHTML +
     '</div>';
 }
 
@@ -1520,6 +2592,29 @@ function getAnimHTML(type, color) {
         '<div class="bug-zap" style="font-size:1.6rem;">×</div>' +
         '<div class="bug-fixed">Bug 已修复</div>' +
       '</div>';
+    case 'reading':
+      return '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">' +
+        '<div style="font-size:2.4rem;">📖</div>' +
+        '<div style="background:#1e1e2e;border-radius:8px;padding:10px 18px;font-family:monospace;font-size:0.85rem;color:#cdd6f4;line-height:1.8;">' +
+          '<span style="color:#cba6f7;">name</span> = <span style="color:#a6e3a1;">"小明"</span><br>' +
+          '<span style="color:#89b4fa;">print</span>(name)' +
+        '</div>' +
+        '<div style="font-size:0.78rem;color:var(--c-text-3);letter-spacing:0.03em;">从上到下 · 逐行阅读 · 预测结果</div>' +
+      '</div>';
+    case 'list':
+      return '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;">' +
+        '<div style="display:flex;gap:6px;">' +
+          '<div style="width:40px;height:48px;background:#ef4444;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">苹果</div>' +
+          '<div style="width:40px;height:48px;background:#f59e0b;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">香蕉</div>' +
+          '<div style="width:40px;height:48px;background:#10b981;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">橘子</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;font-size:0.72rem;color:var(--c-text-3);font-weight:600;">' +
+          '<span style="width:40px;text-align:center;">[0]</span>' +
+          '<span style="width:40px;text-align:center;">[1]</span>' +
+          '<span style="width:40px;text-align:center;">[2]</span>' +
+        '</div>' +
+        '<div style="font-size:0.78rem;color:var(--c-text-3);letter-spacing:0.03em;">有序排列 · 索引从0开始</div>' +
+      '</div>';
     default:
       return '';
   }
@@ -1548,6 +2643,11 @@ function renderQuestion() {
   scoreBox.textContent = state.score + ' 分';
   updateProgress();
 
+  // 阶段内题号计算
+  var stageQs = getStageQuestions(state.stage);
+  var stageQNum = getStageQNumber(state.stage, state.qIndex);
+  var stageTotal = stageQs.length;
+
   var codeHTML = q.code
     ? '<div class="code-block" style="border-left-color:'+m.color+';"><pre>'+q.code+'</pre></div>'
     : '';
@@ -1564,7 +2664,7 @@ function renderQuestion() {
 
   content.innerHTML =
     '<div class="page question-page">' +
-      '<span class="q-number" style="color:'+m.color+';">第 '+(state.qIndex+1)+' 题 / 共'+QUESTIONS.length+'题</span>' +
+      '<span class="q-number" style="color:'+m.color+';">第 '+stageQNum+' 题 / 共'+stageTotal+'题</span>' +
       '<div class="q-concept" style="border-left-color:'+m.color+';">'+q.concept+'</div>' +
       visualHTML +
       '<div class="q-text">'+q.question+'</div>' +
@@ -1572,8 +2672,8 @@ function renderQuestion() {
       '<div class="options">'+optionsHTML+'</div>' +
       '<div class="feedback" id="feedback"></div>' +
       '<div class="next-btn-wrap" id="nextWrap">' +
-        '<button class="btn '+(state.qIndex >= QUESTIONS.length-1 ? 'green' : '')+'" onclick="goNext()">'+
-          (state.qIndex >= QUESTIONS.length-1 ? '查看成绩' : '下一题')+
+        '<button class="btn '+(stageQNum >= stageTotal ? 'green' : '')+'" onclick="goNext()">'+
+          (stageQNum >= stageTotal ? '查看成绩' : '下一题')+
         '</button>' +
       '</div>' +
     '</div>';
@@ -1637,9 +2737,10 @@ function goNext() {
   // 停止朗读
   if (window.tts) window.tts.stop();
   state.qIndex++;
-  // 判断是否进入新模块
-  if (state.qIndex < QUESTIONS.length) {
-    var nextModuleIdx = QUESTIONS[state.qIndex].module - 1;
+  // 判断是否还在当前阶段内（用getStageEndIndex判断阶段边界）
+  var stageEnd = getStageEndIndex(state.stage);
+  if (state.qIndex <= stageEnd) {
+    var nextModuleIdx = QUESTIONS[state.qIndex].module - 1;  // 全局module索引
     if (nextModuleIdx !== state.moduleIndex) {
       state.moduleIndex = nextModuleIdx;
       renderIntro();
@@ -1651,9 +2752,11 @@ function goNext() {
   }
 }
 
-/* 更新进度条 */
+/* 更新进度条（按阶段内进度计算） */
 function updateProgress() {
-  var pct = (state.qIndex / QUESTIONS.length) * 100;
+  var stageQs = getStageQuestions(state.stage);
+  var stageQNum = getStageQNumber(state.stage, state.qIndex);
+  var pct = ((stageQNum - 1) / stageQs.length) * 100;
   progressFill.style.width = pct + '%';
 }
 
@@ -1662,64 +2765,236 @@ function updateProgress() {
  * ============================================================ */
 function renderSummary() {
   state.phase = 'summary';
+  // 先更新阶段最高分/星级（在内存中），再清存档
+  var stageQs = getStageQuestions(state.stage);
+  var total = stageQs.length;
+  var starCount = calcStars(state.score, total);
+
+  if (!state.stageScore) state.stageScore = { 1: 0, 2: 0, 3: 0 };
+  if (!state.stageStars) state.stageStars = { 1: 0, 2: 0, 3: 0 };
+  if (state.score > (state.stageScore[state.stage] || 0)) {
+    state.stageScore[state.stage] = state.score;
+  }
+  if (starCount > (state.stageStars[state.stage] || 0)) {
+    state.stageStars[state.stage] = starCount;
+  }
+
+  // 解锁判断
+  var threshold = getPassThreshold(state.stage);
+  var ratio = total > 0 ? state.score / total : 0;
+  var passed = ratio >= threshold;
+  var newUnlock = false;
+  if (passed && state.stage < 3) {
+    var nextStage = state.stage + 1;
+    if (!state.unlocked) state.unlocked = [1];
+    if (state.unlocked.indexOf(nextStage) < 0) {
+      state.unlocked.push(nextStage);
+      newUnlock = true;
+    }
+  }
+
+  // 清当前阶段进度存档（unlocked/stageScore/stageStars已在内存中保留）
   clearProgress();
+  // 将解锁状态+历史最高分持久化回localStorage（否则renderStart重新加载时丢失）
+  saveProgress();
+
   topbar.style.display = 'flex';
   progressTrack.style.display = 'block';
   progressFill.style.width = '100%';
   moduleTag.textContent = '闯关完成';
   scoreBox.textContent = state.score + ' 分';
 
-  var total = QUESTIONS.length;
   var stars = '';
-  var ratio = state.score / total;
-  var starCount = ratio >= 0.9 ? 5 : (ratio >= 0.7 ? 4 : (ratio >= 0.5 ? 3 : (ratio >= 0.3 ? 2 : 1)));
-  for (var i=0;i<5;i++){ stars += i < starCount ? '⭐' : '☆'; }
+  for (var i = 0; i < 3; i++) stars += i < starCount ? '⭐' : '☆';
 
-  // 模块掌握情况
-  var resultsHTML = MODULES.map(function(m, i){
-    var ms = state.moduleScore[i];
-    var pct = (ms / 3) * 100;
-    var barColor = ms === 3 ? m.color : (ms === 2 ? '#e07b00' : '#d62839');
-    var level = ms === 3 ? '精通' : (ms === 2 ? '良好' : '加油');
+  // 当前阶段模块掌握情况
+  var stageModules = getStageModules(state.stage);
+  var resultsHTML = stageModules.map(function(m) {
+    var globalIdx = MODULES.indexOf(m);
+    var ms = state.moduleScore[globalIdx] || 0;
+    var moduleCount = stageQs.filter(function(q) { return q.module === m.id; }).length;
+    var pct = moduleCount > 0 ? Math.min(100, (ms / moduleCount) * 100) : 0;
+    var barColor = ms === moduleCount ? m.color : (ms >= Math.ceil(moduleCount / 2) ? '#e07b00' : '#d62839');
     return '<div class="mr-item">' +
       '<span class="mr-emoji">'+m.emoji+'</span>' +
       '<div class="mr-info">' +
         '<div class="mr-name">'+m.name+'</div>' +
-        '<div class="mr-bar"><div class="mr-bar-fill" data-target="'+pct+'" style="width:0%;background:'+barColor+';"></div></div>' +
+        '<div class="mr-bar"><div class="mr-bar-fill" data-target="'+pct.toFixed(1)+'" style="width:0%;background:'+barColor+';"></div></div>' +
       '</div>' +
-      '<span class="mr-stat" style="color:'+barColor+';">'+ms+'/3</span>' +
+      '<span class="mr-stat" style="color:'+barColor+';">'+ms+'/'+moduleCount+'</span>' +
     '</div>';
   }).join('');
 
-  // 鼓励语
+  // 阶段总览
+  var allStages = [
+    { id: 1, emoji: '🌱', name: '入门', count: 22 },
+    { id: 2, emoji: '📖', name: '初级', count: 30 },
+    { id: 3, emoji: '🚀', name: '中级', count: 32 }
+  ];
+  var overviewHTML = '<div class="stage-overview-grid">' + allStages.map(function(st) {
+    var unlocked = state.unlocked.indexOf(st.id) >= 0;
+    var stScore = state.stageScore[st.id] || 0;
+    var stStars = state.stageStars[st.id] || 0;
+    var starStr = '';
+    for (var j = 0; j < 3; j++) starStr += j < stStars ? '⭐' : '☆';
+    var passed = (unlocked && stScore > 0);
+    var cardCls = 'stage-overview-card' + (passed ? ' passed' : (unlocked ? '' : ' locked'));
+    var inner;
+    if (passed) {
+      inner = '<span class="soc-emoji">' + st.emoji + '</span>' +
+        '<div class="soc-name">' + st.name + '</div>' +
+        '<div class="soc-stars">' + starStr + '</div>' +
+        '<div class="soc-score">' + stScore + '/' + st.count + '</div>' +
+        '<div class="soc-status">已通过</div>';
+    } else if (unlocked) {
+      inner = '<span class="soc-emoji">' + st.emoji + '</span>' +
+        '<div class="soc-name">' + st.name + '</div>' +
+        '<div class="soc-stars">' + starStr + '</div>' +
+        '<div class="soc-status">已解锁</div>';
+    } else {
+      inner = '<span class="soc-lock">🔒</span>' +
+        '<div class="soc-name">' + st.name + '</div>' +
+        '<div class="soc-status">未解锁</div>';
+    }
+    return '<div class="' + cardCls + '">' + inner + '</div>';
+  }).join('') + '</div>';
+
+  // 鼓励语（按阶段区分）
   var encourage = '';
-  if (ratio >= 0.9) {
-    encourage = '非常扎实！你对这5个编程核心概念都掌握得很好。变量、条件、循环、函数、调试——这是真正编程的基础。继续学下去，实际写代码会让你理解得更深。';
-  } else if (ratio >= 0.7) {
-    encourage = '理解得不错，大部分概念已经清晰了。建议回去再看看错题的解析，特别是概念和代码之间的对应关系。知道"是什么"只是第一步，动手写才能真正掌握。';
-  } else if (ratio >= 0.5) {
-    encourage = '有些概念还不太清楚，这很正常——编程概念第一次接触都比较抽象。建议把错题的解析多读几遍，从生活中找到对应的例子，帮助理解。';
+  if (state.stage === 1) {
+    if (ratio >= 0.9) encourage = '太棒了！你对编程基础概念掌握得非常扎实，可以去挑战初级阶段了！';
+    else if (ratio >= 0.6) encourage = '恭喜通过入门阶段！正确率达到60%就能解锁初级阶段。再多练几次会更扎实！';
+    else encourage = '正确率达到60%就能解锁初级阶段，再来一次吧！相信你能做到！';
   } else {
-    encourage = '这些概念比较新，需要时间消化。不用着急，把每道题的解析认真读一遍，理解比记忆更重要。准备好了再来闯一次，会有很大提升。';
+    if (ratio >= 0.9) encourage = '非常扎实！你的代码阅读能力很强！';
+    else if (ratio >= 0.7) encourage = '做得不错！大部分代码都能读懂了，继续加油！';
+    else if (ratio >= 0.6) encourage = '通过啦！代码阅读需要练习，多读几遍会更熟练。';
+    else encourage = '代码阅读需要多练习，把每道题的解析认真读一遍，再来一次会有很大提升！';
   }
+
+  var stageName = state.stage === 1 ? '入门' : (state.stage === 2 ? '初级' : '中级');
 
   content.innerHTML =
     '<div class="page summary-page">' +
       '<div class="summary-crown">🎓</div>' +
-      '<h2 class="summary-title">闯关完成</h2>' +
+      '<h2 class="summary-title">'+stageName+'阶段 闯关完成</h2>' +
       '<div class="summary-score">'+state.score+'<small> / '+total+'</small></div>' +
-      '<div class="summary-stars">'+stars+'</div>' +
+      '<div class="summary-stars" style="letter-spacing:8px;">'+stars+'</div>' +
       '<div class="module-results">'+resultsHTML+'</div>' +
+      '<div class="stage-overview">'+overviewHTML+'</div>' +
       '<div class="summary-encourage">'+encourage+'</div>' +
-      '<button class="btn green" onclick="restart()">再来一次</button>' +
+      '<div class="btn-row">' +
+        '<button class="btn green" onclick="startGame(state.stage)">重答本阶段</button>' +
+        '<button class="btn" onclick="renderStart()">回阶段选择</button>' +
+      '</div>' +
     '</div>';
 
   // 动画填充进度条
-  setTimeout(function(){
-    document.querySelectorAll('.mr-bar-fill').forEach(function(el){
+  setTimeout(function() {
+    document.querySelectorAll('.mr-bar-fill').forEach(function(el) {
       el.style.width = el.getAttribute('data-target') + '%';
     });
   }, 150);
+
+  // 如果新解锁了下一阶段，弹出解锁弹窗
+  if (newUnlock) {
+    setTimeout(function() { renderUnlock(state.stage, state.score, total); }, 600);
+  }
+}
+
+/* ============================================================
+ *  渲染：解锁弹窗
+ * ============================================================ */
+function renderUnlock(passedStage, score, total) {
+  state.phase = 'unlock';
+  var nextStage = passedStage + 1;
+  var stageNames = { 1: '入门', 2: '初级', 3: '中级' };
+  var nextName = stageNames[nextStage] || '下一阶段';
+  var starCount = calcStars(score, total);
+  var pct = total > 0 ? Math.round((score / total) * 100) : 0;
+
+  /* 星级（依次弹出，delay 0/0.18/0.36s） */
+  var starsHTML = '';
+  for (var i = 0; i < 3; i++) {
+    var ch = i < starCount ? '⭐' : '☆';
+    starsHTML += '<span class="uo-star" style="animation-delay:' + (0.15 + i * 0.18) + 's;">' + ch + '</span>';
+  }
+
+  /* 星光粒子（移动端减少） */
+  var isMobile = window.innerWidth < 600;
+  var sparkCount = isMobile ? 10 : 18;
+  var sparkHTML = '';
+  for (var s = 0; s < sparkCount; s++) {
+    var sx = (Math.random() * 100).toFixed(2);
+    var sy = (Math.random() * 100).toFixed(2);
+    var sd = (Math.random() * 2.2).toFixed(2);
+    var ssz = (10 + Math.random() * 12).toFixed(0);
+    var sym = Math.random() < 0.5 ? '✦' : '✨';
+    sparkHTML += '<span class="uo-spark" style="left:' + sx + '%;top:' + sy + '%;font-size:' + ssz + 'px;animation-delay:' + sd + 's;">' + sym + '</span>';
+  }
+
+  /* 彩带（移动端减少） */
+  var confCount = isMobile ? 8 : 14;
+  var confColors = ['#f72585', '#4361ee', '#2d9e6b', '#e07b00', '#ffd54f', '#7c3aed'];
+  var confHTML = '';
+  for (var c = 0; c < confCount; c++) {
+    var cx = (Math.random() * 100).toFixed(2);
+    var cd = (Math.random() * 0.8).toFixed(2);
+    var cdur = (2.2 + Math.random() * 1.8).toFixed(2);
+    var ccol = confColors[c % confColors.length];
+    confHTML += '<span class="uo-confetti" style="left:' + cx + '%;background:' + ccol + ';animation-delay:' + cd + 's;animation-duration:' + cdur + 's;"></span>';
+  }
+
+  var overlay = document.createElement('div');
+  overlay.className = 'unlock-overlay';
+  overlay.id = 'unlockOverlay';
+  overlay.innerHTML =
+    '<div class="uo-sparkles">' + sparkHTML + '</div>' +
+    confHTML +
+    '<div class="unlock-modal">' +
+      '<div class="unlock-icon">🎉</div>' +
+      '<h2 class="unlock-title">恭喜过关！</h2>' +
+      '<div class="unlock-score-row">本阶段成绩：<b id="uoScoreNum">0</b> / ' + total + '</div>' +
+      '<div class="unlock-stars">' + starsHTML + '</div>' +
+      '<div class="unlock-pct">正确率 <b>' + pct + '%</b></div>' +
+      '<div class="unlock-pill">🔓 已解锁：' + nextName + '阶段</div>' +
+      '<div class="btn-row">' +
+        '<button class="btn green" onclick="closeUnlockAndStart(' + nextStage + ')">去' + nextName + '阶段</button>' +
+        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.10);" onclick="closeUnlock()">再练练</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  /* 分数数字滚动动画（0 → 实际分数，缓动递增） */
+  var numEl = document.getElementById('uoScoreNum');
+  if (numEl && score > 0) {
+    var animStart = null;
+    var animDur = 900;
+    function numStep(ts) {
+      if (animStart === null) animStart = ts;
+      var p = Math.min(1, (ts - animStart) / animDur);
+      var eased = 1 - Math.pow(1 - p, 3); /* easeOutCubic */
+      numEl.textContent = Math.round(eased * score);
+      if (p < 1) {
+        requestAnimationFrame(numStep);
+      } else {
+        numEl.textContent = score;
+      }
+    }
+    requestAnimationFrame(numStep);
+  } else if (numEl) {
+    numEl.textContent = score;
+  }
+}
+
+function closeUnlock() {
+  var overlay = document.getElementById('unlockOverlay');
+  if (overlay) overlay.remove();
+}
+
+function closeUnlockAndStart(stage) {
+  closeUnlock();
+  startGame(stage);
 }
 
 /* ============================================================
@@ -1735,6 +3010,13 @@ function getDefaultVisual(module, m) {
     case 3: return getLoopVisual({ count:5 }, m);
     case 4: return getFuncVisual({ input:'原料', output:'成品' }, m);
     case 5: return getBugVisual({}, m);
+    case 6: return getReadingVisual({ mode:'basic' }, m);
+    case 7: return getVarVisual({ varName:'b', values:['5'] }, m);
+    case 8: return getCondVisual({ cond:'elif', takePath:'middle' }, m);
+    case 9: return getLoopVisual({ count:5 }, m);
+    case 10: return getFuncVisual({ input:'参数', output:'返回值' }, m);
+    case 11: return getListVisual({ items:['A','B','C'] }, m);
+    case 12: return getReadingVisual({ mode:'game' }, m);
     default: return '';
   }
 }
@@ -1747,98 +3029,516 @@ function getQuestionVisual(visual, module) {
     case 'loop': return getLoopVisual(visual.params || {}, m);
     case 'function': return getFuncVisual(visual.params || {}, m);
     case 'bug': return getBugVisual(visual.params || {}, m);
+    case 'reading': return getReadingVisual(visual.params || {}, m);
+    case 'list': return getListVisual(visual.params || {}, m);
     default: return getDefaultVisual(module, m);
   }
 }
 
-/* --- 变量：盒子 --- */
-function getVarVisual(p, m) {
+/* ============================================================
+ *  漫画绘本风格 SVG 插图
+ *  统一主角：戴圆框眼镜的卡通小机器人（橙色机身 + 白色屏幕脸）
+ * ============================================================ */
+
+/* XML 转义，防止变量名/值里含 < > & " 破坏 SVG */
+function _esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* 十六进制颜色加深/变亮 amt(-255~255) */
+function _shade(hex, amt){
+  var h = String(hex).replace('#','');
+  if(h.length===3){ h=h.split('').map(function(x){return x+x;}).join(''); }
+  var r=parseInt(h.substr(0,2),16), g=parseInt(h.substr(2,2),16), b=parseInt(h.substr(4,2),16);
+  r=Math.max(0,Math.min(255,r+amt)); g=Math.max(0,Math.min(255,g+amt)); b=Math.max(0,Math.min(255,b+amt));
+  return '#'+('0'+r.toString(16)).slice(-2)+('0'+g.toString(16)).slice(-2)+('0'+b.toString(16)).slice(-2);
+}
+
+/* 四角闪光星 */
+function _sparkle(cx,cy,color,r){
+  var q=r*0.28;
+  return '<path d="M '+cx+' '+(cy-r)+' L '+(cx+q)+' '+(cy-q)+' L '+(cx+r)+' '+cy+' L '+(cx+q)+' '+(cy+q)+' L '+cx+' '+(cy+r)+' L '+(cx-q)+' '+(cy+q)+' L '+(cx-r)+' '+cy+' L '+(cx-q)+' '+(cy-q)+' Z" fill="'+color+'"/>';
+}
+
+/* 小花 */
+function _flower(cx,cy){
+  var p='<line x1="'+cx+'" y1="'+(cy+1)+'" x2="'+cx+'" y2="'+(cy+15)+'" stroke="#558b2f" stroke-width="2.2" stroke-linecap="round"/>';
+  var cols=['#f48fb1','#ffffff','#f48fb1','#ffffff','#f48fb1'];
+  for(var i=0;i<5;i++){ var a=(i*72-90)*Math.PI/180; p+='<circle cx="'+(cx+Math.cos(a)*9).toFixed(1)+'" cy="'+(cy+Math.sin(a)*9).toFixed(1)+'" r="4.6" fill="'+cols[i]+'" stroke="#e91e63" stroke-width="0.8"/>'; }
+  p+='<circle cx="'+cx+'" cy="'+cy+'" r="3.8" fill="#ffd54f" stroke="#f9a825" stroke-width="0.8"/>';
+  return p;
+}
+
+/* 石头 */
+function _rock(cx,cy){
+  return '<path d="M '+(cx-14)+' '+(cy+5)+' Q '+(cx-16)+' '+(cy-6)+' '+(cx-6)+' '+(cy-10)+' Q '+(cx-2)+' '+(cy-14)+' '+(cx+4)+' '+(cy-12)+' Q '+(cx+14)+' '+(cy-10)+' '+(cx+15)+' '+(cy+2)+' Q '+(cx+12)+' '+(cy+8)+' '+cx+' '+(cy+7)+' Q '+(cx-8)+' '+(cy+8)+' '+(cx-14)+' '+(cy+5)+' Z" fill="#90a4ae" stroke="#546e7a" stroke-width="1.4"/>'+
+         '<path d="M '+(cx-6)+' '+(cy-3)+' Q '+(cx-2)+' '+(cy-6)+' '+(cx+2)+' '+(cy-3)+'" fill="none" stroke="#546e7a" stroke-width="1.2" stroke-linecap="round"/>';
+}
+
+/* 对勾徽章 */
+function _check(cx,cy,color){
+  return '<circle cx="'+cx+'" cy="'+cy+'" r="9" fill="'+color+'22" stroke="'+color+'" stroke-width="1.8"/>'+
+         '<path d="M '+(cx-4)+' '+cy+' L '+(cx-1)+' '+(cy+3.2)+' L '+(cx+4.2)+' '+(cy-3.2)+'" fill="none" stroke="'+color+'" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>';
+}
+
+/* 叉号徽章 */
+function _cross(cx,cy,color){
+  return '<circle cx="'+cx+'" cy="'+cy+'" r="9" fill="'+color+'22" stroke="'+color+'" stroke-width="1.8" opacity="0.85"/>'+
+         '<path d="M '+(cx-3.6)+' '+(cy-3.6)+' L '+(cx+3.6)+' '+(cy+3.6)+' M '+(cx+3.6)+' '+(cy-3.6)+' L '+(cx-3.6)+' '+(cy+3.6)+'" stroke="'+color+'" stroke-width="2.3" stroke-linecap="round"/>';
+}
+
+/* 格子起点旗 */
+function _flag(cx,cy){
+  var p='<line x1="'+cx+'" y1="'+cy+'" x2="'+cx+'" y2="'+(cy+28)+'" stroke="#5d4037" stroke-width="2.2" stroke-linecap="round"/>';
+  var x0=cx+1, y0=cy, c=6;
+  for(var i=0;i<3;i++){ for(var j=0;j<2;j++){ p+='<rect x="'+(x0+i*c)+'" y="'+(y0+j*c)+'" width="'+c+'" height="'+c+'" fill="'+(((i+j)%2===0)?'#1a1d2e':'#ffffff')+'"/>'; } }
+  p+='<rect x="'+x0+'" y="'+y0+'" width="18" height="12" fill="none" stroke="#1a1d2e" stroke-width="1"/>';
+  return p;
+}
+
+/* 汗滴 */
+function _drop(cx,cy){
+  return '<path d="M '+cx+' '+(cy-7)+' C '+(cx+5)+' '+(cy-1)+' '+(cx+5)+' '+(cy+6)+' '+cx+' '+(cy+6)+' C '+(cx-5)+' '+(cy+6)+' '+(cx-5)+' '+(cy-1)+' '+cx+' '+(cy-7)+' Z" fill="#4fc3f7" stroke="#0288d1" stroke-width="1.2"/>'+
+         '<ellipse cx="'+(cx-1.6)+'" cy="'+(cy-1)+'" rx="1.1" ry="2" fill="#ffffff" opacity="0.7"/>';
+}
+
+/* 齿轮 */
+function _gear(cx,cy,color,sc){
+  sc=sc||1;
+  var p='<g transform="translate('+cx+','+cy+') scale('+sc+')">';
+  for(var i=0;i<8;i++){ p+='<rect x="-2.2" y="-13" width="4.4" height="5.5" rx="1" fill="'+color+'" transform="rotate('+(i*45)+')"/>'; }
+  p+='<circle r="9" fill="none" stroke="'+color+'" stroke-width="2.4"/>';
+  p+='<circle r="3" style="fill:var(--c-surface)" stroke="'+color+'" stroke-width="1.4"/>';
+  p+='</g>';
+  return p;
+}
+
+/* 礼物盒 */
+function _gift(cx,cy,color){
+  var p='<rect x="'+(cx-15)+'" y="'+(cy-12)+'" width="30" height="24" rx="3" fill="'+color+'" stroke="'+_shade(color,-30)+'" stroke-width="1.4"/>';
+  p+='<rect x="'+(cx-15)+'" y="'+(cy-12)+'" width="30" height="6" fill="'+_shade(color,35)+'"/>';
+  p+='<rect x="'+(cx-3.2)+'" y="'+(cy-12)+'" width="6.4" height="24" fill="'+_shade(color,45)+'"/>';
+  p+='<ellipse cx="'+(cx-5)+'" cy="'+(cy-13)+'" rx="4.2" ry="3" fill="'+_shade(color,45)+'"/>';
+  p+='<ellipse cx="'+(cx+5)+'" cy="'+(cy-13)+'" rx="4.2" ry="3" fill="'+_shade(color,45)+'"/>';
+  p+='<circle cx="'+cx+'" cy="'+(cy-13)+'" r="2.6" fill="'+_shade(color,-20)+'"/>';
+  return p;
+}
+
+/* 烟雾 */
+function _smoke(cx,cy){
+  return '<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="#b0bec5" opacity="0.55"/>';
+}
+
+/* 侦探帽 */
+function _hat(cx,cy){
+  var p='<ellipse cx="'+cx+'" cy="'+(cy+3)+'" rx="20" ry="4.6" fill="#5d4037" stroke="#3e2723" stroke-width="1.2"/>';
+  p+='<path d="M '+(cx-12)+' '+(cy+3)+' Q '+(cx-13)+' '+(cy-11)+' '+cx+' '+(cy-12)+' Q '+(cx+13)+' '+(cy-11)+' '+(cx+12)+' '+(cy+3)+' Z" fill="#6d4c41" stroke="#3e2723" stroke-width="1.2"/>';
+  p+='<rect x="'+(cx-12)+'" y="'+(cy-1)+'" width="24" height="3.6" fill="#3e2723"/>';
+  return p;
+}
+
+/* 放大镜 */
+function _magnifier(cx,cy){
+  return '<g>'+
+    '<line x1="'+(cx+6.4)+'" y1="'+(cy+6.4)+'" x2="'+(cx+14)+'" y2="'+(cy+14)+'" stroke="#5d4037" stroke-width="3.6" stroke-linecap="round"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="9" fill="#b3e5fc" opacity="0.45" stroke="#1a1d2e" stroke-width="2"/>'+
+    '<path d="M '+(cx-4)+' '+(cy-1)+' A 4 4 0 0 1 '+cx+' '+(cy-5)+'" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/>'+
+    '</g>';
+}
+
+/* 瓢虫 dir>0 朝左，dir<0 朝右 */
+function _ladybug(cx,cy,dir){
+  var p='<g transform="translate('+cx+','+cy+') scale('+(dir>0?1:-1)+',1)">';
+  p+='<line x1="-5" y1="-4.5" x2="-9" y2="-8" stroke="#1a1d2e" stroke-width="1.2" stroke-linecap="round"/>';
+  p+='<line x1="-5" y1="0" x2="-10" y2="0" stroke="#1a1d2e" stroke-width="1.2" stroke-linecap="round"/>';
+  p+='<line x1="-5" y1="4.5" x2="-9" y2="8" stroke="#1a1d2e" stroke-width="1.2" stroke-linecap="round"/>';
+  p+='<line x1="5" y1="-4.5" x2="9" y2="-8" stroke="#1a1d2e" stroke-width="1.2" stroke-linecap="round"/>';
+  p+='<line x1="5" y1="0" x2="10" y2="0" stroke="#1a1d2e" stroke-width="1.2" stroke-linecap="round"/>';
+  p+='<line x1="5" y1="4.5" x2="9" y2="8" stroke="#1a1d2e" stroke-width="1.2" stroke-linecap="round"/>';
+  p+='<ellipse cx="-8" cy="0" rx="3.8" ry="5.6" fill="#1a1d2e"/>';
+  p+='<line x1="-10" y1="-4" x2="-13" y2="-8" stroke="#1a1d2e" stroke-width="1.1" stroke-linecap="round"/>';
+  p+='<line x1="-10" y1="4" x2="-13" y2="8" stroke="#1a1d2e" stroke-width="1.1" stroke-linecap="round"/>';
+  p+='<ellipse cx="2" cy="0" rx="11" ry="8" fill="#e53935" stroke="#1a1d2e" stroke-width="1.2"/>';
+  p+='<line x1="2" y1="-8" x2="2" y2="8" stroke="#1a1d2e" stroke-width="1.2"/>';
+  p+='<circle cx="-2" cy="-3" r="1.6" fill="#1a1d2e"/>';
+  p+='<circle cx="-2" cy="3" r="1.6" fill="#1a1d2e"/>';
+  p+='<circle cx="6.5" cy="-3" r="1.6" fill="#1a1d2e"/>';
+  p+='<circle cx="6.5" cy="3" r="1.6" fill="#1a1d2e"/>';
+  p+='</g>';
+  return p;
+}
+
+/* 统一主角：戴圆框眼镜的卡通小机器人
+ * cx,cy 中心；expr: happy/thinking/surprised/focus；s 缩放；gid 机身渐变 id */
+function _robot(cx, cy, expr, s, gid){
+  var dk='#1a1d2e', g='<g transform="translate('+cx+','+cy+') scale('+s+')">';
+  /* 天线 */
+  g+='<line x1="0" y1="-24" x2="0" y2="-30" stroke="'+dk+'" stroke-width="1.6" stroke-linecap="round"/>';
+  g+='<circle cx="0" cy="-31.5" r="2.6" fill="#f72585"/>';
+  /* 机身 */
+  g+='<rect x="-18" y="-7" width="36" height="26" rx="10" fill="url(#'+gid+')" stroke="'+dk+'" stroke-width="1.6"/>';
+  g+='<circle cx="0" cy="6" r="2.2" fill="#ffd9b3"/>';
+  /* 手臂 */
+  g+='<rect x="-24" y="-3" width="7" height="15" rx="3.5" fill="url(#'+gid+')" stroke="'+dk+'" stroke-width="1.6"/>';
+  g+='<rect x="17" y="-3" width="7" height="15" rx="3.5" fill="url(#'+gid+')" stroke="'+dk+'" stroke-width="1.6"/>';
+  /* 脚 */
+  g+='<rect x="-12" y="18" width="10" height="6" rx="3" fill="#3a3f5c"/>';
+  g+='<rect x="2" y="18" width="10" height="6" rx="3" fill="#3a3f5c"/>';
+  /* 头部屏幕 */
+  g+='<rect x="-16" y="-25" width="32" height="21" rx="7.5" fill="#ffffff" stroke="'+dk+'" stroke-width="1.6"/>';
+  /* 圆框眼镜 */
+  g+='<circle cx="-6.5" cy="-14.5" r="5.2" fill="none" stroke="'+dk+'" stroke-width="1.6"/>';
+  g+='<circle cx="6.5" cy="-14.5" r="5.2" fill="none" stroke="'+dk+'" stroke-width="1.6"/>';
+  g+='<line x1="-1.3" y1="-14.5" x2="1.3" y2="-14.5" stroke="'+dk+'" stroke-width="1.6"/>';
+  if(expr==='happy'){
+    g+='<path d="M -9.5 -14 Q -6.5 -17.2 -3.5 -14" fill="none" stroke="'+dk+'" stroke-width="1.9" stroke-linecap="round"/>';
+    g+='<path d="M 3.5 -14 Q 6.5 -17.2 9.5 -14" fill="none" stroke="'+dk+'" stroke-width="1.9" stroke-linecap="round"/>';
+    g+='<path d="M -4 -8 Q 0 -4.8 4 -8" fill="none" stroke="'+dk+'" stroke-width="1.8" stroke-linecap="round"/>';
+    g+='<ellipse cx="-11" cy="-8.5" rx="2.6" ry="1.8" fill="#ffb3c1" opacity="0.75"/>';
+    g+='<ellipse cx="11" cy="-8.5" rx="2.6" ry="1.8" fill="#ffb3c1" opacity="0.75"/>';
+  } else if(expr==='thinking'){
+    g+='<circle cx="-6.5" cy="-14.5" r="2" fill="'+dk+'"/>';
+    g+='<path d="M 3 -14 Q 6.5 -12.4 10 -14" fill="none" stroke="'+dk+'" stroke-width="1.9" stroke-linecap="round"/>';
+    g+='<line x1="-11" y1="-21" x2="-3" y2="-20" stroke="'+dk+'" stroke-width="1.6" stroke-linecap="round"/>';
+    g+='<line x1="-2.5" y1="-7.6" x2="3" y2="-7.6" stroke="'+dk+'" stroke-width="1.8" stroke-linecap="round"/>';
+  } else if(expr==='surprised'){
+    g+='<circle cx="-6.5" cy="-14.5" r="2.7" fill="'+dk+'"/>';
+    g+='<circle cx="6.5" cy="-14.5" r="2.7" fill="'+dk+'"/>';
+    g+='<circle cx="-5.6" cy="-15.5" r="0.85" fill="#ffffff"/>';
+    g+='<circle cx="7.4" cy="-15.5" r="0.85" fill="#ffffff"/>';
+    g+='<path d="M -10 -21 Q -6.5 -22.6 -3 -21" fill="none" stroke="'+dk+'" stroke-width="1.6" stroke-linecap="round"/>';
+    g+='<path d="M 3 -21 Q 6.5 -22.6 10 -21" fill="none" stroke="'+dk+'" stroke-width="1.6" stroke-linecap="round"/>';
+    g+='<ellipse cx="0" cy="-6.6" rx="2.3" ry="2.9" fill="'+dk+'"/>';
+  } else { /* focus */
+    g+='<circle cx="-6.5" cy="-13.5" r="1.9" fill="'+dk+'"/>';
+    g+='<circle cx="6.5" cy="-13.5" r="1.9" fill="'+dk+'"/>';
+    g+='<line x1="-11" y1="-20" x2="-3.5" y2="-18" stroke="'+dk+'" stroke-width="1.7" stroke-linecap="round"/>';
+    g+='<line x1="3.5" y1="-18" x2="11" y2="-20" stroke="'+dk+'" stroke-width="1.7" stroke-linecap="round"/>';
+    g+='<line x1="-3.5" y1="-6.6" x2="3.5" y2="-6.6" stroke="'+dk+'" stroke-width="1.8" stroke-linecap="round"/>';
+  }
+  g+='</g>';
+  return g;
+}
+
+/* --- 变量：小机器人抱魔法盒子 --- */
+function getVarVisual(p, m){
   var vn = p.varName || 'x';
-  var v  = (p.values && p.values[0]) || '8';
+  var v  = (p.values && p.values[0]) != null ? String(p.values[0]) : '8';
   var c  = m ? m.color : '#4361ee';
-  var bg = m ? m.color.replace('#', '').replace(/../g, function(h) { return String.fromCharCode(parseInt(h,16)+40) }) : '#eef0fd';
-  return '<div class="q-visual">' +
-    '<svg width="260" height="160" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect x="20" y="30" width="220" height="110" rx="14" fill="'+c+'22" stroke="'+c+'" stroke-width="2.5"/>' +
-      '<rect x="20" y="30" width="220" height="36" rx="14" fill="'+c+'33" stroke="'+c+'" stroke-width="2.5"/>' +
-      '<text x="130" y="55" text-anchor="middle" font-size="15" font-weight="700" fill="'+c+'">变量 ' + vn + '</text>' +
-      '<text x="130" y="105" text-anchor="middle" font-size="36" font-weight="800" fill="'+c+'">'+v+'</text>' +
-      '<text x="130" y="140" text-anchor="middle" font-size="11" fill="#9396b0">变量里放的是……</text>' +
-    '</svg></div>';
+  var uid = (Math.random()*1e6|0).toString(36);
+  var gid='rbVar_'+uid, fs = v.length > 4 ? 18 : 24;
+  var s = '<div class="q-visual"><svg width="280" height="160" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">';
+  s += '<defs>';
+  s += '<linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb380"/><stop offset="1" stop-color="#ff8c42"/></linearGradient>';
+  s += '<linearGradient id="boxVar_'+uid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+c+'"/><stop offset="1" stop-color="'+_shade(c,-28)+'"/></linearGradient>';
+  s += '</defs>';
+  /* 柔和投影 */
+  s += '<ellipse cx="150" cy="146" rx="115" ry="10" fill="#000" opacity="0.06"/>';
+  /* 飘出的闪光星 */
+  s += _sparkle(150,30,'#ffd54f',9);
+  s += _sparkle(236,50,'#ffd54f',6);
+  s += _sparkle(118,58,'#ffe082',5);
+  s += _sparkle(252,92,'#ffd54f',5);
+  /* 魔法盒子（半透明可见内部值） */
+  s += '<rect x="146" y="64" width="80" height="66" rx="10" fill="url(#boxVar_'+uid+')" opacity="0.32" stroke="'+c+'" stroke-width="2.2"/>';
+  s += '<rect x="146" y="64" width="80" height="17" rx="10" fill="'+c+'" opacity="0.5"/>';
+  s += '<rect x="146" y="78" width="80" height="4" fill="'+c+'" opacity="0.35"/>';
+  s += '<text x="186" y="118" text-anchor="middle" font-size="'+fs+'" font-weight="800" fill="'+c+'">'+_esc(v)+'</text>';
+  /* 标签纸 */
+  s += '<line x1="158" y1="62" x2="166" y2="52" stroke="#9396b0" stroke-width="1.4"/>';
+  s += '<g transform="rotate(-9 170 55)"><rect x="146" y="46" width="48" height="18" rx="3" fill="#fff8e1" stroke="#e0c060" stroke-width="1.4"/><text x="170" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#8a6d1a">'+_esc(vn)+'</text></g>';
+  /* 小机器人（开心，伸手够盒子） */
+  s += _robot(98, 104, 'happy', 1.05, gid);
+  /* 说明 */
+  s += '<text x="140" y="158" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">变量 '+_esc(vn)+' 里放的是 '+_esc(v)+'</text>';
+  s += '</svg></div>';
+  return s;
 }
 
-/* --- 条件：分岔路口 --- */
-function getCondVisual(p, m) {
+/* --- 条件：Y 形分岔路口 --- */
+function getCondVisual(p, m){
   var c = m ? m.color : '#d62839';
-  return '<div class="q-visual">' +
-    '<svg width="280" height="160" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">' +
-      '<line x1="140" y1="8" x2="140" y2="55" stroke="'+c+'" stroke-width="3" stroke-dasharray="8 4"/>' +
-      '<rect x="108" y="52" width="64" height="28" rx="14" fill="'+c+'"/>' +
-      '<text x="140" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">'+(p.cond||'x>5')+' ?</text>' +
-      '<path d="M140 82 Q 80 110 60 140" stroke="'+c+'" stroke-width="2.5" fill="none"/>' +
-      '<path d="M140 82 Q 200 110 220 140" stroke="'+c+'" stroke-width="2.5" fill="none"/>' +
-      '<circle cx="60" cy="145" r="12" fill="'+c+'22" stroke="'+c+'" stroke-width="2"/>' +
-      '<text x="60" y="150" text-anchor="middle" font-size="12" fill="'+c+'">&#10004;</text>' +
-      '<circle cx="220" cy="145" r="12" fill="#f5f6fa" stroke="#9396b0" stroke-width="2"/>' +
-      '<text x="220" y="150" text-anchor="middle" font-size="12" fill="#9396b0">&#10008;</text>' +
-      '<text x="140" y="158" text-anchor="middle" font-size="10" fill="#9396b0">成立走左，不成立走右</text>' +
-    '</svg></div>';
+  var cond = p.cond || 'x>5';
+  var takeLeft = (p.takePath === 'left' || p.takePath === 'if');
+  var uid = (Math.random()*1e6|0).toString(36);
+  var gid='rbCond_'+uid;
+  var s = '<div class="q-visual"><svg width="280" height="160" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">';
+  s += '<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb380"/><stop offset="1" stop-color="#ff8c42"/></linearGradient></defs>';
+  /* 草地 */
+  s += '<rect x="0" y="118" width="280" height="42" fill="#9ccc65"/>';
+  s += '<rect x="0" y="118" width="280" height="6" fill="#7cb342"/>';
+  /* 分岔路口 */
+  var lp='M 140 84 Q 112 102 74 138';
+  var rp='M 140 84 Q 168 102 206 138';
+  var dim = takeLeft ? rp : lp;
+  var br  = takeLeft ? lp : rp;
+  s += '<path d="'+dim+'" fill="none" stroke="#8892a6" stroke-width="11" stroke-linecap="round" opacity="0.55"/>';
+  s += '<path d="'+dim+'" fill="none" stroke="#ffffff" stroke-width="1.3" stroke-dasharray="5 5" opacity="0.5"/>';
+  s += '<path d="'+br+'" fill="none" stroke="'+c+'" stroke-width="13" stroke-linecap="round" opacity="0.92"/>';
+  s += '<path d="'+br+'" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-dasharray="6 6"/>';
+  s += '<circle cx="140" cy="84" r="6.5" fill="'+c+'"/>';
+  /* 路口尽头：花 / 石头 */
+  s += _flower(74,128);
+  s += _rock(206,132);
+  /* 选中标记 */
+  if(takeLeft){ s += _check(74,114,c); s += _cross(206,116,'#8892a6'); }
+  else { s += _cross(74,116,'#8892a6'); s += _check(206,114,c); }
+  /* 头顶问号气泡（条件） */
+  s += '<ellipse cx="140" cy="22" rx="48" ry="15" style="fill:var(--c-surface)" stroke="'+c+'" stroke-width="1.6"/>';
+  s += '<path d="M 132 35 L 140 45 L 148 35 Z" style="fill:var(--c-surface)" stroke="'+c+'" stroke-width="1.6"/>';
+  s += '<text x="140" y="27" text-anchor="middle" font-size="12.5" font-weight="700" fill="'+c+'">'+_esc(cond)+' ?</text>';
+  /* 小机器人（思考） */
+  s += _robot(140, 68, 'thinking', 0.82, gid);
+  /* 说明 */
+  s += '<text x="140" y="158" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">'+(takeLeft?'条件成立 → 走左边':'条件不成立 → 走右边')+'</text>';
+  s += '</svg></div>';
+  return s;
 }
 
-/* --- 循环：绕圈 --- */
-function getLoopVisual(p, m) {
+/* --- 循环：环形跑道 --- */
+function getLoopVisual(p, m){
   var c = m ? m.color : '#e07b00';
   var n = p.count || 5;
-  return '<div class="q-visual">' +
-    '<svg width="220" height="160" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">' +
-      '<ellipse cx="110" cy="85" rx="68" ry="52" fill="none" stroke="'+c+'" stroke-width="3"/>' +
-      '<ellipse cx="110" cy="85" rx="68" ry="52" fill="'+c+'12" stroke="none"/>' +
-      '<circle cx="42" cy="85" r="18" fill="'+c+'22" stroke="'+c+'" stroke-width="2.5"/>' +
-      '<text x="42" y="91" text-anchor="middle" font-size="15" font-weight="700" fill="'+c+'">➜</text>' +
-      '<text x="110" y="40" text-anchor="middle" font-size="15" font-weight="700" fill="'+c+'">循环</text>' +
-      '<text x="110" y="155" text-anchor="middle" font-size="11" fill="#9396b0">重复执行 '+n+' 次</text>' +
-    '</svg></div>';
+  var uid = (Math.random()*1e6|0).toString(36);
+  var gid='rbLoop_'+uid;
+  var s = '<div class="q-visual"><svg width="260" height="160" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">';
+  s += '<defs>';
+  s += '<linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb380"/><stop offset="1" stop-color="#ff8c42"/></linearGradient>';
+  s += '<linearGradient id="trkLoop_'+uid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+c+'" stop-opacity="0.5"/><stop offset="1" stop-color="'+c+'" stop-opacity="0.22"/></linearGradient>';
+  s += '</defs>';
+  /* 草地 */
+  s += '<rect x="0" y="116" width="260" height="44" fill="#9ccc65"/>';
+  s += '<rect x="0" y="116" width="260" height="5" fill="#7cb342"/>';
+  /* 跑道：外环 + 内环 + 中线 */
+  s += '<ellipse cx="130" cy="90" rx="94" ry="50" fill="url(#trkLoop_'+uid+')" stroke="'+c+'" stroke-width="2"/>';
+  s += '<ellipse cx="130" cy="90" rx="72" ry="30" style="fill:var(--c-surface)" stroke="'+c+'" stroke-width="1.6" stroke-dasharray="2 4" opacity="0.85"/>';
+  s += '<ellipse cx="130" cy="90" rx="83" ry="40" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-dasharray="7 7" opacity="0.7"/>';
+  /* 起点旗 */
+  s += _flag(130,50);
+  /* 方向箭头（顺时针） */
+  s += '<path d="M 210 90 L 220 85 L 220 95 Z" fill="'+c+'"/>';
+  /* 汗滴 */
+  s += _drop(58,54);
+  /* 计数气泡：第 N 圈 */
+  s += '<rect x="184" y="44" width="60" height="22" rx="11" style="fill:var(--c-surface)" stroke="'+c+'" stroke-width="1.6"/>';
+  s += '<text x="214" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="'+c+'">第 '+_esc(n)+' 圈</text>';
+  /* 小机器人（专注，在跑道左侧跑步） */
+  s += _robot(58, 94, 'focus', 0.82, gid);
+  /* 说明 */
+  s += '<text x="130" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">重复执行 '+_esc(n)+' 次</text>';
+  s += '</svg></div>';
+  return s;
 }
 
-/* --- 函数：加工机器 --- */
-function getFuncVisual(p, m) {
+/* --- 函数：齿轮工坊 --- */
+function getFuncVisual(p, m){
   var c = m ? m.color : '#2d9e6b';
-  return '<div class="q-visual">' +
-    '<svg width="300" height="160" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect x="20" y="55" width="56" height="50" rx="10" fill="'+c+'22" stroke="'+c+'" stroke-width="2.5"/>' +
-      '<text x="48" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="'+c+'">原料</text>' +
-      '<rect x="122" y="45" width="76" height="70" rx="12" fill="#fff" stroke="'+c+'" stroke-width="2.5"/>' +
-      '<text x="160" y="78" text-anchor="middle" font-size="15" font-weight="700" fill="'+c+'">fn()</text>' +
-      '<text x="160" y="100" text-anchor="middle" font-size="11" fill="#9396b0">处理中</text>' +
-      '<rect x="224" y="55" width="56" height="50" rx="10" fill="'+c+'22" stroke="'+c+'" stroke-width="2.5"/>' +
-      '<text x="252" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="'+c+'">成品</text>' +
-      '<line x1="76" y1="80" x2="122" y2="80" stroke="'+c+'" stroke-width="2.5" marker-end="url(#arrowB)"/>' +
-      '<line x1="198" y1="80" x2="224" y2="80" stroke="'+c+'" stroke-width="2.5" marker-end="url(#arrowB)"/>' +
-      '<defs><marker id="arrowB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L8,4 L0,8" fill="'+c+'"/></marker></defs>' +
-    '</svg></div>';
+  var inp = p.input || '原料';
+  var out = p.output || '成品';
+  var uid = (Math.random()*1e6|0).toString(36);
+  var gid='rbFunc_'+uid;
+  var s = '<div class="q-visual"><svg width="300" height="160" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">';
+  s += '<defs>';
+  s += '<linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb380"/><stop offset="1" stop-color="#ff8c42"/></linearGradient>';
+  s += '<linearGradient id="roofFunc_'+uid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+c+'"/><stop offset="1" stop-color="'+_shade(c,-30)+'"/></linearGradient>';
+  s += '<marker id="arrF_'+uid+'" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="'+c+'"/></marker>';
+  s += '</defs>';
+  /* 地面 */
+  s += '<rect x="0" y="126" width="300" height="34" fill="#9ccc65"/>';
+  s += '<rect x="0" y="126" width="300" height="5" fill="#7cb342"/>';
+  /* 工坊建筑 */
+  s += '<rect x="116" y="58" width="82" height="60" rx="4" style="fill:var(--c-surface)" stroke="'+c+'" stroke-width="2"/>';
+  /* 屋顶 */
+  s += '<path d="M 110 60 L 157 34 L 204 60 Z" fill="url(#roofFunc_'+uid+')" stroke="'+c+'" stroke-width="2" stroke-linejoin="round"/>';
+  /* 烟囱 + 烟 */
+  s += '<rect x="178" y="38" width="12" height="16" rx="1.5" fill="#8d6e63" stroke="'+c+'" stroke-width="1.4"/>';
+  s += _smoke(184,34)+_smoke(190,26)+_smoke(178,22);
+  /* 门 */
+  s += '<rect x="149" y="92" width="20" height="26" rx="3" fill="'+c+'" opacity="0.85"/>';
+  s += '<circle cx="164" cy="106" r="1.6" fill="#fff8e1"/>';
+  /* 窗 */
+  s += '<rect x="124" y="68" width="20" height="18" rx="2" fill="#fff8e1" stroke="'+c+'" stroke-width="1.4"/>';
+  s += '<line x1="134" y1="68" x2="134" y2="86" stroke="'+c+'" stroke-width="1.2"/>';
+  s += '<line x1="124" y1="77" x2="144" y2="77" stroke="'+c+'" stroke-width="1.2"/>';
+  /* 齿轮装饰 */
+  s += _gear(176,77,c,1);
+  /* 投入：原料（左，小齿轮盒） */
+  s += '<rect x="30" y="86" width="46" height="34" rx="6" fill="'+c+'22" stroke="'+c+'" stroke-width="1.8"/>';
+  s += _gear(53,100,c,0.62);
+  s += '<text x="53" y="116" text-anchor="middle" font-size="11" font-weight="700" fill="'+c+'">'+_esc(inp)+'</text>';
+  /* 产出：成品（右，礼物盒） */
+  s += _gift(250,100,c);
+  s += '<text x="250" y="124" text-anchor="middle" font-size="11" font-weight="700" fill="'+c+'">'+_esc(out)+'</text>';
+  /* 箭头：原料→工坊→成品 */
+  s += '<line x1="78" y1="100" x2="112" y2="92" stroke="'+c+'" stroke-width="2.4" marker-end="url(#arrF_'+uid+')"/>';
+  s += '<line x1="200" y1="92" x2="234" y2="100" stroke="'+c+'" stroke-width="2.4" marker-end="url(#arrF_'+uid+')"/>';
+  /* 小机器人（专注，站在工坊门口） */
+  s += _robot(157, 108, 'focus', 0.72, gid);
+  /* 说明 */
+  s += '<text x="150" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">函数：原料 → 加工 → 成品</text>';
+  s += '</svg></div>';
+  return s;
 }
 
-/* --- 调试：找虫子 --- */
-function getBugVisual(p, m) {
+/* --- 调试：侦探机器人找虫子 --- */
+function getBugVisual(p, m){
   var c = m ? m.color : '#7c3aed';
-  return '<div class="q-visual">' +
-    '<svg width="280" height="160" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect x="10" y="20" width="260" height="90" rx="10" fill="#1e1e2e"/>' +
-      '<text x="20" y="45" font-family="monospace" font-size="12" fill="#cdd6f4">1  x = 8</text>' +
-      '<text x="20" y="64" font-family="monospace" font-size="12" fill="#cdd6f4">2  if x > 5:</text>' +
-      '<text x="20" y="83" font-family="monospace" font-size="12" fill="#cdd6f4">3    print("GT")</text>' +
-      '<text x="20" y="102" font-family="monospace" font-size="12" fill="#f38ba8">   ↑ 这里错了</text>' +
-      '<text x="140" y="145" text-anchor="middle" font-size="13">🐛 → 🔍 → ⚡ → ✅</text>' +
-      '<text x="140" y="158" text-anchor="middle" font-size="10" fill="#9396b0">找虫·分析·修复·验证</text>' +
-    '</svg></div>';
+  var uid = (Math.random()*1e6|0).toString(36);
+  var gid='rbBug_'+uid;
+  var s = '<div class="q-visual"><svg width="280" height="160" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">';
+  s += '<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb380"/><stop offset="1" stop-color="#ff8c42"/></linearGradient></defs>';
+  /* 地面 */
+  s += '<rect x="0" y="128" width="280" height="32" fill="#9ccc65"/>';
+  /* 冒烟的显示器 */
+  s += '<rect x="178" y="48" width="80" height="54" rx="5" fill="#37474f" stroke="'+c+'" stroke-width="2"/>';
+  s += '<rect x="184" y="54" width="68" height="42" rx="2" fill="#1a1d2e"/>';
+  s += '<text x="189" y="70" font-family="monospace" font-size="9" fill="#a5d6a7">1  x = 8</text>';
+  s += '<text x="189" y="83" font-family="monospace" font-size="9" fill="#ef9a9a">2  if x = 5:</text>';
+  s += '<text x="189" y="96" font-family="monospace" font-size="9" fill="#cdd6f4">3    print(x)</text>';
+  s += '<rect x="184" y="76" width="68" height="11" fill="#ef9a9a" opacity="0.18"/>';
+  s += '<rect x="206" y="102" width="22" height="8" fill="#455a64"/>';
+  s += '<rect x="196" y="110" width="42" height="5" rx="2" fill="#37474f"/>';
+  /* 烟 */
+  s += _smoke(217,42)+_smoke(225,34)+_smoke(211,32);
+  /* 逃跑的瓢虫 */
+  s += _ladybug(150,126,1);
+  s += _ladybug(252,136,-1);
+  /* 问号装饰 */
+  s += '<text x="120" y="40" text-anchor="middle" font-size="20" font-weight="800" fill="'+c+'" opacity="0.45">?</text>';
+  s += '<text x="166" y="50" text-anchor="middle" font-size="14" font-weight="800" fill="'+c+'" opacity="0.4">?</text>';
+  /* 小机器人（惊讶）+ 侦探帽 + 放大镜 */
+  s += _robot(80, 104, 'surprised', 1.0, gid);
+  s += _hat(80, 79);
+  s += _magnifier(116, 108);
+  /* 说明 */
+  s += '<text x="140" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">找虫 · 分析 · 修复 · 验证</text>';
+  s += '</svg></div>';
+  return s;
 }
 
-function startGame() {
+/* --- 代码阅读：小机器人捧书阅读（模块6/12）--- */
+function getReadingCodeSymbol(mode) {
+  var symbols = { basic: 'name=', sequence: 'print', calc: 'x+y', update: '+=10', game: 'if/elif', grade: 'score' };
+  return symbols[mode] || 'code';
+}
+
+function getReadingVisual(p, m) {
+  var c = m ? m.color : '#0ea5e9';
+  var mode = (p && p.mode) || 'basic';
+  var uid = (Math.random() * 1e6 | 0).toString(36);
+  var gid = 'rbRead_' + uid;
+  var s = '<div class="q-visual"><svg width="280" height="160" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">';
+  s += '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb380"/><stop offset="1" stop-color="#ff8c42"/></linearGradient></defs>';
+  /* 地面 */
+  s += '<rect x="0" y="128" width="280" height="32" fill="#9ccc65"/>';
+  s += '<rect x="0" y="128" width="280" height="5" fill="#7cb342"/>';
+  /* 打开的书（两页展开） */
+  s += '<path d="M 140 70 L 90 76 L 90 120 L 140 114 Z" fill="#fff8e1" stroke="' + c + '" stroke-width="1.6"/>';
+  s += '<path d="M 140 70 L 190 76 L 190 120 L 140 114 Z" fill="#fff8e1" stroke="' + c + '" stroke-width="1.6"/>';
+  s += '<line x1="140" y1="70" x2="140" y2="114" stroke="' + c + '" stroke-width="1.8"/>';
+  /* 书页上的代码符号（根据mode变化） */
+  s += '<text x="115" y="92" text-anchor="middle" font-family="monospace" font-size="9" fill="' + c + '">' + _esc(getReadingCodeSymbol(mode)) + '</text>';
+  s += '<text x="165" y="92" text-anchor="middle" font-family="monospace" font-size="9" fill="' + c + '">print()</text>';
+  s += '<line x1="100" y1="98" x2="130" y2="98" stroke="' + c + '" stroke-width="1" opacity="0.5"/>';
+  s += '<line x1="148" y1="98" x2="180" y2="98" stroke="' + c + '" stroke-width="1" opacity="0.5"/>';
+  s += '<line x1="100" y1="106" x2="125" y2="106" stroke="' + c + '" stroke-width="1" opacity="0.5"/>';
+  /* 头顶灯泡（表示"理解了"） */
+  s += '<circle cx="140" cy="42" r="9" fill="#fff9c4" stroke="#f9a825" stroke-width="1.6"/>';
+  s += '<path d="M 136 38 Q 140 30 144 38" fill="none" stroke="#f9a825" stroke-width="1.6"/>';
+  s += '<line x1="137" y1="48" x2="143" y2="48" stroke="#f9a825" stroke-width="1.4"/>';
+  /* 小机器人（思考，捧书） */
+  s += _robot(140, 100, 'thinking', 0.85, gid);
+  /* 背景漂浮代码符号装饰 */
+  s += '<text x="40" y="40" font-family="monospace" font-size="11" fill="' + c + '" opacity="0.2">&lt;/&gt;</text>';
+  s += '<text x="230" y="35" font-family="monospace" font-size="10" fill="' + c + '" opacity="0.2">{ }</text>';
+  /* 闪光星装饰 */
+  s += _sparkle(60, 60, '#ffd54f', 6);
+  s += _sparkle(235, 70, '#ffe082', 5);
+  /* 说明 */
+  s += '<text x="140" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">读代码 · 理解 · 预测结果</text>';
+  s += '</svg></div>';
+  return s;
+}
+
+/* --- 列表：小机器人 + 彩色格子（模块11）--- */
+function getListVisual(p, m) {
+  var c = m ? m.color : '#ec4899';
+  var items = (p && p.items) || ['A', 'B', 'C'];
+  var highlight = p ? p.highlight : undefined;
+  var showLen = p ? p.showLen : false;
+  var appendMode = p ? p.appendMode : false;
+  var showSum = p ? p.showSum : false;
+  var uid = (Math.random() * 1e6 | 0).toString(36);
+  var gid = 'rbList_' + uid;
+  var s = '<div class="q-visual"><svg width="280" height="160" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">';
+  s += '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb380"/><stop offset="1" stop-color="#ff8c42"/></linearGradient></defs>';
+  /* 地面 */
+  s += '<rect x="0" y="128" width="280" height="32" fill="#9ccc65"/>';
+  s += '<rect x="0" y="128" width="280" height="5" fill="#7cb342"/>';
+  /* 彩色格子 */
+  var colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
+  var startX = 120;
+  var boxW = 38, boxH = 44, gap = 6;
+  for (var i = 0; i < items.length; i++) {
+    var x = startX + i * (boxW + gap);
+    var bc = colors[i % colors.length];
+    var isHL = (highlight === i);
+    /* 索引号 */
+    s += '<text x="' + (x + boxW / 2) + '" y="68" text-anchor="middle" font-size="11" font-weight="700" fill="' + (isHL ? c : 'var(--c-text-3)') + '">[' + i + ']</text>';
+    /* 格子 */
+    s += '<rect x="' + x + '" y="76" width="' + boxW + '" height="' + boxH + '" rx="5" fill="' + bc + '" stroke="' + (isHL ? c : '#1a1d2e') + '" stroke-width="' + (isHL ? 3 : 1.6) + '" opacity="' + (isHL ? 1 : 0.88) + '"/>';
+    /* 格子内容 */
+    s += '<text x="' + (x + boxW / 2) + '" y="104" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">' + _esc(items[i]) + '</text>';
+    /* 高亮箭头 */
+    if (isHL) {
+      s += '<path d="M ' + (x + boxW / 2) + ' 58 L ' + (x + boxW / 2 - 5) + ' 64 L ' + (x + boxW / 2 + 5) + ' 64 Z" fill="' + c + '"/>';
+    }
+  }
+  /* append模式：末尾虚线格 + ➕ */
+  if (appendMode) {
+    var ax = startX + items.length * (boxW + gap);
+    s += '<rect x="' + ax + '" y="76" width="' + boxW + '" height="' + boxH + '" rx="5" fill="none" stroke="' + c + '" stroke-width="1.8" stroke-dasharray="4 3" opacity="0.7"/>';
+    s += '<text x="' + (ax + boxW / 2) + '" y="105" text-anchor="middle" font-size="18" font-weight="700" fill="' + c + '">+</text>';
+  }
+  /* len标签 */
+  if (showLen) {
+    s += '<rect x="200" y="40" width="56" height="22" rx="11" style="fill:var(--c-surface)" stroke="' + c + '" stroke-width="1.6"/>';
+    s += '<text x="228" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="' + c + '">len=' + items.length + '</text>';
+  }
+  /* 求和符号 */
+  if (showSum) {
+    var sumVal = items.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
+    s += '<text x="250" y="100" text-anchor="middle" font-size="20" font-weight="800" fill="' + c + '">Σ</text>';
+    s += '<text x="250" y="116" text-anchor="middle" font-size="10" fill="' + c + '">= ' + sumVal + '</text>';
+  }
+  /* 小机器人（开心，站在左侧看格子） */
+  s += _robot(70, 100, 'happy', 0.85, gid);
+  /* 说明 */
+  s += '<text x="140" y="156" text-anchor="middle" font-size="10.5" style="fill:var(--c-text-3)">列表 · 有序排列 · 索引从0开始</text>';
+  s += '</svg></div>';
+  return s;
+}
+
+function startGame(stage) {
+  stage = stage || 1;
+  // 先保存跨阶段持久数据（clearProgress只清存档，不影响内存中的持久数据）
+  var unlocked = state.unlocked || [1];
+  var stageScore = state.stageScore || { 1: 0, 2: 0, 3: 0 };
+  var stageStars = state.stageStars || { 1: 0, 2: 0, 3: 0 };
   clearProgress();
-  state.qIndex = 0;
-  state.moduleIndex = 0;
-  state.score = 0;
-  state.moduleScore = [0,0,0,0,0];
+  // 计算阶段第一个模块的全局索引
+  var stageMods = getStageModules(stage);
+  var firstModuleGlobalIdx = stageMods[0] ? MODULES.indexOf(stageMods[0]) : 0;
+  state = {
+    phase: 'start',
+    stage: stage,
+    qIndex: getStageStartIndex(stage),
+    moduleIndex: firstModuleGlobalIdx,
+    score: 0,
+    moduleScore: [0,0,0,0,0,0,0,0,0,0,0,0],
+    answered: false,
+    unlocked: unlocked,
+    stageScore: stageScore,
+    stageStars: stageStars
+  };
   renderIntro();
 }
 
@@ -1847,14 +3547,22 @@ function startQuestions() {
 }
 
 function restart() {
+  // 保留跨阶段持久数据
+  var unlocked = state.unlocked || [1];
+  var stageScore = state.stageScore || { 1: 0, 2: 0, 3: 0 };
+  var stageStars = state.stageStars || { 1: 0, 2: 0, 3: 0 };
   clearProgress();
   state = {
     phase: 'start',
+    stage: 1,
     qIndex: 0,
     moduleIndex: 0,
     score: 0,
-    moduleScore: [0,0,0,0,0],
-    answered: false
+    moduleScore: [0,0,0,0,0,0,0,0,0,0,0,0],
+    answered: false,
+    unlocked: unlocked,
+    stageScore: stageScore,
+    stageStars: stageStars
   };
   renderStart();
 }

@@ -4484,6 +4484,8 @@ function shade(hex) {
 function renderQuestion() {
   state.phase = 'question';
   state.answered = false;
+  topbar.style.display = 'flex';
+  progressTrack.style.display = 'block';
   var q = QUESTIONS[state.qIndex];
   var m = MODULES[state.moduleIndex];
   moduleTag.textContent = m.emoji + ' ' + tM(state.moduleIndex, 'name');

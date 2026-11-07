@@ -1,0 +1,6 @@
+.vercel
+.env*
+
+.DS_Store
+.vercel/
+outputs/

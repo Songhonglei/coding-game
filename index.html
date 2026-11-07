@@ -1328,6 +1328,11 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
+  .version-link { display:flex; align-items:center; justify-content:center; gap:5px; min-height:44px; padding:0 9px; border:1.5px solid var(--c-border); border-radius:var(--r-md); background:var(--c-bg); color:var(--c-primary); font-size:13px; font-weight:700; text-decoration:none; flex-shrink:0; }
+  .version-link:hover { background:var(--c-border); }
+  .version-link:focus-visible { outline:3px solid var(--c-primary); outline-offset:3px; }
+  .topbar { padding-right:224px; }
+  @media(max-width:600px) { .topbar { padding-right:202px; } }
 </style>
 </head>
 <body>
@@ -1335,6 +1340,7 @@
 <div id="game">
   <!-- 顶部控制区：语言切换器 + 主题按钮（始终可见） -->
   <div class="top-controls">
+    <a class="version-link" href="/v2" title="体验 2.0 编程实验课" aria-label="体验 2.0 编程实验课"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5h6l2 2 2-2h6v14h-6l-2 2-2-2H4zM12 7v14M7 9h2m-2 4h2m6-4h2m-2 4h2"/></svg><span>2.0</span></a>
     <div class="lang-switcher">
       <button class="lang-btn" onclick="toggleLangMenu()" title="" aria-label="Language">
         <span>🌐</span><span class="lang-label" id="langLabel">EN</span>

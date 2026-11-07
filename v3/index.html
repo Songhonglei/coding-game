@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>代码探险社 3.0 · 森林观测计划</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到当前任务</a>
+<header><div class="brand"><svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#136e63"/><path d="m15 12-8 8 8 8m10-16 8 8-8 8m-2-20-6 24" stroke="#fff" stroke-width="2.3" fill="none"/></svg><div>代码探险社<small>编程小达人 3.0 · 本地体验版</small></div></div><nav class="header-actions" aria-label="版本与作品"><a href="https://kidcodingnow.vercel.app/v2">2.0 实验册</a><button id="exportProject" class="quiet">导出作品</button><button id="importProject" class="quiet">导入作品</button><input id="importFile" type="file" accept="application/json,.json" hidden></nav></header>
+<div class="shell">
+<aside aria-label="学习路线"><p class="chapter">第一章 / 森林观测计划</p><h2>修复一座气象站</h2><p id="courseProgress" class="muted">6 个编程任务</p><nav id="lessons" class="trail" aria-label="选择任务"></nav><div class="side-note"><strong>每一关都可以动手。</strong><p>改代码、运行、观察，再检查。学习记录保存在这台设备；可以导出到另一台电脑。</p><details><summary>这个工作台能做什么？</summary><p>支持基础 Python：变量、条件、循环、列表、函数。代码在浏览器运行，不会发送到服务器。</p><p>暂不支持第三方库和 input()。执行最多 3000 步，轨迹最多保留前 300 步；运行过久可以停止。</p></details></div></aside>
+<main id="main" tabindex="-1">
+<div class="context"><span id="lessonNumber">任务 01 / 06</span><span id="concept">变量与赋值</span><span id="duration">约 8 分钟</span></div>
+<h1 id="lessonTitle">让气象站亮起来</h1><p id="story" class="story"></p>
+<div class="workspace">
+<section class="coding" aria-label="编写 Python"><div class="task"><h2>这次要做到</h2><p id="goal"></p></div>
+<div class="editor"><div class="editor-head"><span id="filename">station.py</span><span>Python 3</span></div><div class="editor-body"><pre id="lineNumbers" aria-hidden="true">1</pre><textarea id="code" aria-label="Python 代码编辑器" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div><div class="editor-foot"><span>Tab 插入 4 个空格 · ⌘ / Ctrl + Enter 运行</span><span id="saveState" role="status">草稿会自动保存</span></div></div>
+<div class="controls"><button id="run" class="primary" disabled>运行代码</button><button id="stop" class="quiet" disabled>停止</button><button id="reset" class="text-button">恢复本课起始代码</button></div>
+<div id="runtimeStatus" class="runtime" role="status" aria-live="polite">正在准备 Python 引擎…</div><button id="retryRuntime" class="quiet" hidden>重新加载 Python</button>
+<div class="feedback" id="feedback" role="status" aria-live="polite">先运行一次，看看代码现在会做什么。</div><a class="result-link" href="#results">查看现场与检查结果 ↓</a>
+<details class="help"><summary>需要一点提示？</summary><p id="hint"></p><button id="moreHint" class="text-button">再看一点提示</button></details>
+</section>
+<section class="observatory" id="results" aria-label="现场与变量"><div class="scene-panel"><div class="scene-top"><span>林间观测点 01</span><span id="sceneState">等待运行</span></div><div id="scene"></div><div class="scene-bottom"><span id="stationLabel">电量传感器：等待代码</span><div id="battery" class="battery" aria-label="电量"></div></div></div>
+<div class="watch"><div class="section-title"><h2>变量观察</h2><span id="tracePosition">本次运行的最终状态</span></div><div id="variables" class="variables"><p class="muted">运行后，这里会出现变量的真实值。</p></div></div>
+<div class="console"><div class="section-title"><h2>运行输出</h2><span>print()</span></div><pre id="output" aria-live="polite">还没有运行</pre></div>
+</section>
+</div>
+<section id="report" class="report" hidden aria-label="任务检查报告"><div class="section-title"><h2 id="reportTitle">检查结果</h2><span>检查会从头运行代码</span></div><div id="error" class="error" hidden></div><ul id="checks" class="checks"></ul>
+<div id="replay" class="replay" hidden><div><strong>回放执行过程</strong><p>这是本次执行的记录。每一步显示该行执行前的变量，最后一步显示最终状态。</p></div><div class="replay-controls"><button id="previous" class="quiet">上一步</button><label for="traceSlider" class="sr-only">选择执行步骤</label><input id="traceSlider" type="range" min="0" max="0" value="0"><button id="next" class="quiet">下一步</button><button id="finalState" class="text-button">看最终状态</button></div></div>
+<div id="completion" class="completion" hidden><h3>这一关，修好了。</h3><p id="reflection"></p><button id="nextLesson" class="primary">进入下一任务</button></div></section>
+<footer><span>代码探险社 · 森林观测计划</span><span id="storageNotice" role="status">仅本地存档 · 建议定期导出作品</span></footer>
+</main></div>
+<dialog id="confirmReset"><h2>恢复本课起始代码？</h2><p>当前编辑的代码会被替换。已经完成的任务记录会保留。</p><form method="dialog"><button value="cancel" class="quiet">保留当前代码</button><button value="reset" class="primary">恢复起始代码</button></form></dialog>
+<script type="module" src="./app.js"></script>
+</body></html>

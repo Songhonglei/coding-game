@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-version="1.0.1">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -90,7 +90,9 @@
     display: flex;
     align-items: center;
     gap: var(--sp-sm);
-    padding: 14px var(--sp-lg) 10px;
+    padding: 14px 144px 10px var(--sp-lg);
+    min-height: 68px;
+    flex-wrap: wrap;
     background: var(--c-surface);
     border-bottom: 1px solid var(--c-border);
     color: var(--c-text-1);
@@ -103,6 +105,9 @@
     font-size: 0.82rem;
     font-weight: 600;
     white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
     letter-spacing: 0.02em;
   }
   .topbar .score-box {
@@ -971,7 +976,7 @@
   /* ===== 响应式：平板 ===== */
   @media (max-width: 768px) {
     #game    { max-width: 100%; border-radius: var(--r-md); border: none; box-shadow: none; }
-    .topbar  { padding: 12px var(--sp-md) 10px; }
+    .topbar  { padding: 12px 136px 10px var(--sp-md); }
     .content { padding: var(--sp-md) var(--sp-md) var(--sp-xl); }
   }
 
@@ -995,7 +1000,7 @@
     .q-text  { font-size: 0.95rem; }
     .q-visual { height: 130px; }
     .q-visual svg { height: 118px; }
-    .topbar  { padding: 10px 12px 8px; }
+    .topbar  { padding: 10px 136px 8px 12px; }
     .content { padding: var(--sp-sm) var(--sp-sm) var(--sp-lg); }
   }
 
@@ -1015,6 +1020,9 @@
     margin: 0 auto var(--sp-lg);
   }
   .stage-card {
+    font: inherit;
+    width: 100%;
+    color: inherit;
     background: var(--c-bg);
     border-radius: var(--r-md);
     padding: 18px 10px 14px;
@@ -1316,6 +1324,10 @@
   @media (max-width: 380px) {
     .stage-selector { grid-template-columns: 1fr; max-width: 240px; }
   }
+  button:focus-visible { outline: 3px solid var(--c-primary); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -1384,7 +1396,7 @@ var TTS_LANG_MAP = { 'zh': 'zh-CN', 'en': 'en-US', 'fr': 'fr-FR' };
 var I18N = {
   zh: {
     app_title: '编程小达人',
-    app_subtitle: '知识闯关 · 3大阶段 · 84道题',
+    app_subtitle: '知识闯关 · {stages}大阶段 · {questions}道题',
     app_subtitle2: '从认识概念到读懂代码',
     stage_beginner: '入门',
     stage_elementary: '初级',
@@ -1397,9 +1409,10 @@ var I18N = {
     best_score: '最高 {score}/{total}',
     status_unlocked: '已解锁',
     status_locked: '未解锁',
+    status_coming_soon: '即将开放',
     continue_info: '上次进度：{stage}阶段 · 第{n}题 · {score}分',
     btn_continue: '继续闯关',
-    btn_reselect: '重新选择',
+    btn_reselect: '重新开始本阶段',
     btn_start: '开始答题',
     unit_score: '分',
     q_number: '第 {n} 题 / 共{total}题',
@@ -1464,7 +1477,7 @@ var I18N = {
   },
   en: {
     app_title: 'Coding Star Kids',
-    app_subtitle: 'Quiz Adventure · 3 Stages · 84 Questions',
+    app_subtitle: 'Quiz Adventure · {stages} Stages · {questions} Questions',
     app_subtitle2: 'From concepts to reading code',
     stage_beginner: 'Beginner',
     stage_elementary: 'Elementary',
@@ -1477,9 +1490,10 @@ var I18N = {
     best_score: 'Best {score}/{total}',
     status_unlocked: 'Unlocked',
     status_locked: 'Locked',
+    status_coming_soon: 'Coming soon',
     continue_info: 'Last progress: {stage} · Q{n} · {score} pts',
     btn_continue: 'Continue',
-    btn_reselect: 'Choose Again',
+    btn_reselect: 'Restart this stage',
     btn_start: 'Start',
     unit_score: ' pts',
     q_number: 'Question {n} / {total}',
@@ -1544,7 +1558,7 @@ var I18N = {
   },
   fr: {
     app_title: 'Petits Pros du Code',
-    app_subtitle: 'Aventure Quiz · 3 Niveaux · 84 Questions',
+    app_subtitle: 'Aventure Quiz · {stages} Niveaux · {questions} Questions',
     app_subtitle2: 'Des concepts à la lecture de code',
     stage_beginner: 'Débutant',
     stage_elementary: 'Élémentaire',
@@ -1557,9 +1571,10 @@ var I18N = {
     best_score: 'Meilleur {score}/{total}',
     status_unlocked: 'Déverrouillé',
     status_locked: 'Verrouillé',
+    status_coming_soon: 'Bientôt disponible',
     continue_info: 'Dernière progression : {stage} · Q{n} · {score} pts',
     btn_continue: 'Continuer',
-    btn_reselect: 'Choisir à nouveau',
+    btn_reselect: 'Recommencer ce niveau',
     btn_start: 'Commencer',
     unit_score: ' pts',
     q_number: 'Question {n} / {total}',
@@ -1835,40 +1850,40 @@ var QUESTIONS = [
   },
   {
     module: 1,
-    visual: { type: 'variable', params: { varName: "myName", values: ["Evan"] } },
-    concept: '给变量起名字有规则：不能以数字开头、不能含空格、不能用减号（Python中）。驼峰命名法（myName）是常见的好习惯！',
+    visual: { type: 'variable', params: { varName: "my_name", values: ["Evan"] } },
+    concept: '给变量起名字有规则：不能以数字开头、不能含空格、不能用减号（Python中）。Python 通常用小写字母和下划线命名，例如 my_name。',
     question: '下面哪个变量名是正确的？',
     code: null,
     options: [
-      { letter: 'A', text: 'myName' },
+      { letter: 'A', text: 'my_name' },
       { letter: 'B', text: 'my name' },
       { letter: 'C', text: '1name' },
       { letter: 'D', text: 'my-name' }
     ],
     answer: 0,
-    explain: '变量名不能以数字开头，不能含空格，通常用字母、数字、下划线，myName 是驼峰命名法。',
+    explain: '变量名不能以数字开头，不能含空格，通常用字母、数字、下划线，my_name 使用 Python 常见的小写字母加下划线写法。',
     i18n: {
       en: {
-        concept: 'Naming variables has rules: cannot start with a digit, no spaces, no hyphens (in Python). CamelCase (myName) is a common good habit!',
+        concept: 'Naming variables has rules: cannot start with a digit, no spaces, no hyphens (in Python). Python usually uses lowercase letters and underscores, such as my_name.',
         question: 'Which variable name is correct?',
         options: [
-          { letter: 'A', text: 'myName' },
+          { letter: 'A', text: 'my_name' },
           { letter: 'B', text: 'my name' },
           { letter: 'C', text: '1name' },
           { letter: 'D', text: 'my-name' }
         ],
-        explain: 'Variable names cannot start with a digit, cannot contain spaces, and usually use letters, digits, and underscores. myName uses camelCase.'
+        explain: 'Variable names cannot start with a digit, cannot contain spaces, and usually use letters, digits, and underscores. my_name uses the usual Python lowercase-with-underscores style.'
       },
       fr: {
-        concept: 'Nommer une variable a des règles : pas de chiffre au début, pas d\'espace, pas de tiret (en Python). Le camelCase (myName) est une bonne habitude courante !',
+        concept: 'Nommer une variable a des règles : pas de chiffre au début, pas d\'espace, pas de tiret (en Python). Python utilise généralement des minuscules et des tirets bas, comme my_name.',
         question: 'Quel nom de variable est correct ?',
         options: [
-          { letter: 'A', text: 'myName' },
+          { letter: 'A', text: 'my_name' },
           { letter: 'B', text: 'my name' },
           { letter: 'C', text: '1name' },
           { letter: 'D', text: 'my-name' }
         ],
-        explain: 'Les noms de variables ne peuvent pas commencer par un chiffre, ni contenir d\'espaces. On utilise lettres, chiffres et tirets bas. myName utilise le camelCase.'
+        explain: 'Les noms de variables ne peuvent pas commencer par un chiffre, ni contenir d\'espaces. On utilise lettres, chiffres et tirets bas. my_name utilise des minuscules et des tirets bas, le style habituel en Python.'
       }
     }
   },
@@ -3943,6 +3958,9 @@ var QUESTIONS = [
 /* UI 文案翻译：t(key) → I18N[currentLang][key] → I18N.zh[key] → key */
 function t(key) {
   var pack = I18N[currentLang] || I18N.zh;
+  if (key === 'app_subtitle') {
+    return pack[key].replace('{stages}', getStages().filter(function(st) { return st.available; }).length).replace('{questions}', QUESTIONS.length);
+  }
   if (pack[key] != null) return pack[key];
   if (I18N.zh[key] != null) return I18N.zh[key];
   return key;
@@ -3969,7 +3987,9 @@ function tM(moduleIndex, field) {
 
 /* 获取当前语言的阶段数组 */
 function getStages() {
-  return STAGES_I18N[currentLang] || STAGES_I18N.zh;
+  return (STAGES_I18N[currentLang] || STAGES_I18N.zh).map(function(st) {
+    return Object.assign({}, st, { count: getStageQuestions(st.id).length, available: isStageAvailable(st.id) });
+  });
 }
 
 /* 初始化语言：读取 localStorage，无值则自动检测浏览器语言 */
@@ -4017,7 +4037,10 @@ function rerenderCurrent() {
     case 'intro':       renderIntro(); break;
     case 'question':    renderQuestion(); break;
     case 'summary':     renderSummary(); break;
-    case 'unlock':      /* 解锁弹窗保持，底层成绩页已渲染 */ break;
+    case 'unlock':
+      renderSummary();
+      renderUnlock(state.stage, state.score, getStageQuestions(state.stage).length);
+      break;
   }
 }
 
@@ -4046,7 +4069,10 @@ function updateLangSwitcher() {
   var langBtn = document.querySelector('.lang-btn');
   if (langBtn) langBtn.setAttribute('title', t('lang_tooltip'));
   var speakBtn = document.getElementById('speakBtn');
-  if (speakBtn) speakBtn.setAttribute('title', t('speak_tooltip'));
+  if (speakBtn) {
+    speakBtn.setAttribute('title', t('speak_tooltip'));
+    speakBtn.setAttribute('aria-label', t('speak_tooltip'));
+  }
   var themeBtn = document.getElementById('themeBtn');
   if (themeBtn) {
     /* 主题按钮 title 保持原样，用CSS token即可 */
@@ -4072,6 +4098,9 @@ var state = {
   score: 0,             // 当前阶段总分
   moduleScore: [0,0,0,0,0,0,0,0,0,0,0,0], // 各模块得分（12位）
   answered: false,      // 当前题是否已答
+  answers: {},           // 当前阶段已提交的选项（按全局题号）
+  stageProgress: {},     // 各阶段独立的活动会话
+  stageCompleted: [],    // 已完成（不一定通过）的阶段
   unlocked: [1],        // 已解锁阶段列表
   stageScore: { 1: 0, 2: 0, 3: 0 },   // 各阶段历史最高分
   stageStars: { 1: 0, 2: 0, 3: 0 }    // 各阶段历史最高星级(0-3)
@@ -4086,39 +4115,109 @@ var progressFill = document.getElementById('progressFill');
 
 /* ---- 进度暂存（localStorage）---- */
 var SAVE_KEY = 'coding-game-save';
+function isStageAvailable(stage) {
+  return getStageQuestions(stage).length > 0 && getStageModules(stage).length > 0;
+}
+
+function isStagePassed(stage, score) {
+  var total = getStageQuestions(stage).length;
+  return total > 0 && score / total >= getPassThreshold(stage);
+}
+
+function boundedInt(value, max) {
+  return Number.isInteger(value) && value >= 0 ? Math.min(value, max) : 0;
+}
+
+function validQuestion(stage, qIndex) {
+  return Number.isInteger(qIndex) && !!QUESTIONS[qIndex] && (QUESTIONS[qIndex].stage || 1) === stage;
+}
+
+function normalizeSession(stage, session) {
+  if (!session || typeof session !== 'object' || !validQuestion(stage, session.qIndex) || session.status === 'completed') return null;
+  var answers = {};
+  Object.keys(session.answers || {}).forEach(function(key) {
+    var n = Number(key), answer = session.answers[key];
+    if (validQuestion(stage, n) && n <= session.qIndex && Number.isInteger(answer) && answer >= 0 && answer < QUESTIONS[n].options.length) answers[n] = answer;
+  });
+  return {
+    qIndex: session.qIndex,
+    moduleIndex: QUESTIONS[session.qIndex].module - 1,
+    score: boundedInt(session.score, getStageQuestions(stage).length),
+    moduleScore: MODULES.map(function(m, i) {
+      return boundedInt((session.moduleScore || [])[i], getStageQuestions(stage).filter(function(q) { return q.module === m.id; }).length);
+    }),
+    answers: answers,
+    phase: session.phase === 'intro' ? 'intro' : 'question',
+    ts: typeof session.ts === 'number' ? session.ts : 0
+  };
+}
+
 function saveProgress() {
+  var active = state.phase === 'intro' || state.phase === 'question';
+  if (active && validQuestion(state.stage, state.qIndex)) {
+    state.stageProgress[state.stage] = {
+      qIndex: state.qIndex, moduleIndex: state.moduleIndex,
+      score: state.score, moduleScore: state.moduleScore.slice(),
+      answers: Object.assign({}, state.answers), phase: state.phase, ts: Date.now()
+    };
+  } else if (state.phase === 'summary' || state.phase === 'unlock') {
+    delete state.stageProgress[state.stage];
+    if (state.stageCompleted.indexOf(state.stage) < 0) state.stageCompleted.push(state.stage);
+  }
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      stage: state.stage,
-      qIndex: state.qIndex,
-      moduleIndex: state.moduleIndex,
-      score: state.score,
-      moduleScore: state.moduleScore,
-      unlocked: state.unlocked || [1],
-      stageScore: state.stageScore,
-      stageStars: state.stageStars,
-      ts: Date.now()
+      version: 2,
+      lastStage: active ? state.stage : null,
+      stageProgress: state.stageProgress,
+      unlocked: state.unlocked.filter(isStageAvailable),
+      stageScore: state.stageScore, stageStars: state.stageStars,
+      stageCompleted: state.stageCompleted, ts: Date.now()
     }));
   } catch(e) {}
 }
+
 function loadProgress() {
   try {
     var raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
-    var save = JSON.parse(raw);
-    // 兼容性处理：旧存档无 stage/unlocked/stageScore/stageStars 字段
-    if (save.stage == null) save.stage = 1;
-    if (!save.unlocked) save.unlocked = [1];
-    if (!save.stageScore) save.stageScore = { 1: 0, 2: 0, 3: 0 };
-    if (!save.stageStars) save.stageStars = { 1: 0, 2: 0, 3: 0 };
-    // moduleScore 补0到12位（兼容旧5位数组）
-    if (!save.moduleScore) save.moduleScore = [];
-    while (save.moduleScore.length < 12) save.moduleScore.push(0);
+    var old = JSON.parse(raw);
+    if (!old || typeof old !== 'object' || Array.isArray(old)) return null;
+    var save = { unlocked: [1], stageScore: {}, stageStars: {}, stageProgress: {}, stageCompleted: [], lastStage: null, active: null };
+    [1, 2, 3].forEach(function(stage) {
+      var total = getStageQuestions(stage).length;
+      save.stageScore[stage] = boundedInt((old.stageScore || {})[stage], total);
+      save.stageStars[stage] = calcStars(save.stageScore[stage], total);
+      if (!isStageAvailable(stage)) return;
+      if (Array.isArray(old.unlocked) && old.unlocked.indexOf(stage) >= 0 && save.unlocked.indexOf(stage) < 0) save.unlocked.push(stage);
+      if (Array.isArray(old.stageCompleted) && old.stageCompleted.indexOf(stage) >= 0) save.stageCompleted.push(stage);
+      var session = old.version === 2 ? (old.stageProgress || {})[stage] : ((old.stage || 1) === stage ? old : null);
+      var normalized = normalizeSession(stage, session);
+      if (normalized) save.stageProgress[stage] = normalized;
+      else if (session && Number.isInteger(session.qIndex) && session.qIndex > getStageEndIndex(stage)) {
+        if (save.stageCompleted.indexOf(stage) < 0) save.stageCompleted.push(stage);
+        save.stageScore[stage] = Math.max(save.stageScore[stage], boundedInt(session.score, total));
+        save.stageStars[stage] = calcStars(save.stageScore[stage], total);
+      }
+    });
+    // Scores are permanent achievements. Repair missing unlock flags in legacy saves.
+    if (isStagePassed(1, save.stageScore[1]) && save.unlocked.indexOf(2) < 0 && isStageAvailable(2)) save.unlocked.push(2);
+    Object.keys(save.stageProgress).forEach(function(key) {
+      if (save.unlocked.indexOf(Number(key)) < 0) delete save.stageProgress[key];
+    });
+    var preferred = old.version === 2 ? old.lastStage : (old.stage || 1);
+    var keys = Object.keys(save.stageProgress).sort(function(a, b) { return save.stageProgress[b].ts - save.stageProgress[a].ts; });
+    save.lastStage = save.stageProgress[preferred] ? Number(preferred) : (keys.length ? Number(keys[0]) : null);
+    if (save.lastStage !== null) save.active = Object.assign({ stage: save.lastStage }, save.stageProgress[save.lastStage]);
     return save;
   } catch(e) { return null; }
 }
-function clearProgress() {
-  try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+
+function restoreAchievements(save) {
+  state.unlocked = save ? save.unlocked : [1];
+  state.stageScore = save ? save.stageScore : { 1: 0, 2: 0, 3: 0 };
+  state.stageStars = save ? save.stageStars : { 1: 0, 2: 0, 3: 0 };
+  state.stageCompleted = save ? save.stageCompleted : [];
+  state.stageProgress = save ? save.stageProgress : {};
 }
 
 /* ============================================================
@@ -4145,12 +4244,12 @@ function getStageStartIndex(stage) {
   for (var i = 0; i < QUESTIONS.length; i++) {
     if ((QUESTIONS[i].stage || 1) === stage) return i;
   }
-  return 0;
+  return -1;
 }
 
 /* 获取当前阶段最后一题的全局索引 */
 function getStageEndIndex(stage) {
-  var last = 0;
+  var last = -1;
   for (var i = 0; i < QUESTIONS.length; i++) {
     if ((QUESTIONS[i].stage || 1) === stage) last = i;
   }
@@ -4188,6 +4287,7 @@ function getPassThreshold(stage) {
 var tts = {
   speaking: false,
   paused: false,
+  _runId: 0,
   _queue: [],              /* 分段队列 */
   _idx: 0,
   _onEnd: null,
@@ -4224,6 +4324,7 @@ var tts = {
   /* 入口：分段 → 播放 */
   speak: function(text, onEnd) {
     this.stop();
+    if (typeof speechSynthesis === 'undefined' || typeof SpeechSynthesisUtterance === 'undefined') return;
     var chunks = this._chunk(text);
     this._queue = chunks;
     this._idx = 0;
@@ -4237,9 +4338,11 @@ var tts = {
   /* Web Speech API 引擎播放 */
   _playWithWebSpeech: function() {
     var self = this;
+    var runId = this._runId;
     var lang = this._getTTSLang();
 
     function playNext() {
+      if (runId !== self._runId) return;
       if (self._idx >= self._queue.length) {
         self._finish();
         return;
@@ -4248,8 +4351,8 @@ var tts = {
       u.lang = lang;
       u.rate = 0.88;
       u.pitch = 1.0;
-      u.onend = function() { self._idx++; playNext(); };
-      u.onerror = function() { self._idx++; playNext(); };
+      u.onend = function() { if (runId === self._runId) { self._idx++; playNext(); } };
+      u.onerror = function() { if (runId === self._runId) { self._idx++; playNext(); } };
       speechSynthesis.speak(u);
     }
     playNext();
@@ -4266,6 +4369,7 @@ var tts = {
 
   /* 停止播放 */
   stop: function() {
+    this._runId++;
     this._queue = [];
     this._idx = 0;
     if (typeof speechSynthesis !== 'undefined' && (speechSynthesis.speaking || speechSynthesis.pending)) {
@@ -4317,12 +4421,12 @@ var tts = {
 /* ---- 朗读控制 ---- */
 function toggleSpeak() {
   var btn = document.getElementById('speakBtn');
-  if (!btn) return;
-  if (window.tts.speaking && !window.tts.paused) {
+  if (!btn || (state.phase !== 'question' && state.phase !== 'intro')) return;
+  if (window.tts.speaking || window.tts.paused) {
     window.tts.toggle();
   } else {
-    var conceptText = tQ(state.qIndex, 'concept').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'');
-    var questionText = tQ(state.qIndex, 'question');
+    var conceptText = (state.phase === 'intro' ? tM(state.moduleIndex, 'desc') : getQuestionPresentation().concept).replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'');
+    var questionText = state.phase === 'intro' ? '' : tQ(state.qIndex, 'question');
     var text = conceptText + '。' + questionText;
     window.tts.speak(text);
   }
@@ -4335,63 +4439,56 @@ function speakExplain() {
 
 function continueGame() {
   var save = loadProgress();
-  if (!save || save.qIndex >= QUESTIONS.length) { renderStart(); return; }
-  state.stage = save.stage || 1;
-  state.qIndex = save.qIndex;
-  state.moduleIndex = save.moduleIndex;
-  state.score = save.score;
-  state.moduleScore = save.moduleScore;  // 已在loadProgress中补0到12位
-  state.unlocked = save.unlocked || [1];
-  state.stageScore = save.stageScore || { 1: 0, 2: 0, 3: 0 };
-  state.stageStars = save.stageStars || { 1: 0, 2: 0, 3: 0 };
-  state.answered = false;
-  renderQuestion();
+  if (!save || !save.active) { renderStart(); return; }
+  restoreAchievements(save);
+  var session = save.active;
+  state.stage = session.stage;
+  state.qIndex = session.qIndex;
+  state.moduleIndex = session.moduleIndex;
+  state.score = session.score;
+  state.moduleScore = session.moduleScore.slice();
+  state.answers = Object.assign({}, session.answers);
+  if (session.phase === 'intro') renderIntro();
+  else renderQuestion();
 }
 
 /* ============================================================
  *  渲染：开始页
  * ============================================================ */
 function renderStart() {
+  cancelUnlock();
+  if (window.tts) window.tts.stop();
   state.phase = 'start';
   topbar.style.display = 'none';
   progressTrack.style.display = 'none';
 
   var save = loadProgress();
-  /* 从save恢复unlocked/stageScore/stageStars到state（用于卡片显示） */
-  if (save) {
-    state.unlocked = save.unlocked;
-    state.stageScore = save.stageScore;
-    state.stageStars = save.stageStars;
-  } else {
-    state.unlocked = [1];
-    state.stageScore = { 1: 0, 2: 0, 3: 0 };
-    state.stageStars = { 1: 0, 2: 0, 3: 0 };
-  }
+  restoreAchievements(save);
 
   var stages = getStages();
 
   var cardsHTML = stages.map(function(st) {
-    var unlocked = state.unlocked.indexOf(st.id) >= 0;
+    var unlocked = st.available && state.unlocked.indexOf(st.id) >= 0;
     var stars = state.stageStars[st.id] || 0;
     var starStr = '';
     for (var i = 0; i < 3; i++) starStr += i < stars ? '⭐' : '☆';
     var score = state.stageScore[st.id] || 0;
 
     if (unlocked) {
-      var passedBadge = score > 0 ? '<div class="stage-passed-badge">'+t('passed_badge')+'</div>' : '';
-      return '<div class="stage-card start-anim-card" onclick="startGame(' + st.id + ')" style="cursor:pointer;">' +
+      var passedBadge = isStagePassed(st.id, score) ? '<div class="stage-passed-badge">'+t('passed_badge')+'</div>' : '';
+      return '<button type="button" class="stage-card start-anim-card" onclick="startGame(' + st.id + ')" style="cursor:pointer;">' +
         passedBadge +
         '<span style="font-size:2rem;">' + st.emoji + '</span>' +
         '<div class="stage-name">' + st.name + '</div>' +
         '<div class="stage-count">' + st.count + t('unit_questions') + '</div>' +
         '<div class="stage-stars-mini">' + starStr + '</div>' +
         (score > 0 ? '<div class="stage-best">'+t('best_score').replace('{score}', score).replace('{total}', st.count)+'</div>' : '<div class="stage-status">'+t('status_unlocked')+'</div>') +
-      '</div>';
+      '</button>';
     } else {
       return '<div class="stage-card locked start-anim-card">' +
         '<span style="font-size:2rem;opacity:0.4;">' + st.emoji + '</span>' +
         '<div class="stage-name" style="opacity:0.5;">' + st.name + '</div>' +
-        '<div class="stage-count" style="opacity:0.5;">' + st.count + t('unit_questions') + '</div>' +
+        '<div class="stage-count" style="opacity:0.5;">' + (st.available ? st.count + t('unit_questions') : t('status_coming_soon')) + '</div>' +
         '<div class="lock-icon">🔒</div>' +
         '<div class="stage-status" style="opacity:0.5;">'+t('status_locked')+'</div>' +
       '</div>';
@@ -4399,15 +4496,16 @@ function renderStart() {
   }).join('');
 
   /* 续玩按钮逻辑 */
-  var hasSave = save && save.qIndex < QUESTIONS.length && save.stage;
+  var hasSave = save && save.active;
+  var activeSave = hasSave ? save.active : null;
   var continueHTML = '';
   if (hasSave) {
-    var stageName = stages[save.stage - 1] ? stages[save.stage - 1].name : '';
-    var stageQNum = getStageQNumber(save.stage, save.qIndex);
-    continueHTML = '<div class="start-anim-continue"><div class="continue-info">'+t('continue_info').replace('{stage}', stageName).replace('{n}', stageQNum).replace('{score}', save.score)+'</div>' +
+    var stageName = stages[activeSave.stage - 1] ? stages[activeSave.stage - 1].name : '';
+    var stageQNum = getStageQNumber(activeSave.stage, activeSave.qIndex);
+    continueHTML = '<div class="start-anim-continue"><div class="continue-info">'+t('continue_info').replace('{stage}', stageName).replace('{n}', stageQNum).replace('{score}', activeSave.score)+'</div>' +
       '<div class="btn-row">' +
         '<button class="btn" onclick="continueGame()">'+t('btn_continue')+'</button>' +
-        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.06);" onclick="startGame(' + (state.unlocked[state.unlocked.length - 1]) + ')">'+t('btn_reselect')+'</button>' +
+        '<button class="btn" style="background:var(--c-text-3);box-shadow:0 1px 2px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.06);" onclick="startGame(' + activeSave.stage + ')">'+t('btn_reselect')+'</button>' +
       '</div></div>';
   }
 
@@ -4435,6 +4533,8 @@ function renderStart() {
  * ============================================================ */
 function renderIntro() {
   state.phase = 'intro';
+  document.getElementById('speakBtn').disabled = false;
+  saveProgress();
   var m = MODULES[state.moduleIndex];
   topbar.style.display = 'flex';
   progressTrack.style.display = 'block';
@@ -4542,7 +4642,10 @@ function shade(hex) {
  * ============================================================ */
 function renderQuestion() {
   state.phase = 'question';
-  state.answered = false;
+  if (!isStageAvailable(state.stage) || !validQuestion(state.stage, state.qIndex)) { renderStart(); return; }
+  state.moduleIndex = QUESTIONS[state.qIndex].module - 1;
+  state.answered = Object.prototype.hasOwnProperty.call(state.answers, state.qIndex);
+  document.getElementById('speakBtn').disabled = false;
   topbar.style.display = 'flex';
   progressTrack.style.display = 'block';
   var q = QUESTIONS[state.qIndex];
@@ -4570,18 +4673,18 @@ function renderQuestion() {
   }).join('');
 
   // 生成图文插图（优先使用当前语言的 visual 翻译）
-  var qVisual = tQ(state.qIndex, 'visual');
-  var visualHTML = qVisual ? getQuestionVisual(qVisual, q.module) : getDefaultVisual(q.module, m);
+  var presentation = getQuestionPresentation();
+  var visualHTML = presentation.visual;
 
   content.innerHTML =
     '<div class="page question-page">' +
       '<span class="q-number" style="color:'+m.color+';">'+t('q_number').replace('{n}', stageQNum).replace('{total}', stageTotal)+'</span>' +
-      '<div class="q-concept" style="border-left-color:'+m.color+';">'+tQ(state.qIndex, 'concept')+'</div>' +
-      visualHTML +
-      '<div class="q-text">'+tQ(state.qIndex, 'question')+'</div>' +
+      '<div class="q-concept" id="questionConcept" style="border-left-color:'+m.color+';">'+presentation.concept+'</div>' +
+      '<div id="questionVisual">'+visualHTML+'</div>' +
       codeHTML +
+      '<div class="q-text">'+tQ(state.qIndex, 'question')+'</div>' +
       '<div class="options">'+optionsHTML+'</div>' +
-      '<div class="feedback" id="feedback"></div>' +
+      '<div class="feedback" id="feedback" role="status" aria-live="polite"></div>' +
       '<div class="next-btn-wrap" id="nextWrap">' +
         '<button class="btn '+(stageQNum >= stageTotal ? 'green' : '')+'" onclick="goNext()">'+
           (stageQNum >= stageTotal ? t('btn_view_results') : t('btn_next'))+
@@ -4590,19 +4693,45 @@ function renderQuestion() {
     '</div>';
   saveProgress();
 
+  if (state.answered) showAnswer(state.answers[state.qIndex]);
+
   // 更新朗读按钮
-  var speakText = tQ(state.qIndex, 'concept').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'') + '。' + tQ(state.qIndex, 'question');
+  var speakText = presentation.concept.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'') + '。' + tQ(state.qIndex, 'question');
   window._currentSpeakText = speakText;
 }
 
-/* 选择选项 */
-function selectOption(index) {
-  if (state.answered) return;
-  state.answered = true;
+/* Keep result-bearing illustrations and explanations behind the prediction. */
+function getQuestionPresentation() {
   var q = QUESTIONS[state.qIndex];
-  var m = MODULES[state.moduleIndex];
+  var m = MODULES[q.module - 1];
+  if (q.code && !state.answered) return { concept: tM(q.module - 1, 'desc'), visual: getReadingVisual({ mode: 'basic' }, m) };
+  var visual = tQ(state.qIndex, 'visual');
+  return { concept: tQ(state.qIndex, 'concept'), visual: visual ? getQuestionVisual(visual, q.module) : getDefaultVisual(q.module, m) };
+}
+
+/* Submit once; rendering and language switching never award points. */
+function selectOption(index) {
+  if (state.phase !== 'question' || state.answered || Object.prototype.hasOwnProperty.call(state.answers, state.qIndex)) return;
+  var q = QUESTIONS[state.qIndex];
+  if (!Number.isInteger(index) || index < 0 || index >= q.options.length) return;
+  state.answers[state.qIndex] = index;
+  state.answered = true;
+  if (index === q.answer) {
+    state.score++;
+    state.moduleScore[state.moduleIndex]++;
+  }
+  saveProgress();
+  showAnswer(index);
+}
+
+function showAnswer(index) {
+  var q = QUESTIONS[state.qIndex];
+  var presentation = getQuestionPresentation();
+  document.getElementById('questionConcept').innerHTML = presentation.concept;
+  document.getElementById('questionVisual').innerHTML = presentation.visual;
+  scoreBox.textContent = state.score + ' ' + t('unit_score');
   var opts = document.querySelectorAll('.option');
-  opts.forEach(function(o){ o.classList.add('disabled'); });
+  opts.forEach(function(o){ o.classList.add('disabled'); o.disabled = true; });
 
   var feedback = document.getElementById('feedback');
   var nextWrap = document.getElementById('nextWrap');
@@ -4622,9 +4751,6 @@ function selectOption(index) {
   window._explainText = tQ(state.qIndex, 'explain').replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,'');
 
   if (isRight) {
-    state.score++;
-    state.moduleScore[state.moduleIndex]++;
-    scoreBox.textContent = state.score + ' ' + t('unit_score');
     feedback.className = 'feedback right show';
     feedback.innerHTML =
       '<div class="fb-title">'+t('fb_correct_title')+'</div>' +
@@ -4646,6 +4772,7 @@ function selectOption(index) {
 
 /* 进入下一题/下一模块/总结 */
 function goNext() {
+  if (state.phase !== 'question' || !state.answered) return;
   // 停止朗读
   if (window.tts) window.tts.stop();
   state.qIndex++;
@@ -4676,7 +4803,9 @@ function updateProgress() {
  *  渲染：总结页
  * ============================================================ */
 function renderSummary() {
+  if (!isStageAvailable(state.stage)) { renderStart(); return; }
   state.phase = 'summary';
+  document.getElementById('speakBtn').disabled = true;
   // 先更新阶段最高分/星级（在内存中），再清存档
   var stageQs = getStageQuestions(state.stage);
   var total = stageQs.length;
@@ -4696,7 +4825,7 @@ function renderSummary() {
   var ratio = total > 0 ? state.score / total : 0;
   var passed = ratio >= threshold;
   var newUnlock = false;
-  if (passed && state.stage < 3) {
+  if (passed && isStageAvailable(state.stage + 1)) {
     var nextStage = state.stage + 1;
     if (!state.unlocked) state.unlocked = [1];
     if (state.unlocked.indexOf(nextStage) < 0) {
@@ -4705,9 +4834,7 @@ function renderSummary() {
     }
   }
 
-  // 清当前阶段进度存档（unlocked/stageScore/stageStars已在内存中保留）
-  clearProgress();
-  // 将解锁状态+历史最高分持久化回localStorage（否则renderStart重新加载时丢失）
+  // Save achievements and remove only this completed session.
   saveProgress();
 
   topbar.style.display = 'flex';
@@ -4740,12 +4867,12 @@ function renderSummary() {
   // 阶段总览
   var allStages = getStages();
   var overviewHTML = '<div class="stage-overview-grid">' + allStages.map(function(st) {
-    var unlocked = state.unlocked.indexOf(st.id) >= 0;
+    var unlocked = st.available && state.unlocked.indexOf(st.id) >= 0;
     var stScore = state.stageScore[st.id] || 0;
     var stStars = state.stageStars[st.id] || 0;
     var starStr = '';
     for (var j = 0; j < 3; j++) starStr += j < stStars ? '⭐' : '☆';
-    var passed = (unlocked && stScore > 0);
+    var passed = unlocked && isStagePassed(st.id, stScore);
     var cardCls = 'stage-overview-card' + (passed ? ' passed' : (unlocked ? '' : ' locked'));
     var inner;
     if (passed) {
@@ -4762,7 +4889,7 @@ function renderSummary() {
     } else {
       inner = '<span class="soc-lock">🔒</span>' +
         '<div class="soc-name">' + st.name + '</div>' +
-        '<div class="soc-status">'+t('overview_locked')+'</div>';
+        '<div class="soc-status">'+t(st.available ? 'overview_locked' : 'status_coming_soon')+'</div>';
     }
     return '<div class="' + cardCls + '">' + inner + '</div>';
   }).join('') + '</div>';
@@ -4776,7 +4903,6 @@ function renderSummary() {
   } else {
     if (ratio >= 0.9) encourage = t('encourage_s2_3star');
     else if (ratio >= 0.7) encourage = t('encourage_s2_pass');
-    else if (ratio >= 0.6) encourage = t('encourage_s2_low_pass');
     else encourage = t('encourage_s2_fail');
   }
 
@@ -4805,15 +4931,32 @@ function renderSummary() {
   }, 150);
 
   // 如果新解锁了下一阶段，弹出解锁弹窗
-  if (newUnlock) {
-    setTimeout(function() { renderUnlock(state.stage, state.score, total); }, 600);
+  if (newUnlock) pendingUnlock = state.stage;
+  if (pendingUnlock === state.stage) {
+    clearTimeout(unlockTimer);
+    var completedStage = state.stage, completedScore = state.score;
+    unlockTimer = setTimeout(function() {
+      if (state.phase === 'summary' && state.stage === completedStage) renderUnlock(completedStage, completedScore, total);
+    }, 600);
   }
 }
 
 /* ============================================================
  *  渲染：解锁弹窗
  * ============================================================ */
+var unlockTimer = null;
+var pendingUnlock = null;
+function cancelUnlock() {
+  clearTimeout(unlockTimer);
+  pendingUnlock = null;
+  closeUnlock();
+}
+
 function renderUnlock(passedStage, score, total) {
+  if (!isStageAvailable(passedStage + 1)) return;
+  clearTimeout(unlockTimer);
+  pendingUnlock = null;
+  closeUnlock();
   state.phase = 'unlock';
   var nextStage = passedStage + 1;
   var stagesArr = getStages();
@@ -4896,6 +5039,7 @@ function renderUnlock(passedStage, score, total) {
 }
 
 function closeUnlock() {
+  if (state.phase === 'unlock') state.phase = 'summary';
   var overlay = document.getElementById('unlockOverlay');
   if (overlay) overlay.remove();
 }
@@ -5447,26 +5591,18 @@ function getListVisual(p, m) {
 
 function startGame(stage) {
   stage = stage || 1;
-  // 先保存跨阶段持久数据（clearProgress只清存档，不影响内存中的持久数据）
-  var unlocked = state.unlocked || [1];
-  var stageScore = state.stageScore || { 1: 0, 2: 0, 3: 0 };
-  var stageStars = state.stageStars || { 1: 0, 2: 0, 3: 0 };
-  clearProgress();
-  // 计算阶段第一个模块的全局索引
-  var stageMods = getStageModules(stage);
-  var firstModuleGlobalIdx = stageMods[0] ? MODULES.indexOf(stageMods[0]) : 0;
-  state = {
-    phase: 'start',
-    stage: stage,
-    qIndex: getStageStartIndex(stage),
-    moduleIndex: firstModuleGlobalIdx,
-    score: 0,
-    moduleScore: [0,0,0,0,0,0,0,0,0,0,0,0],
-    answered: false,
-    unlocked: unlocked,
-    stageScore: stageScore,
-    stageStars: stageStars
-  };
+  if (!isStageAvailable(stage) || state.unlocked.indexOf(stage) < 0) return;
+  cancelUnlock();
+  if (window.tts) window.tts.stop();
+  // Preserve other stages and permanent achievements, including on the intro page.
+  saveProgress();
+  state.stage = stage;
+  state.qIndex = getStageStartIndex(stage);
+  state.moduleIndex = QUESTIONS[state.qIndex].module - 1;
+  state.score = 0;
+  state.moduleScore = MODULES.map(function() { return 0; });
+  state.answers = {};
+  state.answered = false;
   renderIntro();
 }
 
@@ -5475,23 +5611,7 @@ function startQuestions() {
 }
 
 function restart() {
-  // 保留跨阶段持久数据
-  var unlocked = state.unlocked || [1];
-  var stageScore = state.stageScore || { 1: 0, 2: 0, 3: 0 };
-  var stageStars = state.stageStars || { 1: 0, 2: 0, 3: 0 };
-  clearProgress();
-  state = {
-    phase: 'start',
-    stage: 1,
-    qIndex: 0,
-    moduleIndex: 0,
-    score: 0,
-    moduleScore: [0,0,0,0,0,0,0,0,0,0,0,0],
-    answered: false,
-    unlocked: unlocked,
-    stageScore: stageScore,
-    stageStars: stageStars
-  };
+  saveProgress();
   renderStart();
 }
 

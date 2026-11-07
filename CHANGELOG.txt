@@ -1,0 +1,21 @@
+1.0.1 — 2026-11-07
+
+Maintenance release; retains the 1.0 visual design and static deployment.
+
+- Preserve submitted answers across language changes and reloads; award each answer once.
+- Save answers immediately and keep independent stage sessions plus permanent achievements.
+- Persist module introductions; migrate original saves and reject cross-stage continuation.
+- Compute passed badges from the actual thresholds and prevent unlocking unfinished content.
+- Show released counts (2 stages, 52 questions); mark Intermediate as coming soon.
+- Reveal result-bearing illustrations and explanations only after code predictions are submitted.
+- Fix overlapping header controls, keyboard access to stage cards and reduced-motion support.
+- Correct Python variable naming examples and read-aloud pause/resume and cancellation.
+
+Validation: node --test tests/regression.test.cjs (13 regression tests).
+Browser checks: submission/language/reload, 156 question/language renderings,
+header layout on desktop and a 390px viewport. Physical-device and spoken-audio
+quality checks are not included.
+
+Save compatibility: existing scores and available-stage unlocks are retained.
+Old saves did not record individual answers, so their historical choices cannot
+be reconstructed. The new format adds stage sessions and answer records.

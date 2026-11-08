@@ -1,0 +1,8 @@
+{
+  "battery": "energy = 3\nenergy = energy + 7\nprint(energy)",
+  "weather": "if rain > 0:\n    print(\"带伞\")\nelse:\n    print(\"晴天\")",
+  "charge": "energy = 0\nfor hour in range(5):\n    energy += 2\nprint(energy)",
+  "readings": "total = 0\nfor value in readings:\n    total += value\nprint(total)",
+  "functions": "def recharge(energy, amount):\n    return energy + amount\nenergy = recharge(3, 7)\nprint(energy)",
+  "rescue": "def recharge(value):\n    if value < 10:\n        return 10\n    return value\nrepaired = []\nfor value in readings:\n    repaired.append(recharge(value))\nprint(repaired)"
+}

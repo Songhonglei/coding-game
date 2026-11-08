@@ -17,3 +17,14 @@
 
 未覆盖：真实学生试课、实体手机与完整无障碍验收。
 v3 仅本地体验，不代表完整课程体系或生产验收。
+
+2026-11-08 frontend-design local review validation
+- 12 native runner tests and 13 original regression tests passed.
+- Six real-browser lessons: starter rejection, working program, wrong/correct understanding check, next lesson.
+- 56 layout states: 8 widths x 7 phases, no page overflow. Code-to-run max 14px; run-to-report max 65.2px including feedback.
+- Error-line focus, syntax-error state, replay from real frame values, edited-code invalidation, stop-and-rerun passed.
+- Reload restored six completed lessons; final chapter uses a wrap-up dialog.
+- Export/import restored drafts; invalid import preserved the existing code; mobile picker and reset cancel passed.
+- QA used separate port 18767 storage. User port 18766 storage was not reset.
+- Local only: no push or deployment. Physical devices and real student trials remain untested.
+Evidence: outputs/v3-review/. Design review: REVIEW-DESIGN.txt.

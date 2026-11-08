@@ -7,14 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('runner', ROOT / 'v3/runner.py')
 runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
-SOLUTIONS = {
-    'battery': 'energy = 3\nenergy = energy + 7\nprint(energy)',
-    'weather': 'if rain > 0:\n    print("带伞")\nelse:\n    print("晴天")',
-    'charge': 'energy = 0\nfor hour in range(5):\n    energy += 2\nprint(energy)',
-    'readings': 'total = 0\nfor value in readings:\n    total += value\nprint(total)',
-    'functions': 'def recharge(energy, amount):\n    return energy + amount\nenergy = recharge(3, 7)\nprint(energy)',
-    'rescue': 'def recharge(value):\n    if value < 10:\n        return 10\n    return value\nrepaired = []\nfor value in readings:\n    repaired.append(recharge(value))\nprint(repaired)',
-}
+SOLUTIONS = json.loads((ROOT / 'tests/v3/solutions.json').read_text())
 
 class RunnerTests(unittest.TestCase):
     def test_all_six_lessons_and_starters(self):
@@ -53,6 +46,23 @@ class RunnerTests(unittest.TestCase):
         result=runner.run_lesson(SOLUTIONS['battery'], 'battery')
         self.assertEqual(result['trace'][1]['variables']['energy'],'3')
         self.assertEqual(result['trace'][2]['variables']['energy'],'10')
+    def test_lesson_guidance_matches_engine_inputs(self):
+        lessons=json.loads((ROOT/'v3/lessons.json').read_text())
+        for lesson in lessons:
+            self.assertEqual(lesson['inputs'], runner.SPECS[lesson['id']][0][0])
+            review=lesson['review']
+            self.assertIn(review['answer'], range(len(review['choices'])))
+            self.assertEqual(len(set(review['choices'])),len(review['choices']))
+            self.assertTrue(lesson['explain'] and review['explanation'])
+    def test_variable_check_names_the_actual_value(self):
+        result=runner.run_lesson('energy=3\nprint(10)', 'battery')
+        self.assertFalse(result['passed'])
+        self.assertIn('energy=3',result['checks'][-1]['actual'])
+        self.assertIn('energy=10',result['checks'][-1]['expected'])
+    def test_trace_excludes_hidden_function_checks(self):
+        result=runner.run_lesson(SOLUTIONS['functions'],'functions')
+        amounts={frame['variables']['amount'] for frame in result['trace'] if 'amount' in frame['variables']}
+        self.assertEqual(amounts, {'7'})
     def test_import_is_explained_and_json_safe(self):
         self.assertIn('暂不支持',runner.run_lesson('import os', 'battery')['error']['message'])
         self.assertIsInstance(json.loads(runner.run_json(SOLUTIONS['battery'], 'battery')),dict)

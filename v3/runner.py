@@ -65,6 +65,7 @@ def run_lesson(source, lesson):
             checks.append({'label': '练习本课的方法：' + names[node_type], 'passed': False, 'expected': names[node_type], 'actual': '还没有使用'})
     for index, (inputs, expected, expected_vars, label) in enumerate(SPECS[lesson]):
         printed, ticks, started = [], 0, time.monotonic()
+        recording = True
         namespace = {}
 
         def lesson_print(*values, sep=' ', end='\n', **kwargs):
@@ -85,7 +86,7 @@ def run_lesson(source, lesson):
                 ticks += 1
                 if ticks > 3000 or time.monotonic() - started > 2:
                     raise RuntimeError('已停止：执行超过 3000 步或 2 秒。请检查循环的结束条件。')
-                if index == 0 and event == 'line' and len(traces) < 300:
+                if index == 0 and recording and event == 'line' and len(traces) < 300:
                     scope = {**namespace, **frame.f_locals}
                     traces.append({'line': frame.f_lineno, 'variables': visible(scope), 'output': ''.join(printed)[:8000]})
             return trace
@@ -94,6 +95,7 @@ def run_lesson(source, lesson):
         try:
             sys.settrace(trace)
             exec(code, namespace)
+            recording = False
             if lesson == 'functions':
                 fn = namespace.get('recharge')
                 for args, want in [((1, 2), 3), ((8, 0), 8), ((0, 5), 5)]:
@@ -112,7 +114,12 @@ def run_lesson(source, lesson):
         output = ''.join(printed).strip()
         actual_vars = {k: namespace.get(k) for k in expected_vars}
         ok = error_info is None and output == expected and all(type(actual_vars[k]) is type(v) and actual_vars[k] == v for k, v in expected_vars.items())
-        checks.append({'label': label, 'passed': ok, 'expected': expected, 'actual': error_info['type'] if error_info else output or '没有输出'})
+        wanted = expected
+        actual = error_info['type'] if error_info else output or '没有输出'
+        if expected_vars and not ok and error_info is None:
+            wanted = '输出 ' + expected + '；' + '，'.join(k + '=' + display(v) for k, v in expected_vars.items())
+            actual = '输出 ' + (output or '无') + '；' + '，'.join(k + '=' + display(v) for k, v in actual_vars.items())
+        checks.append({'label': label, 'passed': ok, 'expected': wanted, 'actual': actual})
         if index == 0:
             first_output, first_vars, first_error = output, visible(namespace), error_info
             traces.append({'line': None, 'variables': first_vars, 'output': output})

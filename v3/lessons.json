@@ -1,8 +1,206 @@
 [
- {"id":"battery","title":"让气象站亮起来","concept":"变量与赋值","minutes":8,"story":"昨夜的雨停了，气象站只剩 3 格电。让它恢复到 10 格，重新点亮观测屏。","goal":"更新 energy 到 10，并用 print 输出它。","starter":"energy = 3\nenergy = energy + 2\nprint(energy)\n","hints":["energy 里已经有 3。还差几格才能到 10？","第二行先计算右边，再存回 energy。试着改变加上的数字。","可以把第二行写成 energy = energy + 7。"],"reflection":"变量名不变，里面存着的值可以更新。","watch":["energy"]},
- {"id":"weather","title":"给出合适的天气提醒","concept":"if / else 条件判断","minutes":10,"story":"雨量传感器会提供 rain。只要雨量大于 0，就提醒探险队带伞；没下雨时显示晴天。","goal":"有雨输出“带伞”，无雨输出“晴天”。程序会接受 3 组不同雨量的检查。","starter":"# rain 由传感器提供，不需要重新赋值\nif rain > 10:\n    print(\"带伞\")\nelse:\n    print(\"晴天\")\n","hints":["小雨也需要带伞。rain 等于 5 时，现在会走到哪个分支？","判断有没有下雨，要把 rain 与 0 比较。","把条件改成 if rain > 0:，保留两个分支。"],"reflection":"同一段程序会根据输入选择不同的执行路径。","watch":["rain"]},
- {"id":"charge","title":"让太阳能板重复充电","concept":"for / range 循环","minutes":12,"story":"每轮日照可以补充 2 格电。从 0 开始，用循环让电量达到 10 格。","goal":"使用 for 循环充电，最后 energy 和输出都为 10。","starter":"energy = 0\nfor hour in range(2):\n    energy = energy + 2\nprint(energy)\n","hints":["每次加 2，一共需要重复几次？","range(5) 会让循环体运行 5 次，hour 依次为 0、1、2、3、4。","把 range(2) 改成 range(5)。注意循环体前面的 4 个空格。"],"reflection":"缩进决定哪些语句要重复执行。","watch":["energy","hour"]},
- {"id":"readings","title":"整理一周的观测记录","concept":"列表与累加","minutes":15,"story":"传感器把多天的电量放在 readings 列表里。把每项加起来，算出总量。","goal":"遍历 readings，用 total 累加并输出。还会换一组数据检查。","starter":"# readings 由传感器提供\ntotal = 0\nfor value in readings:\n    total = value\nprint(total)\n","hints":["现在每次循环都覆盖了 total，最后只留下了列表的最后一项。","每次需要保留旧 total，再加上新 value。","循环里改成 total = total + value。"],"reflection":"列表保存多项数据，循环逐项读取，累加器保存中间结果。","watch":["readings","total","value"]},
- {"id":"functions","title":"制作可重复使用的充电器","concept":"函数、参数与返回值","minutes":15,"story":"不同设备的起始电量不一样。定义 recharge，让每个设备都能补充 amount 格电。","goal":"完成 recharge(energy, amount)，返回相加结果。检查会调用 3 组参数。","starter":"def recharge(energy, amount):\n    return energy\n\nenergy = recharge(3, 7)\nprint(energy)\n","hints":["return 决定函数把什么结果交给调用它的地方。","要同时用到 energy 与 amount 两个参数。","把返回语句改成 return energy + amount。"],"reflection":"参数让函数处理不同输入，return 把计算结果交回去。","watch":["energy","amount","recharge"]},
- {"id":"rescue","title":"完成气象站的自动修复","concept":"综合任务","minutes":20,"story":"最后一站：把 recharge 写成函数。只有电量低于 10 时才充电；逐个处理 readings，并输出修复后的列表。","goal":"保留已充足的电量，把不足 10 的电量补到 10。使用函数、条件、循环和 append。","starter":"def recharge(value):\n    # 电量不足 10 时，返回 10；否则返回原值\n    return value\n\nrepaired = []\nfor value in readings:\n    repaired.append(recharge(value))\nprint(repaired)\n","hints":["先让函数处理一个设备，再交给循环处理整个列表。","函数里判断 value < 10。两种情况需要返回不同的值。","函数可写成：\nif value < 10:\n    return 10\nreturn value\n记得整体缩进在 def 里面。"],"reflection":"把一个小问题写成函数，再把函数用在更大的任务中。","watch":["readings","repaired","value","recharge"]}
+  {
+    "id": "battery",
+    "title": "让气象站亮起来",
+    "concept": "变量与赋值",
+    "minutes": 8,
+    "story": "昨夜的雨停了，气象站只剩 3 格电。让它恢复到 10 格，重新点亮观测屏。",
+    "goal": "更新 energy 到 10，并用 print 输出它。",
+    "starter": "energy = 3\nenergy = energy + 2\nprint(energy)\n",
+    "hints": [
+      "energy 里已经有 3。还差几格才能到 10？",
+      "第二行先计算右边，再存回 energy。试着改变加上的数字。",
+      "可以把第二行写成 energy = energy + 7。"
+    ],
+    "reflection": "变量名不变，里面存着的值可以更新。",
+    "watch": [
+      "energy"
+    ],
+    "inputs": {},
+    "explain": "变量像一个有名字的格子。赋值时先计算等号右边，再把新值放回左边。",
+    "review": {
+      "question": "energy = energy + 7 中，哪一边先计算？",
+      "choices": [
+        "先算等号右边",
+        "先算 energy 左边",
+        "两边同时变成 7"
+      ],
+      "answer": 0,
+      "explanation": "先算出右边的结果，再用它更新 energy。"
+    }
+  },
+  {
+    "id": "weather",
+    "title": "给出合适的天气提醒",
+    "concept": "if / else 条件判断",
+    "minutes": 10,
+    "story": "雨量传感器会提供 rain。只要雨量大于 0，就提醒探险队带伞；没下雨时显示晴天。",
+    "goal": "有雨输出“带伞”，无雨输出“晴天”。程序会接受 3 组不同雨量的检查。",
+    "starter": "# rain 由传感器提供，不需要重新赋值\nif rain > 10:\n    print(\"带伞\")\nelse:\n    print(\"晴天\")\n",
+    "hints": [
+      "小雨也需要带伞。rain 等于 5 时，现在会走到哪个分支？",
+      "判断有没有下雨，要把 rain 与 0 比较。",
+      "把条件改成 if rain > 0:，保留两个分支。"
+    ],
+    "reflection": "同一段程序会根据输入选择不同的执行路径。",
+    "watch": [
+      "rain"
+    ],
+    "inputs": {
+      "rain": 5
+    },
+    "explain": "if 后面的条件为真，执行缩进的代码；否则执行 else 里的代码。",
+    "review": {
+      "question": "当 rain 等于 0，程序应该走哪条路？",
+      "choices": [
+        "if，输出带伞",
+        "两个分支都执行",
+        "else，输出晴天"
+      ],
+      "answer": 2,
+      "explanation": "0 不大于 0，所以执行 else。"
+    }
+  },
+  {
+    "id": "charge",
+    "title": "让太阳能板重复充电",
+    "concept": "for / range 循环",
+    "minutes": 12,
+    "story": "每轮日照可以补充 2 格电。从 0 开始，用循环让电量达到 10 格。",
+    "goal": "使用 for 循环充电，最后 energy 和输出都为 10。",
+    "starter": "energy = 0\nfor hour in range(2):\n    energy = energy + 2\nprint(energy)\n",
+    "hints": [
+      "每次加 2，一共需要重复几次？",
+      "range(5) 会让循环体运行 5 次，hour 依次为 0、1、2、3、4。",
+      "把 range(2) 改成 range(5)。注意循环体前面的 4 个空格。"
+    ],
+    "reflection": "缩进决定哪些语句要重复执行。",
+    "watch": [
+      "energy",
+      "hour"
+    ],
+    "inputs": {},
+    "explain": "for 会重复执行缩进的代码。range(n) 依次提供 0 到 n−1，一共 n 次。",
+    "review": {
+      "question": "range(5) 会让循环体运行多少次？",
+      "choices": [
+        "4 次",
+        "5 次",
+        "6 次"
+      ],
+      "answer": 1,
+      "explanation": "0、1、2、3、4 是五个数，因此重复五次。"
+    }
+  },
+  {
+    "id": "readings",
+    "title": "整理一周的观测记录",
+    "concept": "列表与累加",
+    "minutes": 15,
+    "story": "传感器把多天的电量放在 readings 列表里。把每项加起来，算出总量。",
+    "goal": "遍历 readings，用 total 累加并输出。还会换一组数据检查。",
+    "starter": "# readings 由传感器提供\ntotal = 0\nfor value in readings:\n    total = value\nprint(total)\n",
+    "hints": [
+      "现在每次循环都覆盖了 total，最后只留下了列表的最后一项。",
+      "每次需要保留旧 total，再加上新 value。",
+      "循环里改成 total = total + value。"
+    ],
+    "reflection": "列表保存多项数据，循环逐项读取，累加器保存中间结果。",
+    "watch": [
+      "readings",
+      "total",
+      "value"
+    ],
+    "inputs": {
+      "readings": [
+        2,
+        4,
+        1,
+        3
+      ]
+    },
+    "explain": "累加时保留之前的总数，再加上当前项。直接把 value 赋给 total 会覆盖之前的结果。",
+    "review": {
+      "question": "为什么写 total = total + value？",
+      "choices": [
+        "保留旧总数，再加当前项",
+        "只记住最后一项",
+        "把列表变成字符串"
+      ],
+      "answer": 0,
+      "explanation": "total 保存之前的总数，value 是这一轮的新数据。"
+    }
+  },
+  {
+    "id": "functions",
+    "title": "制作可重复使用的充电器",
+    "concept": "函数、参数与返回值",
+    "minutes": 15,
+    "story": "不同设备的起始电量不一样。定义 recharge，让每个设备都能补充 amount 格电。",
+    "goal": "完成 recharge(energy, amount)，返回相加结果。检查会调用 3 组参数。",
+    "starter": "def recharge(energy, amount):\n    return energy\n\nenergy = recharge(3, 7)\nprint(energy)\n",
+    "hints": [
+      "return 决定函数把什么结果交给调用它的地方。",
+      "要同时用到 energy 与 amount 两个参数。",
+      "把返回语句改成 return energy + amount。"
+    ],
+    "reflection": "参数让函数处理不同输入，return 把计算结果交回去。",
+    "watch": [
+      "energy",
+      "amount",
+      "recharge"
+    ],
+    "inputs": {},
+    "explain": "参数给函数提供本次输入。return 把计算结果交回调用它的地方。",
+    "review": {
+      "question": "return 的作用是什么？",
+      "choices": [
+        "自动打印结果",
+        "把结果返回给调用者",
+        "让函数重复执行"
+      ],
+      "answer": 1,
+      "explanation": "返回值可以继续赋给变量或用于其他计算。"
+    }
+  },
+  {
+    "id": "rescue",
+    "title": "完成气象站的自动修复",
+    "concept": "综合任务",
+    "minutes": 20,
+    "story": "最后一站：把 recharge 写成函数。只有电量低于 10 时才充电；逐个处理 readings，并输出修复后的列表。",
+    "goal": "保留已充足的电量，把不足 10 的电量补到 10。使用函数、条件、循环和 append。",
+    "starter": "def recharge(value):\n    # 电量不足 10 时，返回 10；否则返回原值\n    return value\n\nrepaired = []\nfor value in readings:\n    repaired.append(recharge(value))\nprint(repaired)\n",
+    "hints": [
+      "先让函数处理一个设备，再交给循环处理整个列表。",
+      "函数里判断 value < 10。两种情况需要返回不同的值。",
+      "函数可写成：\nif value < 10:\n    return 10\nreturn value\n记得整体缩进在 def 里面。"
+    ],
+    "reflection": "把一个小问题写成函数，再把函数用在更大的任务中。",
+    "watch": [
+      "readings",
+      "repaired",
+      "value",
+      "recharge"
+    ],
+    "inputs": {
+      "readings": [
+        3,
+        12,
+        0,
+        10
+      ]
+    },
+    "explain": "先让 recharge 处理单个设备，再在循环中调用它，把返回值 append 到列表中。",
+    "review": {
+      "question": "电量为 12 的设备，修复后应该是多少？",
+      "choices": [
+        "10",
+        "22",
+        "12"
+      ],
+      "answer": 2,
+      "explanation": "只补足低于 10 的设备，已有 12 的设备保留原值。"
+    }
+  }
 ]

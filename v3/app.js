@@ -1,6 +1,10 @@
 const $ = id => document.getElementById(id);
 const STORAGE = 'kidcoding-v3-expedition-v1';
-const lessons = await (await fetch(new URL('./lessons.json', import.meta.url))).json();
+const REVISION = new URL(import.meta.url).searchParams.get('v') || '20261108-v3-review1';
+function asset(path) {
+  const url = new URL(path, import.meta.url); url.searchParams.set('v', REVISION); return url;
+}
+const lessons = await (await fetch(asset('./lessons.json'))).json();
 const ids = new Set(lessons.map(item => item.id));
 
 function cleanState(value) {
@@ -127,7 +131,7 @@ function setBusy(value) {
 function boot() {
   clearTimeout(loadTimer); clearTimeout(runTimer); worker?.terminate(); ready = false; setBusy(false);
   $('runtimeStatus').textContent = '正在准备 Python…'; $('retryRuntime').hidden = true;
-  const current = new Worker(new URL('./worker.js', import.meta.url), {type: 'module'}); worker = current;
+  const current = new Worker(asset('./worker.js'), {type: 'module'}); worker = current;
   function failed(message) {
     if (worker !== current) return;
     clearTimeout(loadTimer); clearTimeout(runTimer); current.terminate(); ready = false; setBusy(false);

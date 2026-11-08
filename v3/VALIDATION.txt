@@ -28,3 +28,7 @@ v3 仅本地体验，不代表完整课程体系或生产验收。
 - QA used separate port 18767 storage. User port 18766 storage was not reset.
 - Local only: no push or deployment. Physical devices and real student trials remain untested.
 Evidence: outputs/v3-review/. Design review: REVIEW-DESIGN.txt.
+
+Cache consistency follow-up: HTML/CSS/module/lesson data/worker/runner now use a shared revision query.
+The final localhost check exposed a mixed old asset cache; revision URLs prevent that without clearing drafts or progress.
+The 56-state browser QA used the isolated 18767 origin with fresh assets.

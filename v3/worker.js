@@ -2,7 +2,9 @@ import { loadPyodide } from './vendor/pyodide/pyodide.mjs';
 let pyodide;
 async function init() {
   pyodide = await loadPyodide({indexURL: new URL('./vendor/pyodide/', import.meta.url).href});
-  const response = await fetch(new URL('./runner.py', import.meta.url));
+  const runnerURL = new URL('./runner.py', import.meta.url);
+  runnerURL.searchParams.set('v', new URL(import.meta.url).searchParams.get('v') || '20261108-v3-review1');
+  const response = await fetch(runnerURL);
   if (!response.ok) throw new Error('任务检查器加载失败');
   pyodide.runPython(await response.text());
   self.postMessage({type:'ready'});

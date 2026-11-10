@@ -3,3 +3,9 @@
 !v2
 !v2/**
 !vercel.json
+!v3
+!v3/**
+v3/*.txt
+v3/vendor/pyodide/*.txt
+v3/vendor/pyodide/checksums.json
+v3/vendor/pyodide/provenance.json

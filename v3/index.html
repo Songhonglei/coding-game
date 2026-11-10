@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>代码探险社 3.0 · 森林观测计划</title>
-<link rel="stylesheet" href="./style.css?v=20261108-v3-review1">
+<link rel="stylesheet" href="/v3/style.css?v=20261110-v3-release1">
 </head>
 <body>
 <a class="skip-link" href="#main">跳到当前任务</a>
-<header><div class="brand"><svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#136e63"/><path d="m15 12-8 8 8 8m10-16 8 8-8 8m-2-20-6 24" stroke="#fff" stroke-width="2.3" fill="none"/></svg><div>代码探险社<small>3.0 本地体验版</small></div></div><div class="header-actions"><a href="https://kidcodingnow.vercel.app/v2">2.0 实验册</a><details class="file-menu" id="fileMenu"><summary>我的作品</summary><div><button id="exportProject">导出作品</button><button id="importProject">导入作品</button><p>将六课草稿和学习记录保存成文件。</p></div></details><input id="importFile" type="file" accept="application/json,.json" hidden></div></header>
+<header><div class="brand"><svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#136e63"/><path d="m15 12-8 8 8 8m10-16 8 8-8 8m-2-20-6 24" stroke="#fff" stroke-width="2.3" fill="none"/></svg><div>代码探险社<small>3.0 体验版</small></div></div><div class="header-actions"><a href="https://kidcodingnow.vercel.app/v2">2.0 实验册</a><details class="file-menu" id="fileMenu"><summary>我的作品</summary><div><button id="exportProject">导出作品</button><button id="importProject">导入作品</button><p>将六课草稿和学习记录保存成文件。</p></div></details><input id="importFile" type="file" accept="application/json,.json" hidden></div></header>
 <div class="shell">
 <aside aria-label="学习路线"><p class="chapter">森林观测计划</p><h2>修复一座气象站</h2><p id="courseProgress" class="muted">已完成 0 / 6 个任务</p><nav id="lessons" class="trail" aria-label="选择任务"></nav><details class="scope"><summary>工作台使用说明</summary><p>支持基础 Python 的变量、条件、循环、列表和函数。暂不支持第三方库和 input()。</p><p>执行最多 3000 步；运行过久可停止。代码只在浏览器执行，学习记录仅保存在本机。</p></details></aside>
 <main id="main" tabindex="-1">
@@ -32,5 +32,5 @@
 </main></div>
 <dialog id="confirmReset"><h2>恢复本课起始代码？</h2><p>当前编辑的代码会被替换。已完成的任务记录会保留。</p><form method="dialog"><button value="cancel" class="quiet">保留当前代码</button><button value="reset" class="primary">恢复起始代码</button></form></dialog>
 <dialog id="courseDone"><h2 id="courseDoneTitle">观测计划</h2><p id="courseDoneText"></p><div class="dialog-actions"><button id="keepExploring" class="quiet">继续探索本课</button><button id="returnRoute" class="primary">回到学习路线</button></div></dialog>
-<script type="module" src="./app.js?v=20261108-v3-review1"></script>
+<script type="module" src="/v3/app.js?v=20261110-v3-release1"></script>
 </body></html>

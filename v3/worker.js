@@ -3,7 +3,7 @@ let pyodide;
 async function init() {
   pyodide = await loadPyodide({indexURL: new URL('./vendor/pyodide/', import.meta.url).href});
   const runnerURL = new URL('./runner.py', import.meta.url);
-  runnerURL.searchParams.set('v', new URL(import.meta.url).searchParams.get('v') || '20261110-v3-release1');
+  runnerURL.searchParams.set('v', new URL(import.meta.url).searchParams.get('v') || '20261110-v3-mobile1');
   const response = await fetch(runnerURL);
   if (!response.ok) throw new Error('任务检查器加载失败');
   pyodide.runPython(await response.text());

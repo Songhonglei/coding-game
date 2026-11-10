@@ -1,6 +1,6 @@
 const $ = id => document.getElementById(id);
 const STORAGE = 'kidcoding-v3-expedition-v1';
-const REVISION = new URL(import.meta.url).searchParams.get('v') || '20261110-v3-release1';
+const REVISION = new URL(import.meta.url).searchParams.get('v') || '20261110-v3-mobile1';
 function asset(path) {
   const url = new URL(path, import.meta.url); url.searchParams.set('v', REVISION); return url;
 }
@@ -192,7 +192,10 @@ function showResult() {
   if (result.passed) renderReview(); else resetReview();
   $('debugDetails').hidden = !result.trace.length; $('replay').hidden = !result.trace.length;
   $('traceSlider').max = Math.max(0, result.trace.length - 1); showTrace(result.trace.length - 1); setFlow(2);
-  if (matchMedia('(max-width: 700px)').matches && $('report').getBoundingClientRect().top > innerHeight - 140) $('report').scrollIntoView({block: 'start'});
+  if (matchMedia('(max-width: 700px)').matches) {
+    const target = result.error ? $('report') : $('results');
+    if (target.getBoundingClientRect().top > innerHeight - 140) target.scrollIntoView({block: 'start'});
+  }
 }
 function showTrace(index) {
   if (!result) return;

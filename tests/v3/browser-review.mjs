@@ -17,12 +17,13 @@ async function measure(phase) {
       return {
         width, phase, overflow:document.documentElement.scrollWidth>innerWidth,
         codeToRun:rect('.controls').top-rect('.editor').bottom,
-        reportGap:document.querySelector('#report').hidden ? null : rect('#report').top-rect('.controls').bottom,
+        reportGap:document.querySelector('#report').hidden ? null : rect('#report').top-rect(width<=700 ? '#results' : '.controls').bottom,
+        outputBeforeReport:width>700 || document.querySelector('#report').hidden || rect('#results').bottom<=rect('#report').top,
         codeHeight:rect('#code').height,
         reflectionOverflow:document.querySelector('#completion').scrollWidth>document.querySelector('#completion').clientWidth && !document.querySelector('#completion').hidden,
       };
     }, {width,phase});
-    if (value.overflow || value.reflectionOverflow || value.codeToRun < 0 || value.codeToRun > (width<=700 ? 16:70) || value.reportGap > 110 || value.codeHeight > 289) throw new Error(JSON.stringify(value));
+    if (value.overflow || value.reflectionOverflow || !value.outputBeforeReport || value.codeToRun < 0 || value.codeToRun > (width<=700 ? 16:70) || value.reportGap > 110 || value.codeHeight > 289) throw new Error(JSON.stringify(value));
     measurements.push(value);
   }
   await page.cdp('Emulation.clearDeviceMetricsOverride');
